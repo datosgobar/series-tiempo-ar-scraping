@@ -5,13 +5,20 @@ progress: true
 style: style.css
 
 --
-# Series de Tiempo
-## Datos con **dimensión temporal**: muestran la evolución de una variable con frecuencia crónica
+# Proyecto Series de Tiempo
+## Una base de series de tiempo para Argentina
+
+-- separator
+# ¿Qué son y para qué se usan?
+## Datos con **dimensión temporal**: muestran la evolución de un indicador con frecuencia crónica
 
 --
 ### ¿Qué son?
+<p><img src="assets/IPCs.png" align="middle" height="450" width="800"></p>
 
-(Screenshot de distintas series de tiempo)
+--
+### ¿Qué son?
+<p><img src="assets/empleo.png" align="middle" height="450" width="800"></p>
 
 --
 ### ¿Para qué se usan?
@@ -22,52 +29,87 @@ style: style.css
 * Evolución histórica
 
 -- separator
-# Referencias internacionales
-## Bases de series de tiempo en el mundo
+# ¿Qué vamos a hacer?
 
 --
-### Referencias internacionales: BM
-
-<p><img src="assets/BM.png" align="middle" height="400" width="800"></p>
+### Catálogo de series de tiempo
+<p><img src="assets/catalogo.png" align="middle" height="400" width="800"></p>
 
 --
-### Referencias internacionales: OECD
-
+### Catálogo de series de tiempo
 <p><img src="assets/OECD.png" align="middle" height="400" width="800"></p>
 
 --
-### Referencias internacionales: FRED
-
-<p><img src="assets/FRED.png" align="middle" height="400" width="800"></p>
+### Catálogo de series de tiempo
+<p><img src="assets/QUANDL.png" align="middle" height="400" width="800"></p>
 
 --
-### Referencias internacionales: Quandl
+### Dashboard de seguimiento de coyuntura económica
 
-<p><img src="assets/Quandl.png" align="middle" height="400" width="800"></p>
+(Mock en Tableau embebido o screenshot)
+
+--
+### API de series de tiempo
+<p><img src="assets/QUANDL_api.png" align="middle" height="400" width="800"></p>
+
+--
+### Interfaz web de búsqueda, selección, procesamiento y descarga
+<p><img src="assets/BM.png" align="middle" height="400" width="800"></p>
+
+--
+### Interfaz web de búsqueda, selección, procesamiento y descarga
+<p><img src="assets/FRED_interfaz.png" align="middle" height="400" width="800"></p>
 
 -- separator
-# Proyecto Series de Tiempo
-## Una base de series de tiempo argentina
+# Impacto del proyecto
 
 --
-### ¿Qué vamos a hacer?
+### Verticales de la Dirección Nacional
+<p><img src="assets/verticales.png" align="middle" height="400" width="800"></p>
 
-* **Catálogo de series de tiempo** de la SS de Programación Macroeconómica
-* **Dashboard de seguimiento de coyuntura económica** (Información Económica al Día)
-* **API de series de tiempo** integrada a la Infraestructura de Datos
-* **Interfaz web** de búsqueda, selección, procesamiento y descarga de series de tiempo
+<!-- 
 
-**TODO: separar en 4 slides con screenshots o iframes de c/cosa**
+* **Mejora en la gestión de datos**
+    - Infraestructura de Datos
+    - Datos Aplicados
+* **Apertura**
+    - Marco institucional
+    - Herramientas/plataformas
+    - Implementación
 
---
-### Beneficios del proyecto (1): verticales de la DN
-
-* **Apertura**: 200 nuevos datasets de la SSPM
-* **Mejoras al uso**: info económica valiosa publicada en forma más ágil y actualizada
-* **Mejoras en origen**: activos de datos mejor estructurados y documentados para su consumo
-* **Apalancamiento de la Infraestructura de Datos**: primer cliente que empieza a usar servicios de la Infraestructura de Datos
+ -->
 
 --
+### Profundización de la apertura
+
+* **200 nuevos datasets**
+
+* **Datos como servicio**<!-- series disponibles para desarrollo de aplicaciones, reportes automáticos, dashboards, sistemas de alerta... -->
+
+* **Nueva experiencia web de consumo de datos**<!-- navegar, descubrir, combinar, descargar y compartir datos de manera más útil y personalizada -->
+
+* **Información económica valiosa para el público**<!-- en forma más ágil y actualizada -->
+
+--
+### Mejora en la gestión de datos
+
+* **Cambia la forma de trabajo con datos**
+
+* **Puesta en valor de trabajo previo** <!-- en el desarrollo interno de estándares sub-utilizados y todavía nunca publicados -->
+
+* **Sistema para compartir datos de gobierno _internos_** <!-- fácilmente entre organismos del estado -->
+
+* **Nueva fuente de datos para Tablero de Gestión** <!-- disponibilización de indicadores clave (abiertos y no abiertos) de seguimiento de la economía para el control de gestión en tiempo real -->
+
+--
+### Comunidad
+
+* **Nuevos partners en la APN** <!-- alianza con la SSPM que maneja datos económicos importantes para seguimiento de la economía -->
+
+
+
+<!--
+
 ### Beneficios del proyecto (2): Infraestructura de Datos
 
 * **Mejorar la calidad**: re-estructuración de datos difíciles de usar
@@ -75,9 +117,4 @@ style: style.css
 * **Facilitar la reutilización**: consumo de datos desatendido y customizado, pensado para una variedad de casos de uso
 * **Simplificar el acceso**: datos _no abiertos_ se comparten fácilmente entre organismos del estado
 
---
-### Beneficios del proyecto (3): sinergias y alianzas
-
-* **Nuevos partners en la APN**: alianza con la SSPM que maneja datos económicos importantes para seguimiento de la economía
-* **Nueva fuente de datos para Tablero de Gestión**: disponibilización de indicadores clave (abiertos y no abiertos) de seguimiento de la economía para el control de gestión
-
+ -->
