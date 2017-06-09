@@ -8,10 +8,9 @@ style: style.css
 # Proyecto Series de Tiempo
 ## Una base de series de tiempo para Argentina
 
-Holaaaaaa
-
 -- separator
-# ¿Qué son y para qué se usan?
+# ¿Qué son?
+
 ## Datos con **dimensión temporal**: muestran la evolución de un indicador con frecuencia crónica
 
 --
@@ -25,9 +24,12 @@ Holaaaaaa
 --
 ### ¿Para qué se usan?
 
-* Seguimiento de coyuntura
-* Evaluación de impacto
+* Coyuntura socioeconómica
+
+* Evaluación de resultados
+
 * Análisis de correlación
+
 * Evolución histórica
 
 -- separator
@@ -46,20 +48,24 @@ Holaaaaaa
 <p><img src="assets/QUANDL.png" align="middle" height="400" width="800"></p>
 
 --
-### Dashboard de seguimiento de coyuntura económica
+### Dashboard de seguimiento de coyuntura
 
 (Mock en Tableau embebido o screenshot)
 
 --
 ### API de series de tiempo
+###### *https://www.quandl.com/api/v3/datasets/WIKI/AAPL.json?start_date=1985-05-01&end_date=1997-07-01&collapse=quarterly&transformation=rdiff *######
+
 <p><img src="assets/QUANDL_api.png" align="middle" height="400" width="800"></p>
 
 --
-### Interfaz web de búsqueda, selección, procesamiento y descarga
+### Web de búsqueda, exploración y descarga
+
 <p><img src="assets/BM.png" align="middle" height="400" width="800"></p>
 
 --
-### Interfaz web de búsqueda, selección, procesamiento y descarga
+### Web de búsqueda, exploración y descarga
+
 <p><img src="assets/FRED_interfaz.png" align="middle" height="400" width="800"></p>
 
 -- separator
@@ -86,28 +92,31 @@ Holaaaaaa
 
 * **200 nuevos datasets**
 
-* **Datos como servicio**<!-- series disponibles para desarrollo de aplicaciones, reportes automáticos, dashboards, sistemas de alerta... -->
+* **Acceso a los datos como servicio**<!-- series disponibles para desarrollo de aplicaciones, reportes automáticos, dashboards, sistemas de alerta... -->
 
-* **Nueva experiencia web de consumo de datos**<!-- navegar, descubrir, combinar, descargar y compartir datos de manera más útil y personalizada -->
+* **Consumo de datos más simple y personalizado**<!-- navegar, descubrir, combinar, descargar y compartir datos de manera más útil y personalizada -->
 
-* **Información económica valiosa para el público**<!-- en forma más ágil y actualizada -->
+* **Información de coyuntura a un click**<!-- en forma más ágil y actualizada -->
 
 --
 ### Mejora en la gestión de datos
 
-* **Cambia la forma de trabajo con datos**
+* **Procesos mas sencillos y documentados**
 
-* **Puesta en valor de trabajo previo** <!-- en el desarrollo interno de estándares sub-utilizados y todavía nunca publicados -->
+* **Puesta en valor de trabajo pre-existente** <!-- en el desarrollo interno de estándares sub-utilizados y todavía nunca publicados -->
 
-* **Sistema para compartir datos de gobierno _internos_** <!-- fácilmente entre organismos del estado -->
+* **Fortalecimiento de los procesos para compartir datos en gobierno** <!-- fácilmente entre organismos del estado -->
 
-* **Nueva fuente de datos para Tablero de Gestión** <!-- disponibilización de indicadores clave (abiertos y no abiertos) de seguimiento de la economía para el control de gestión en tiempo real -->
+* **Sinergía con otros proyectos** <!-- disponibilización de indicadores clave (abiertos y no abiertos) de seguimiento de la economía para el control de gestión en tiempo real -->
 
 --
 ### Comunidad
 
-* **Nuevos partners en la APN** <!-- alianza con la SSPM que maneja datos económicos importantes para seguimiento de la economía -->
+* **Ampliación de la red de nodos** <!-- alianza con la SSPM que maneja datos económicos importantes para seguimiento de la economía -->
 
+* **Tracción de nuevos focales**
+
+* **Fortalecimiento de la comunidad interna**
 
 
 <!--
