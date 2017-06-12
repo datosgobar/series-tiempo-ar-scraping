@@ -49,15 +49,15 @@ style: style.css
 
 --
 ### Dashboard de seguimiento de coyuntura
-<p><img src="assets/dash_actividad.png" align="middle" height="400" width="800"></p>
+<p><img src="assets/dash_actividad.png" align="middle" height="460" width="800"></p>
 
 --
 ### Dashboard de seguimiento de coyuntura
-<p><img src="assets/dash_precios_ingresos.png" align="middle" height="400" width="800"></p>
+<p><img src="assets/dash_precios_ingresos.png" align="middle" height="460" width="800"></p>
 
 --
 ### Dashboard de seguimiento de coyuntura
-<p><img src="assets/dash_sector_externo.png" align="middle" height="400" width="800"></p>
+<p><img src="assets/dash_sector_externo.png" align="middle" height="460" width="800"></p>
 
 --
 ### API de series de tiempo
