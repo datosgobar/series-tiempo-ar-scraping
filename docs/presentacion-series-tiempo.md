@@ -112,9 +112,10 @@ style: style.css
 
 * **Puesta en valor de trabajo pre-existente** <!-- en el desarrollo interno de estándares sub-utilizados y todavía nunca publicados -->
 
+* **Sinergia con otros proyectos** <!-- disponibilización de indicadores clave (abiertos y no abiertos) de seguimiento de la economía para el control de gestión en tiempo real -->
+
 * **Fortalecimiento de los procesos para compartir datos en gobierno** <!-- fácilmente entre organismos del estado -->
 
-* **Sinergía con otros proyectos** <!-- disponibilización de indicadores clave (abiertos y no abiertos) de seguimiento de la economía para el control de gestión en tiempo real -->
 
 --
 ### Comunidad
