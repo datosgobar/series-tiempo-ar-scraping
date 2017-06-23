@@ -45,4 +45,5 @@ update_datasets: catalogo/datos/datasets/
 # clean
 clean:
 	rm -f catalogo/datos/excels_urls.txt
+	rm -f catalogo/datos/etl_params.csv
 	rm -rf catalogo/datos/ied/
