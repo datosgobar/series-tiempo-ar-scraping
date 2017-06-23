@@ -2,3 +2,7 @@ FRB
 fredapi
 fred
 Quandl
+openpyxl
+pydatajson
+xlseries
+xlrd

@@ -89,3 +89,7 @@ ENV/
 .ropeproject
 *.DS_Store
 fred_api_key.txt
+catalogo-sspm.xlsx
+excels_urls.txt
+~$catalogo-sspm.xlsx
+actividad_ied.xlsx
