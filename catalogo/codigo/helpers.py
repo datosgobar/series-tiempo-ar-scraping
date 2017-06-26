@@ -20,3 +20,7 @@ def get_ws_case_insensitive(wb, title):
             continue
 
     raise e
+
+
+def row_from_cell_coord(coord):
+    return int(filter(lambda x: x.isdigit(), coord))
