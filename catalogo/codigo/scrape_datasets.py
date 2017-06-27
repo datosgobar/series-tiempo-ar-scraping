@@ -27,6 +27,7 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
 LOGS_DIR = os.path.join(PROJECT_DIR, "catalogo", "logs")
 SCHEMAS_DIR = os.path.join(PROJECT_DIR, "catalogo", "codigo", "schemas")
 DATOS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos")
+DATASETS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "datasets")
 REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 
 NOW = arrow.now().isoformat()
@@ -58,11 +59,15 @@ XLSERIES_PARAMS = {
 def get_dataset_metadata(catalog, dataset_identifier):
     datasets = filter(lambda x: x.get("identifier") == dataset_identifier,
                       catalog["dataset"])
-    msg = "Hay más de 1 dataset con id {}: {}".format(dataset_identifier,
-                                                      datasets)
-    assert len(datasets) == 1, msg
 
-    return datasets[0]
+    if len(datasets) > 1:
+        msg = "Hay más de 1 dataset con id {}: {}".format(dataset_identifier,
+                                                          datasets)
+        raise Exception(msg)
+    elif len(datasets) == 0:
+        return None
+    else:
+        return datasets[0]
 
 
 def get_distribution_metadata(catalog, distribution_identifier,
@@ -145,7 +150,8 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
 
     # coordenadas del header del indice de tiempo
     params["time_header_coord"] = df_distrib[
-        df_distrib.field_title == "indice_tiempo"]["field_identifierCell"][0]
+        df_distrib.field_title == "indice_tiempo"][
+        "field_identifierCell"].iloc[0]
 
     # nombres de las series
     params["series_names"] = list(df_fields.field_title)

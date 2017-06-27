@@ -1,3 +1,4 @@
+pandas
 FRB
 fredapi
 fred
