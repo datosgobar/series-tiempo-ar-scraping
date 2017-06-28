@@ -7,3 +7,5 @@ openpyxl
 pydatajson
 xlseries
 xlrd
+requests
+yaml

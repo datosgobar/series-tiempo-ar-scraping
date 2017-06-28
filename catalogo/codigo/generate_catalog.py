@@ -86,7 +86,7 @@ def validate_and_filter(catalog):
         export_path=os.path.join(REPORTES_DIR, "reporte-datasets.xlsx")
     )
     catalog_filtered = dj.generate_harvestable_catalogs(
-        catalog, harvest='valid')
+        catalog, harvest='valid')[0]
 
     return catalog_filtered
 
