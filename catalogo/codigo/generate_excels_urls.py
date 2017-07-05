@@ -20,9 +20,9 @@ PARAMS_SHEET_NAME = "Parametros ETL"
 def main(catalog_xlsx_path, excels_urls_path):
     df = pd.read_excel(catalog_xlsx_path, PARAMS_SHEET_NAME)
     urls_series = df.distribution_iedFileURL.unique()
+
     with open(excels_urls_path, "wb") as f:
-        for url in urls_series:
-            f.write(url)
+        f.write("\n".join(urls_series))
 
 
 if __name__ == '__main__':

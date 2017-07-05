@@ -1,9 +1,9 @@
 PYTHON=/Users/abenassi/anaconda/envs/series-tiempo/bin/python2.7
 
-.PHONY: all clean download_excels update_catalog update_datasets catalogo/datos/datasets
+.PHONY: all clean download_catalog download_excels update_catalog update_datasets
 
 all: extraction transformation load
-extraction: catalogo/datos/excels_urls.txt download_excels
+extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets
 load: update_catalog update_datasets
 setup: create_dir
@@ -21,6 +21,12 @@ create_dir:
 	mkdir -p catalogo/codigo
 
 # extraction
+download_catalog:
+	wget -N -i catalogo/datos/catalogo_sspm_url.txt --directory-prefix=catalogo/datos --no-check-certificate -O catalogo/datos/catalogo-sspm-downloaded.xlsx
+
+catalogo/datos/catalogo-sspm.xlsx: catalogo/datos/catalogo-sspm-downloaded.xlsx
+	[ -n $(`cmp "$<" "$@"`) ] && cp "$<" "$@"
+
 catalogo/datos/excels_urls.txt: catalogo/datos/catalogo-sspm.xlsx
 	$(PYTHON) catalogo/codigo/generate_excels_urls.py "$<" "$@"
 
@@ -31,7 +37,7 @@ download_excels:
 catalogo/datos/data.json: catalogo/datos/catalogo-sspm.xlsx
 	$(PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@"
 # TODO: revisar como se usan adecuadamenten los directorios
-catalogo/datos/datasets: catalogo/datos/data.json catalogo/datos/etl_params.csv
+catalogo/datos/datasets/: catalogo/datos/data.json catalogo/datos/etl_params.csv
 	$(PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@"
 
 catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
@@ -46,8 +52,10 @@ update_datasets: catalogo/datos/datasets/
 
 # clean
 clean:
+	rm -f catalogo/datos/catalogo-sspm-downloaded.xlsx
+	rm -f catalogo/datos/catalogo-sspm.xlsx
 	rm -f catalogo/datos/excels_urls.txt
-	rm -f catalogo/datos/etl_params.csv
-	rm -f catalogo/datos/data.json
 	rm -rf catalogo/datos/ied/
+	rm -f catalogo/datos/data.json
+	rm -f catalogo/datos/etl_params.csv
 	rm -rf catalogo/datos/datasets/
