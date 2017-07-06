@@ -1,0 +1,6 @@
+gmail:
+  user: series.tiempo.etl
+  pass: password
+etl:
+  destinatarios: a@b.com
+  adjuntos: path/to/file1,path/to/file2
