@@ -1,10 +1,10 @@
 PYTHON=/Users/abenassi/anaconda/envs/series-tiempo/bin/python2.7
 
-.PHONY: all clean download_catalog download_excels update_catalog update_datasets
+.PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report
 
 all: extraction transformation load
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
-transformation: catalogo/datos/data.json catalogo/datos/datasets/
+transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
 load: update_catalog update_datasets
 setup: create_dir
 
@@ -36,12 +36,16 @@ download_excels:
 # transformation
 catalogo/datos/data.json: catalogo/datos/catalogo-sspm.xlsx
 	$(PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@"
+
 # TODO: revisar como se usan adecuadamenten los directorios
 catalogo/datos/datasets/: catalogo/datos/data.json catalogo/datos/etl_params.csv
 	$(PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@"
 
 catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
 	$(PYTHON) catalogo/codigo/generate_etl_params.py "$<" "$@"
+
+send_transformation_report:
+	$(PYTHON) catalogo/codigo/send_email.py "Reporte ETL series de tiempo" "Mensaje del reporte"
 
 # load
 update_catalog: catalogo/datos/data.json
