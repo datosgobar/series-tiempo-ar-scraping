@@ -9,3 +9,5 @@ xlseries
 xlrd
 requests
 yaml
+webdavclient
+pycurl

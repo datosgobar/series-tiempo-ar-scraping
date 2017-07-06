@@ -4,7 +4,7 @@ PYTHON=/Users/abenassi/anaconda/envs/series-tiempo/bin/python2.7
 
 all: extraction transformation load
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
-transformation: catalogo/datos/data.json catalogo/datos/datasets
+transformation: catalogo/datos/data.json catalogo/datos/datasets/
 load: update_catalog update_datasets
 setup: create_dir
 
@@ -59,3 +59,4 @@ clean:
 	rm -f catalogo/datos/data.json
 	rm -f catalogo/datos/etl_params.csv
 	rm -rf catalogo/datos/datasets/
+	make setup

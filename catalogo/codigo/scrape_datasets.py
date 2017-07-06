@@ -335,26 +335,28 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir):
     complete_report_datasets = pd.concat(all_report_datasets)
     complete_report_distributions = pd.concat(all_report_distributions)
 
-    # guarda el reporte de datasets en CSV
+    # guarda el reporte de datasets en EXCEL
     cols_rep_dataset = [
         "distribution_iedFileURL", "dataset_identifier", "dataset_status"
     ]
-    complete_report_datasets[cols_rep_dataset].to_csv(
-        os.path.join(REPORTES_DIR, "reporte-datasets-scraping.csv"),
+    complete_report_datasets[cols_rep_dataset].to_excel(
+        os.path.join(REPORTES_DIR, "reporte-datasets-scraping.xlsx"),
         encoding="utf-8", index=False)
 
-    # guarda el reporte de distribuciones en CSV
+    # guarda el reporte de distribuciones en EXCEL
     cols_rep_distribution = [
         "distribution_iedFileURL", "dataset_identifier",
         "distribution_identifier", "distribution_status", "distribution_notes"
     ]
-    complete_report_distributions[cols_rep_distribution].to_csv(
-        os.path.join(REPORTES_DIR, "reporte-distributions-scraping.csv"),
+    complete_report_distributions[cols_rep_distribution].to_excel(
+        os.path.join(REPORTES_DIR, "reporte-distributions-scraping.xlsx"),
         encoding="utf-8", index=False)
 
     # imprime resultados a la terminal
     print(complete_report_distributions.groupby(
         "distribution_status")[["distribution_identifier"]].count())
+    hours = round((NOW - arrow.now()).total_seconds() / 60.0 / 60.0)
+    print("Scraping completado en {} horas".format(hours))
 
 
 if __name__ == '__main__':
