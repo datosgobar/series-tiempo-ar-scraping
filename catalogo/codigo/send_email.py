@@ -45,6 +45,12 @@ def send_email(subject, message, to=None, files=None, email_user=None,
         cfg = yaml.load(ymlfile)
 
     # parametros
+    if os.path.isfile(subject):
+        with open(subject, "r") as f:
+            subject = f.read()
+    if os.path.isfile(message):
+        with open(message, "r") as f:
+            message = f.read()
     email_user = email_user or cfg['gmail']['user']
     email_pass = email_pass or cfg['gmail']['pass']
     to = to or cfg['etl']['destinatarios']

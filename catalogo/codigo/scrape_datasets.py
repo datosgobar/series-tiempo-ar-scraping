@@ -31,7 +31,6 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
 LOGS_DIR = os.path.join(PROJECT_DIR, "catalogo", "logs")
 SCHEMAS_DIR = os.path.join(PROJECT_DIR, "catalogo", "codigo", "schemas")
 DATOS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos")
-DATASETS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "datasets")
 REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 
 NOW = arrow.now().isoformat()
@@ -127,7 +126,8 @@ def _convert_frequency(freq_iso8601):
     frequencies_map = {
         "R/P1Y": "Y",
         "R/P3M": "Q",
-        "R/P1M": "M"
+        "R/P1M": "M",
+        "R/P1D": "D"
     }
     return frequencies_map[freq_iso8601]
 
@@ -182,10 +182,12 @@ def scrape_dataframe(xl, worksheet, headers_coord, data_starts, frequency,
 
     try:
         params["time_composed"] = True
-        dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet)
+        dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
+                                 preserve_wb_obj=False)
     except TimeIsNotComposed:
         params["time_composed"] = False
-        dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet)
+        dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
+                                 preserve_wb_obj=False)
 
     return dfs
 
@@ -210,7 +212,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
     dataset_meta = get_dataset_metadata(catalog, dataset_identifier)
 
     if dataset_meta:
-        dataset_dir = os.path.join(DATASETS_DIR, dataset_identifier)
+        dataset_dir = os.path.join(datasets_dir, dataset_identifier)
         if not os.path.isdir(dataset_dir):
             os.mkdir(dataset_dir)
         res["dataset_status"] = "OK"
@@ -308,7 +310,61 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
     return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
 
 
-def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir):
+def generate_summary_message(indicators):
+    """Genera asunto y mensaje del mail de reporte a partir de indicadores.
+
+    Args:
+        indicators (dict):
+
+    Return:
+        tuple: (str, str) (asunto, mensaje)
+    """
+    subject = "[desa] Series de Tiempo ETL: {}".format(
+        arrow.now().format("DD/MM/YYYY HH:mm")
+    )
+    message = "\n".join(
+        "{}: {}".format(key.ljust(40), value)
+        for key, value in sorted(indicators.items(), key=lambda x: x[0])
+    )
+    return subject, message
+
+
+def generate_summary_indicators(report_files, report_datasets,
+                                report_distributions):
+
+    distr_ok = len(report_distributions[
+        report_distributions.distribution_status == "OK"
+    ])
+    distr_error = len(report_distributions[
+        report_distributions.distribution_status != "OK"
+    ])
+    indicators = {
+        "Archivos": len(report_files),
+        "Archivos (OK)": len(report_files[
+            report_files.file_status == "OK"
+        ]),
+        "Archivos (ERROR)": len(report_files[
+            report_files.file_status != "OK"
+        ]),
+        "Datasets": len(report_datasets),
+        "Datasets (OK)": len(report_datasets[
+            report_datasets.dataset_status == "OK"
+        ]),
+        "Datasets (ERROR)": len(report_datasets[
+            report_datasets.dataset_status != "OK"
+        ]),
+        "Distribuciones": len(report_distributions),
+        "Distribuciones (OK)": distr_ok,
+        "Distribuciones (ERROR)": distr_error,
+        "Distribuciones (OK %)": round(
+            float(distr_ok) / (distr_ok + distr_error), 3) * 100,
+    }
+
+    return indicators
+
+
+def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
+         replace=False, debug_mode=False):
 
     catalog = pydatajson.readers.read_catalog(catalog_json_path)
 
@@ -323,17 +379,49 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir):
                       for filename in ied_xlsx_filenames]
 
     # scrapea cada excel de ied y genera los reportes
+    report_files = []
     all_report_datasets = []
     all_report_distributions = []
+    msg = "Archivo {}: {} ({})"
     for ied_xlsx_path in ied_xlsx_paths:
-        report_datasets, report_distributions = scrape_file(
-            ied_xlsx_path, etl_params, catalog, datasets_dir, replace=False)
-        all_report_datasets.append(report_datasets)
-        all_report_distributions.append(report_distributions)
+
+        try:
+            report_datasets, report_distributions = scrape_file(
+                ied_xlsx_path, etl_params, catalog, datasets_dir,
+                replace=replace)
+            all_report_datasets.append(report_datasets)
+            all_report_distributions.append(report_distributions)
+
+            report_files.append({
+                "file_name": ied_xlsx_path,
+                "file_status": "OK",
+                "file_notes": ""
+            })
+
+        except Exception as e:
+            if isinstance(e, KeyboardInterrupt):
+                raise
+            report_files.append({
+                "file_name": ied_xlsx_path,
+                "file_status": "ERROR",
+                "file_notes": repr(e).encode("utf8")
+            })
+            print(msg.format(ied_xlsx_path, "ERROR", repr(e).encode("utf8")))
+            if debug_mode:
+                raise
 
     # concatena todos los reportes
+    complete_report_files = pd.DataFrame(report_files)
     complete_report_datasets = pd.concat(all_report_datasets)
     complete_report_distributions = pd.concat(all_report_distributions)
+
+    # guarda el reporte de archivos en EXCEL
+    cols_rep_files = [
+        "file_name", "file_status", "file_notes"
+    ]
+    complete_report_files[cols_rep_files].to_excel(
+        os.path.join(REPORTES_DIR, "reporte-files-scraping.xlsx"),
+        encoding="utf-8", index=False)
 
     # guarda el reporte de datasets en EXCEL
     cols_rep_dataset = [
@@ -353,10 +441,21 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir):
         encoding="utf-8", index=False)
 
     # imprime resultados a la terminal
-    print(complete_report_distributions.groupby(
-        "distribution_status")[["distribution_identifier"]].count())
-    hours = round((NOW - arrow.now()).total_seconds() / 60.0 / 60.0)
-    print("Scraping completado en {} horas".format(hours))
+    indicators = generate_summary_indicators(
+        complete_report_files,
+        complete_report_datasets,
+        complete_report_distributions
+    )
+    subject, message = generate_summary_message(indicators)
+
+    with open(os.path.join(REPORTES_DIR, "mail_subject.txt"), "wb") as f:
+        f.write(subject)
+    with open(os.path.join(REPORTES_DIR, "mail_message.txt"), "wb") as f:
+        f.write(message)
+
+    print(message)
+    # hours = round((NOW - arrow.now()).total_seconds() / 60.0 / 60.0)
+    # print("Scraping completado en {} horas".format(hours))
 
 
 if __name__ == '__main__':

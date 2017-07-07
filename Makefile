@@ -2,7 +2,7 @@ PYTHON=/Users/abenassi/anaconda/envs/series-tiempo/bin/python2.7
 
 .PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report
 
-all: extraction transformation load
+all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
 load: update_catalog update_datasets
@@ -16,6 +16,7 @@ create_dir:
 	mkdir -p catalogo/datos
 	mkdir -p catalogo/datos/ied
 	mkdir -p catalogo/datos/datasets
+	mkdir -p catalogo/datos/datasets_test
 	mkdir -p catalogo/datos/catalogos
 	mkdir -p catalogo/datos/reportes
 	mkdir -p catalogo/codigo
@@ -45,7 +46,7 @@ catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
 	$(PYTHON) catalogo/codigo/generate_etl_params.py "$<" "$@"
 
 send_transformation_report:
-	$(PYTHON) catalogo/codigo/send_email.py "Reporte ETL series de tiempo" "Mensaje del reporte"
+	$(PYTHON) catalogo/codigo/send_email.py catalogo/datos/reportes/mail_subject.txt catalogo/datos/reportes/mail_message.txt
 
 # load
 update_catalog: catalogo/datos/data.json
@@ -64,3 +65,10 @@ clean:
 	rm -f catalogo/datos/etl_params.csv
 	rm -rf catalogo/datos/datasets/
 	make setup
+
+# test
+profiling_test: catalogo/datos/data.json catalogo/datos/etl_params_test.csv
+	$(PYTHON) catalogo/codigo/profiling.py $^ catalogo/datos/ied/ catalogo/datos/datasets_test/
+
+
+
