@@ -22,7 +22,7 @@ create_dir:
 	mkdir -p catalogo/codigo
 
 # extraction
-download_catalog:
+download_catalog: catalogo/datos/catalogo_sspm_url.txt
 	wget -N -i catalogo/datos/catalogo_sspm_url.txt --directory-prefix=catalogo/datos --no-check-certificate -O catalogo/datos/catalogo-sspm-downloaded.xlsx
 
 catalogo/datos/catalogo-sspm.xlsx: catalogo/datos/catalogo-sspm-downloaded.xlsx
