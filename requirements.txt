@@ -8,6 +8,6 @@ pydatajson
 xlseries
 xlrd
 requests
-yaml
+pyyaml
 webdavclient
 pycurl

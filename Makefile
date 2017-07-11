@@ -1,4 +1,4 @@
-PYTHON=/Users/abenassi/anaconda/envs/series-tiempo/bin/python2.7
+PYTHON=$SERIES_TIEMPO_PYTHON
 
 .PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report
 
@@ -6,10 +6,22 @@ all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
 load: update_catalog update_datasets
-setup: create_dir install_cron
+setup: install_anaconda setup_environment create_dir install_cron
 
 
 # setup
+install_anaconda:
+	wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+	bash Miniconda2-latest-Linux-x86_64.sh
+
+setup_environment:
+	git clone https://github.com/datosgobar/series-tiempo.git
+	cd series-tiempo
+	conda create -n series-tiempo
+	source activate series-tiempo
+	conda install pandas
+	pip install -r requirements.txt
+
 create_dir:
 	mkdir -p catalogo
 	mkdir -p catalogo/logs
