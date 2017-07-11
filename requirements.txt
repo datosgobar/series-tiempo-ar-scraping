@@ -4,8 +4,8 @@ fredapi
 fred
 Quandl
 openpyxl
-pydatajson
-xlseries
+pydatajson==0.2.15
+xlseries==0.1.16
 xlrd
 requests
 pyyaml
