@@ -1,5 +1,3 @@
-PYTHON=$(SERIES_TIEMPO_PYTHON)
-
 .PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report
 
 all: extraction transformation
@@ -39,7 +37,7 @@ create_dir:
 
 install_cron: cron_jobs
 	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
-	@echo "SERIES_TIEMPO_PYTHON=$(PYTHON)" >> .cronfile
+	@echo "SERIES_TIEMPO_PYTHON=$(SERIES_TIEMPO_PYTHON)" >> .cronfile
 	cat cron_jobs >> .cronfile
 	crontab .cronfile
 	rm .cronfile
@@ -53,31 +51,31 @@ catalogo/datos/catalogo-sspm.xlsx: catalogo/datos/catalogo-sspm-downloaded.xlsx
 	[ -n $(`cmp "$<" "$@"`) ] && cp "$<" "$@"
 
 catalogo/datos/excels_urls.txt: catalogo/datos/catalogo-sspm.xlsx
-	$(PYTHON) catalogo/codigo/generate_excels_urls.py "$<" "$@"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_excels_urls.py "$<" "$@"
 
 download_excels:
 	wget -N -i catalogo/datos/excels_urls.txt --directory-prefix=catalogo/datos/ied/
 
 # transformation
 catalogo/datos/data.json: catalogo/datos/catalogo-sspm.xlsx
-	$(PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@"
 
 # TODO: revisar como se usan adecuadamenten los directorios
 catalogo/datos/datasets/: catalogo/datos/data.json catalogo/datos/etl_params.csv
-	$(PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@"
 
 catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
-	$(PYTHON) catalogo/codigo/generate_etl_params.py "$<" "$@"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_etl_params.py "$<" "$@"
 
 send_transformation_report:
-	$(PYTHON) catalogo/codigo/send_email.py catalogo/datos/reportes/mail_subject.txt catalogo/datos/reportes/mail_message.txt
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/send_email.py catalogo/datos/reportes/mail_subject.txt catalogo/datos/reportes/mail_message.txt
 
 # load
 update_catalog: catalogo/datos/data.json
-	$(PYTHON) catalogo/codigo/update_catalog.py "$<" "config_ind.yml"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_catalog.py "$<" "config_ind.yml"
 
 update_datasets: catalogo/datos/datasets/
-	$(PYTHON) catalogo/codigo/update_datasets.py "$<" "config_ind.yml"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_datasets.py "$<" "config_ind.yml"
 
 # clean
 clean:
@@ -92,7 +90,7 @@ clean:
 
 # test
 profiling_test: catalogo/datos/data.json catalogo/datos/etl_params_test.csv
-	$(PYTHON) catalogo/codigo/profiling.py $^ catalogo/datos/ied/ catalogo/datos/datasets_test/
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/profiling.py $^ catalogo/datos/ied/ catalogo/datos/datasets_test/
 
 
 
