@@ -26,6 +26,7 @@ import custom_exceptions as ce
 
 sys.path.insert(0, os.path.abspath(".."))
 
+PRESERVE_WB_OBJ = False
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 LOGS_DIR = os.path.join(PROJECT_DIR, "catalogo", "logs")
@@ -48,7 +49,10 @@ XLSERIES_PARAMS = {
     'continuity': True,
     'blank_rows': False,
     'missings': True,
-    'missing_value': [None, '-', '...', '.', '/', '///', '', "s.d."],
+    'missing_value': [
+        None, "-", "...", ".", "/", "///", "", "s.d.", "s/d", "n,d,", "s.d",
+        " ", "s", "x", "n.d.", "n.d"
+    ],
     'time_alignment': 0,
     'time_multicolumn': False,
     "headers_coord": None,
@@ -183,11 +187,11 @@ def scrape_dataframe(xl, worksheet, headers_coord, data_starts, frequency,
     try:
         params["time_composed"] = True
         dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
-                                 preserve_wb_obj=False)
+                                 preserve_wb_obj=PRESERVE_WB_OBJ)
     except TimeIsNotComposed:
         params["time_composed"] = False
         dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
-                                 preserve_wb_obj=False)
+                                 preserve_wb_obj=PRESERVE_WB_OBJ)
 
     return dfs
 

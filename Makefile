@@ -6,7 +6,7 @@ all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
 load: update_catalog update_datasets
-setup: create_dir
+setup: create_dir install_cron
 
 
 # setup
@@ -20,6 +20,14 @@ create_dir:
 	mkdir -p catalogo/datos/catalogos
 	mkdir -p catalogo/datos/reportes
 	mkdir -p catalogo/codigo
+
+install_cron: cron_jobs
+	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
+	@echo "SERIES_TIEMPO_PYTHON=$(PYTHON)" >> .cronfile
+	cat cron_jobs >> .cronfile
+	crontab .cronfile
+	rm .cronfile
+	touch cron_jobs
 
 # extraction
 download_catalog:
@@ -64,7 +72,7 @@ clean:
 	rm -f catalogo/datos/data.json
 	rm -f catalogo/datos/etl_params.csv
 	rm -rf catalogo/datos/datasets/
-	make setup
+	make create_dir
 
 # test
 profiling_test: catalogo/datos/data.json catalogo/datos/etl_params_test.csv
