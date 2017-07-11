@@ -49,9 +49,11 @@ XLSERIES_PARAMS = {
     'continuity': True,
     'blank_rows': False,
     'missings': True,
-    'missing_value': [
-        None, "-", "...", ".", "/", "///", "", "s.d.", "s/d", "n,d,", "s.d",
-        " ", "s", "x", "n.d.", "n.d"
+    "missing_value": [
+        None, "", " ", "-", "---", ".", "...", "/", "///",
+        "s.d.", "s.d", "s/d",
+        "n,d,", "n,d", "n.d.", "n.d", "n/d",
+        "s", "x"
     ],
     'time_alignment': 0,
     'time_multicolumn': False,
@@ -244,7 +246,13 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
                 status = "Replaced" if os.path.exists(dist_path) else "Created"
                 distribution = scrape_distribution(
                     xl, etl_params, catalog, distribution_identifier)
-                distribution.to_csv(
+
+                if isinstance(distribution, list):
+                    distribution_complete = pd.concat(distribution)
+                else:
+                    distribution_complete = distribution
+
+                distribution_complete.to_csv(
                     dist_path, encoding="utf-8-sig",
                     index_label="indice_tiempo")
             else:
