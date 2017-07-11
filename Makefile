@@ -1,4 +1,4 @@
-PYTHON=$SERIES_TIEMPO_PYTHON
+PYTHON=$(SERIES_TIEMPO_PYTHON)
 
 .PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report
 
@@ -14,12 +14,16 @@ install_anaconda:
 	wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
 	bash Miniconda2-latest-Linux-x86_64.sh
 
+# ambiente testeado para un Ubuntu 16.04
 setup_environment:
 	git clone https://github.com/datosgobar/series-tiempo.git
 	cd series-tiempo
 	conda create -n series-tiempo
 	source activate series-tiempo
 	conda install pandas
+	conda install pycurl
+	# sudo apt-get update && sudo apt-get install gcc && sudo apt-get install python-pycurl
+	# sudo apt-get install libcurl4-gnutls-dev
 	pip install -r requirements.txt
 
 create_dir:
