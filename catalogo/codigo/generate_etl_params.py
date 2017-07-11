@@ -24,7 +24,7 @@ def main(catalog_xlsx_path, excels_urls_path):
         "field_identifierCell", "field_dataStartCell"
     ]
     df[params_fields].to_csv(
-        "/Users/abenassi/github/series-tiempo/catalogo/datos/etl_params.csv",
+        "catalogo/datos/etl_params.csv",
         encoding="utf8", index=False
     )
 
