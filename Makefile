@@ -36,6 +36,7 @@ create_dir:
 	mkdir -p catalogo/codigo
 
 install_cron: cron_jobs
+	@echo "PATH=$(PATH)" >> .cronfile
 	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
 	@echo "SERIES_TIEMPO_PYTHON=$(SERIES_TIEMPO_PYTHON)" >> .cronfile
 	cat cron_jobs >> .cronfile
