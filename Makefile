@@ -1,10 +1,10 @@
-.PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report
+.PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
 
 all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
 load: update_catalog update_datasets
-setup: install_anaconda setup_environment create_dir install_cron
+setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
 
 # setup
@@ -12,13 +12,14 @@ install_anaconda:
 	wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
 	bash Miniconda2-latest-Linux-x86_64.sh
 
-# ambiente testeado para un Ubuntu 16.04
-setup_environment:
+clone_repo:
 	git clone https://github.com/datosgobar/series-tiempo.git
 	cd series-tiempo
-	conda create -n series-tiempo
+
+# ambiente testeado para un Ubuntu 16.04
+setup_environment:
+	conda create -n series-tiempo --no-default-packages
 	source activate series-tiempo
-	conda install pandas
 	conda install pycurl
 	# sudo apt-get update && sudo apt-get install gcc && sudo apt-get install python-pycurl
 	# sudo apt-get install libcurl4-gnutls-dev

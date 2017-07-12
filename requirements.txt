@@ -1,12 +1,12 @@
+pydatajson==0.2.15
+xlseries==0.1.17
 pandas
+openpyxl
+xlrd
 FRB
 fredapi
 fred
 Quandl
-openpyxl
-pydatajson==0.2.15
-xlseries==0.1.16
-xlrd
 requests
 pyyaml
 webdavclient
