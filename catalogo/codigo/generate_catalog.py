@@ -92,18 +92,19 @@ def validate_and_filter(catalog):
 
 
 def main(catalog_xlsx_path, catalog_json_path):
+    logger = logging.getLogger()
 
-    logging.info("Comienza a leer {}".format(catalog_xlsx_path))
+    logger.info("Comienza a leer {}".format(catalog_xlsx_path))
     catalog = read_xlsx_catalog(catalog_xlsx_path)
-    logging.info("Termina de leer {}".format(catalog_xlsx_path))
+    logger.info("Termina de leer {}".format(catalog_xlsx_path))
 
-    logging.info("Escribe catálogo original {}".format(catalog_json_path))
+    logger.info("Escribe catálogo original {}".format(catalog_json_path))
     write_json_catalog(catalog, catalog_json_path)
 
-    logging.info("Valida y filtra el catálogo")
+    logger.info("Valida y filtra el catálogo")
     catalog_filtered = validate_and_filter(catalog)
 
-    logging.info("Escribe catálogo filtrado {}".format(catalog_json_path))
+    logger.info("Escribe catálogo filtrado {}".format(catalog_json_path))
     write_json_catalog(catalog_filtered, catalog_json_path)
 
 

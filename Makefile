@@ -61,6 +61,7 @@ download_excels:
 # transformation
 catalogo/datos/data.json: catalogo/datos/catalogo-sspm.xlsx
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@"
+	# $(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@" > catalogo/datos/generate-catalog-errors.txt
 
 # TODO: revisar como se usan adecuadamenten los directorios
 catalogo/datos/datasets/: catalogo/datos/data.json catalogo/datos/etl_params.csv
