@@ -95,5 +95,7 @@ clean:
 profiling_test: catalogo/datos/data.json catalogo/datos/etl_params_test.csv
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/profiling.py $^ catalogo/datos/ied/ catalogo/datos/datasets_test/
 
+test_crontab:
+	echo $(SERIES_TIEMPO_PYTHON)
 
 
