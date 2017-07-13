@@ -74,9 +74,11 @@ def validate_and_filter(catalog):
         validation_result,
         os.path.join(REPORTES_DIR, "reporte-catalogo-completo.json")
     )
+    datasets_errors = filter(lambda x: x["status"] == "ERROR",
+                             validation_result["error"]["dataset"])
+
     writers.write_json(
-        filter(lambda x: x["status"] == "ERROR",
-               validation_result["error"]["dataset"]),
+        datasets_errors,
         os.path.join(REPORTES_DIR, "reporte-datasets-error.json")
     )
 
