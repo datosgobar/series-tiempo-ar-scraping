@@ -37,6 +37,10 @@ create_dir:
 	mkdir -p catalogo/codigo
 
 install_cron: cron_jobs
+	@echo "LANG=en_US.UTF-8" >> .cronfile
+	@echo "LANGUAGE=en" >> .cronfile
+	@echo "LC_CTYPE=en_US.UTF-8" >> .cronfile
+	@echo "PYTHONIOENCODING=utf8" >> .cronfile
 	@echo "PATH=$(PATH)" >> .cronfile
 	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
 	@echo "SERIES_TIEMPO_PYTHON=$(SERIES_TIEMPO_PYTHON)" >> .cronfile
