@@ -50,7 +50,7 @@ XLSERIES_PARAMS = {
     'blank_rows': False,
     'missings': True,
     "missing_value": [
-        None, "", " ", "-", "---", ".", "...", "/", "///",
+        None, "", " ", "-", "--", "---", ".", "...", "/", "///",
         "s.d.", "s.d", "s/d",
         "n,d,", "n,d", "n.d.", "n.d", "n/d",
         "s", "x"
