@@ -471,4 +471,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    if sys.argv[5]:
+        replace = True if "replace" else False
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
+         replace=replace)
