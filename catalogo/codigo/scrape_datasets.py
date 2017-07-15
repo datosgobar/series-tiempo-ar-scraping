@@ -131,6 +131,7 @@ def get_field_metadata(catalog, distribution_identifier, field_id=None,
 def _convert_frequency(freq_iso8601):
     frequencies_map = {
         "R/P1Y": "Y",
+        "R/P6M": "S",
         "R/P3M": "Q",
         "R/P1M": "M",
         "R/P1D": "D"
@@ -471,7 +472,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
 
 
 if __name__ == '__main__':
-    if sys.argv[5]:
-        replace = True if "replace" else False
+    if len(sys.argv) >= 6 and sys.argv[5]:
+        replace = True if sys.argv[5] == "replace" else False
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
          replace=replace)
