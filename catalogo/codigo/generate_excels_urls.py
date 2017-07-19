@@ -13,12 +13,14 @@ import os
 import sys
 
 import pandas as pd
+from helpers import find_ws_name
 
-PARAMS_SHEET_NAME = "Parametros ETL"
+DISTRIBUTION_SHEET_NAME = "distribution"
 
 
 def main(catalog_xlsx_path, excels_urls_path):
-    df = pd.read_excel(catalog_xlsx_path, PARAMS_SHEET_NAME)
+    df = pd.read_excel(catalog_xlsx_path,
+                       find_ws_name(DISTRIBUTION_SHEET_NAME))
     urls_series = df.distribution_iedFileURL.unique()
 
     with open(excels_urls_path, "wb") as f:

@@ -29,7 +29,9 @@ create_dir:
 	mkdir -p catalogo
 	mkdir -p catalogo/logs
 	mkdir -p catalogo/datos
+	mkdir -p catalogo/datos/dumps
 	mkdir -p catalogo/datos/ied
+	mkdir -p catalogo/datos/series
 	mkdir -p catalogo/datos/datasets
 	mkdir -p catalogo/datos/datasets_test
 	mkdir -p catalogo/datos/catalogos
@@ -69,7 +71,8 @@ catalogo/datos/data.json: catalogo/datos/catalogo-sspm.xlsx
 
 # TODO: revisar como se usan adecuadamenten los directorios
 catalogo/datos/datasets/: catalogo/datos/data.json catalogo/datos/etl_params.csv
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" replace
+	# $(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" replace
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" skip
 
 catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_etl_params.py "$<" "$@"
