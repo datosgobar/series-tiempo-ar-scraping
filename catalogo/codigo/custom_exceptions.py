@@ -54,7 +54,7 @@ class BaseNonExistentError(ValueError):
     """El id de una entidad no existe en el catálogo."""
 
     def get_msg(self, entity_name, entity_type, entity_id):
-        return "No hay ningun {} con {} {}: {}".format(
+        return "No hay ningun {} con {} {}".format(
             entity_name, entity_type, entity_id)
 
 

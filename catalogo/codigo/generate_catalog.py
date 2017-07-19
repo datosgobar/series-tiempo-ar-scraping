@@ -13,6 +13,7 @@ import pandas as pd
 import arrow
 from openpyxl import load_workbook
 import logging
+import logging.config
 
 from pydatajson import DataJson
 import pydatajson.readers as readers
@@ -29,11 +30,6 @@ REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
-
-logging.basicConfig(
-    filename=os.path.join(LOGS_DIR, 'generate_catalog.log'),
-    filemode='w', level=logging.DEBUG, format='%(asctime)s %(message)s'
-)
 
 
 def read_xlsx_catalog(catalog_xlsx_path):
@@ -94,7 +90,15 @@ def validate_and_filter(catalog):
 
 
 def main(catalog_xlsx_path, catalog_json_path):
-    logger = logging.getLogger()
+    # crea el logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    logging_formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(logging_formatter)
+    logger.addHandler(ch)
 
     logger.info("Comienza a leer {}".format(catalog_xlsx_path))
     catalog = read_xlsx_catalog(catalog_xlsx_path)

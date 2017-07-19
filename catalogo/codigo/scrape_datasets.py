@@ -97,8 +97,26 @@ def get_distribution_metadata(catalog, distribution_identifier,
     return distributions[0]
 
 
-def get_field_metadata(catalog, distribution_identifier, field_id=None,
+def find_distribution_identifier(catalog, field_id):
+
+    for dataset in catalog["dataset"]:
+        for distribution in dataset["distribution"]:
+            if "field" in distribution:
+                for field in distribution["field"]:
+                    if field["id"] == field_id:
+                        return distribution["identifier"]
+
+    raise Exception("No se puedo encontrar la serie {}".format(field_id))
+
+
+def get_field_metadata(catalog, distribution_identifier=None, field_id=None,
                        field_title=None, dataset_identifier=None):
+
+    if not distribution_identifier:
+        msg = "Se necesita id del campo si no se provee id de la distribucion"
+        assert field_id, msg
+        distribution_identifier = find_distribution_identifier(
+            catalog, field_id)
 
     distribution = get_distribution_metadata(catalog, distribution_identifier,
                                              dataset_identifier)
