@@ -19,8 +19,10 @@ DISTRIBUTION_SHEET_NAME = "distribution"
 
 
 def main(catalog_xlsx_path, excels_urls_path):
-    df = pd.read_excel(catalog_xlsx_path,
-                       find_ws_name(DISTRIBUTION_SHEET_NAME))
+    df = pd.read_excel(
+        catalog_xlsx_path,
+        find_ws_name(catalog_xlsx_path, DISTRIBUTION_SHEET_NAME)
+    )
     urls_series = df.distribution_iedFileURL.unique()
 
     with open(excels_urls_path, "wb") as f:
