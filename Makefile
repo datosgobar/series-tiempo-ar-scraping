@@ -25,6 +25,10 @@ setup_environment:
 	# sudo apt-get install libcurl4-gnutls-dev
 	pip install -r requirements.txt
 
+update_environment:
+	source activate series-tiempo
+	pip install -r requirements.txt --upgrade
+
 create_dir:
 	mkdir -p catalogo
 	mkdir -p catalogo/logs
@@ -71,8 +75,8 @@ catalogo/datos/data.json: catalogo/datos/catalogo-sspm.xlsx
 
 # TODO: revisar como se usan adecuadamenten los directorios
 catalogo/datos/datasets/: catalogo/datos/data.json catalogo/datos/etl_params.csv
-	# $(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" replace
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" skip
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" replace
+	# $(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" skip
 
 catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_etl_params.py "$<" "$@"
