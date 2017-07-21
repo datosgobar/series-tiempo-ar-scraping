@@ -2,7 +2,7 @@
 
 all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
-transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
+transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report catalogo/datos/series/
 load: update_catalog update_datasets
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
@@ -84,12 +84,24 @@ catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/send_email.py catalogo/datos/reportes/mail_subject.txt catalogo/datos/reportes/mail_message.txt
 
+catalogo/datos/series/: catalogo/datos/data.json catalogo/datos/series_params.json
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_series.py $^ catalogo/datos/datasets/ "$@"
+
+catalogo/datos/dumps/: catalogo/datos/data.json catalogo/datos/datasets/ catalogo/datos/dumps_params.json
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_dumps.py $^ "$@"
+
 # load
 update_catalog: catalogo/datos/data.json
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_catalog.py "$<" "config_ind.yml"
 
 update_datasets: catalogo/datos/datasets/
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_datasets.py "$<" "config_ind.yml"
+
+update_series: catalogo/datos/series/
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_series.py "$<" "config_hacienda.yml"
+
+update_dumps: catalogo/datos/dumps/
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_dumps.py "$<" "config_ministerial.yml"
 
 # clean
 clean:
