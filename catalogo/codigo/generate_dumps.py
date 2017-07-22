@@ -19,20 +19,24 @@ from data import get_time_series_data
 sys.path.insert(0, os.path.abspath(".."))
 
 
-def main(catalog_json_path, dumps_params_path, datasets_dir, dump_path):
+def main(catalog_json_path, dumps_params_path, datasets_dir, dumps_dir):
 
     with open(dumps_params_path, "r") as f:
         dumps_params = json.load(f, encoding='utf-8')
 
-    dump_file_name = os.path.basename(dump_path)
+    for dump_file_name, dump_params in dumps_params.iteritems():
+        dump_path = os.path.join(dumps_dir, dump_file_name)
 
-    # genera un dump de series de tiempo
-    df = get_time_series_data(
-        dumps_params[dump_file_name], catalog_json_path, dump_path,
-        datasets_dir=datasets_dir
-    )
-    print("{} values".format(len(df)))
-    print("{} series".format(len(df.field_id.unique())))
+        # genera un dump de series de tiempo
+        df = get_time_series_data(
+            dump_params, catalog_json_path, dump_path,
+            datasets_dir=datasets_dir
+        )
+        print("\n{}  Series: {} Values: {}".format(
+            dump_file_name.ljust(40),
+            unicode(len(df.field_id.unique())).ljust(3),
+            unicode(len(df)).ljust(6)
+        ))
 
 
 if __name__ == '__main__':

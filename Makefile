@@ -2,7 +2,7 @@
 
 all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
-transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report catalogo/datos/series/
+transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report catalogo/datos/series/ catalogo/datos/dumps/
 load: update_catalog update_datasets update_series update_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
@@ -87,7 +87,7 @@ send_transformation_report:
 catalogo/datos/series/: catalogo/datos/data.json catalogo/datos/series_params.json
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_series.py $^ catalogo/datos/datasets/ "$@"
 
-catalogo/datos/dumps/tablero-ministerial-ied.csv: catalogo/datos/data.json catalogo/datos/dumps_params.json
+catalogo/datos/dumps/: catalogo/datos/data.json catalogo/datos/dumps_params.json
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_dumps.py $^ catalogo/datos/datasets/ "$@"
 
 # load
