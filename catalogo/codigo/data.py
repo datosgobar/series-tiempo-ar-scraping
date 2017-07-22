@@ -21,10 +21,11 @@ import pydatajson.writers as writers
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 import json
+from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
-from scrape_datasets import get_field_metadata
+from scrape_datasets import get_field_metadata, get_distribution_metadata
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -45,13 +46,14 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 def get_time_series_data(
         field_ids,
         catalog_path=DEFAULT_CATALOG_PATH,
-        export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv"):
+        export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv", datasets_dir=DATASETS_DIR):
 
     if isinstance(field_ids, list):
         field_ids = {field_id: None for field_id in field_ids}
 
-    catalog = read_catalog(catalog_path)
-    df = get_time_series_df(field_ids.keys(), use_id=True)
+    catalog = readers.read_catalog(catalog_path)
+    df = get_time_series_df(field_ids.keys(), use_id=True,
+                            catalog=catalog)
 
     rows = []
     for field_id, data in df.to_dict().items():
@@ -92,7 +94,8 @@ def get_time_series_data(
     return df
 
 
-def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH):
+def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH,
+                       datasets_dir=DATASETS_DIR):
     catalog = readers.read_catalog(catalog)
 
     if not isinstance(field_ids, list):
@@ -108,12 +111,15 @@ def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH):
     # toma las series y genera un data frame concatenado
     if use_id:
         time_series = [
-            get_time_series(*serie_params, field_id=field_id)
+            get_time_series(*serie_params, field_id=field_id,
+                            datasets_dir=datasets_dir)
             for field_id, serie_params in zip(field_ids, series_params)
         ]
     else:
-        time_series = [get_time_series(*serie_params)
-                       for serie_params in series_params]
+        time_series = [
+            get_time_series(*serie_params, datasets_dir=datasets_dir)
+            for serie_params in series_params
+        ]
 
     return pd.concat(time_series, axis=1)
 

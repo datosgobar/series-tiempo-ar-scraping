@@ -1,0 +1,13 @@
+{
+	"tablero-ministerial-ied.csv": {
+    	"4.2_OGP_2004_T_17": "PBI (base 2004)",
+    	"45.2_ECTDT_0_T_33": "Tasa de Desempleo (EPH continua)",
+    	"11.3_ISOM_2004_M_29": "EMAE (base 2004)",
+    	"63.1_T_0_0_5": "Pobreza (EPH puntual y continua)",
+    	"66.2_SP_E_0_T_14": "Puestos de trabajo declarados (sector privado)",
+    	"92.1_TCV_0_0_21": "Tipo de cambio (valuación de reservas BCRA)",
+    	"92.1_RID_0_0_32": "Reservas internacionales (BCRA)",
+    	"89.1_TIB_0_0_20": "BADLAR (BCRA)",
+    	"89.1_TIPF35D_0_0_35": "Plazo fijo 30 a 59 días (BCRA)"
+	}
+}
