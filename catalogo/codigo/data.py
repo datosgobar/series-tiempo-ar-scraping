@@ -52,22 +52,21 @@ def get_time_series_data(
         field_ids = {field_id: None for field_id in field_ids}
 
     catalog = readers.read_catalog(catalog_path)
-    df = get_time_series_df(field_ids.keys(), use_id=True,
-                            catalog=catalog)
 
     rows = []
-    for field_id, data in df.to_dict().items():
+    for field_id in field_ids:
+        df = get_time_series_df(field_id, use_id=True, catalog=catalog)
         distribution_identifier = field_id.split("_")[0]
-        field_metadata = get_field_metadata(catalog, distribution_identifier,
-                                            field_id)
+        field_metadata = get_field_metadata(
+            catalog, distribution_identifier, field_id
+        )
         distribution_metadata = get_distribution_metadata(
             catalog, distribution_identifier)
-
         time_index_freq = filter(
             lambda x: x.get("specialType") == "time_index",
             distribution_metadata["field"])[0]["specialTypeDetail"]
 
-        for field_time, field_value in data.items():
+        for field_time, field_value in df[field_id].to_dict().iteritems():
             row = {
                 "field_id": field_id,
                 "field_time": field_time,
