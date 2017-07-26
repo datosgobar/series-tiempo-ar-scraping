@@ -20,6 +20,7 @@ import pydatajson.readers as readers
 import pydatajson.writers as writers
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
+from dateutil.parser import parse as parse_time
 
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
@@ -36,6 +37,8 @@ REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
+MINIMUM_VALUES = 3
+MAX_MISSING_PROPORTION = 0.66
 
 logging.basicConfig(
     filename=os.path.join(LOGS_DIR, 'scrape_datasets.log'),
@@ -221,8 +224,101 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
 
     distribution_params = gen_distribution_params(
         etl_params, catalog, distribution_identifier)
+    distrib_meta = get_distribution_metadata(
+        catalog, distribution_identifier
+    )
+    dataset_meta = get_dataset_metadata(
+        catalog, distribution_identifier.split(".")[0]
+    )
 
-    return scrape_dataframe(xl, **distribution_params)
+    df = scrape_dataframe(xl, **distribution_params)
+
+    # VALIDACIONES
+
+    # 1. No debe haber fechas futuras
+    for time_value in df.index:
+        time_value = arrow.get(time_value.year, time_value.month,
+                               time_value.day)
+        if not time_value.year <= arrow.now().year:
+            iso_time_value = time_value.isoformat()
+            iso_now = arrow.now().isoformat()
+            raise ce.TimeIndexFutureTimeValueError(iso_time_value, iso_now)
+
+    # 2. Las series deben tener una cantidad mínima de valores
+    for field in df.columns:
+        positive_values = len(df[field][df[field].notnull()])
+        if not positive_values >= MINIMUM_VALUES:
+            raise ce.FieldFewValuesError(
+                field, positive_values, MINIMUM_VALUES
+            )
+
+    # 3. Las series deben tener una proporción máxima de missings
+    for field in df.columns:
+        total_values = len(df[field])
+        positive_values = len(df[field][df[field].notnull()])
+        missing_values = total_values - positive_values
+        missing_values_prop = missing_values / float(total_values)
+        if not missing_values_prop <= MAX_MISSING_PROPORTION:
+            raise ce.FieldTooManyMissingsError(
+                field, missing_values, positive_values
+            )
+
+    # realiza validaciones usando el campo "temporal" de metadadta del dataset
+    try:
+        ini_temporal, end_temporal = dataset_meta["temporal"].split("/")
+        parse_time(ini_temporal)
+        parse_time(end_temporal)
+    except Exception:
+        raise ce.DatasetTemporalMetadataError(dataset_meta["temporal"])
+    # 4. Las series deben comenzar después del valor inicial de "temporal"
+    for time_value in df.index:
+        time_value = arrow.get(time_value.year, time_value.month,
+                               time_value.day)
+        if not time_value >= arrow.get(ini_temporal):
+            iso_time_value = time_value.isoformat()
+            iso_ini_temporal = arrow.get(ini_temporal).isoformat()
+            raise ce.TimeValueBeforeTemporalError(
+                iso_time_value, iso_ini_temporal)
+
+    # 5. Las series deben terminar después de la mitad del rango "temporal"
+    half_temporal = arrow.get(ini_temporal) + (arrow.get(end_temporal) -
+                                               arrow.get(ini_temporal)) / 2
+    end_time_value_str = "{}-{}-{}".format(
+        df.index[-1].year, df.index[-1].month, df.index[-1].day)
+    iso_end_index = arrow.get(end_time_value_str).isoformat()
+    iso_half_temporal = half_temporal.isoformat()
+    if not arrow.get(end_time_value_str) >= half_temporal:
+        raise ce.TimeIndexTooShortError(
+            iso_end_index, iso_half_temporal, dataset_meta["temporal"])
+
+    # 6. Los ids de fields no deben repetirse en todo un catálogo
+    fields = []
+    for dataset in catalog["dataset"]:
+        for distrib in dataset["distribution"]:
+            if "field" in distrib:
+                for field in distrib["field"]:
+                    if field["title"] != "indice_tiempo":
+                        fields.append(field)
+    _assert_repeated_value("id", fields, ce.FieldIdRepetitionError)
+
+    # 7. Los títulos de fields no deben repetirse en una distribución
+    fields = distrib_meta["field"]
+    _assert_repeated_value("title", fields, ce.FieldTitleRepetitionError)
+
+    # 8. Las descripciones de fields no deben repetirse en una distribución
+    fields = [field for field in distrib_meta["field"]
+              if "description" in field]
+    _assert_repeated_value("description", fields,
+                           ce.FieldDescriptionRepetitionError)
+
+    return df
+
+
+def _assert_repeated_value(field_name, field_values, exception):
+    fields = pd.Series([field[field_name] for field in field_values])
+    field_dups = fields[fields.duplicated()].values
+    if not len(field_dups) == 0:
+        raise exception(repeated_fields=field_dups)
 
 
 def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
