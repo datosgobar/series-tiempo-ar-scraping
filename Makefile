@@ -1,4 +1,5 @@
 .PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
+SERIES_TIEMPO_BIN=$(dirname "${SERIES_TIEMPO_PYTHON}")
 
 all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
@@ -26,9 +27,8 @@ setup_environment:
 	pip install -r requirements.txt
 
 update_environment:
-	source activate series-tiempo
 	git pull
-	pip install -r requirements.txt --upgrade
+	$(SERIES_TIEMPO_BIN)/pip install -r requirements.txt --upgrade
 
 create_dir:
 	mkdir -p catalogo
