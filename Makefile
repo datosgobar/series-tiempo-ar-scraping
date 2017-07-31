@@ -27,6 +27,7 @@ setup_environment:
 
 update_environment:
 	source activate series-tiempo
+	git pull
 	pip install -r requirements.txt --upgrade
 
 create_dir:
