@@ -24,7 +24,7 @@ setup_environment:
 	# sudo apt-get install libcurl4-gnutls-dev
 	`dirname $(SERIES_TIEMPO_PYTHON)`/pip install -r requirements.txt
 
-update_environment:
+update_environment: create_dir
 	git pull
 	`dirname $(SERIES_TIEMPO_PYTHON)`/pip install -r requirements.txt --upgrade
 
