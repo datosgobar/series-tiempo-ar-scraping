@@ -19,15 +19,14 @@ clone_repo:
 # ambiente testeado para un Ubuntu 16.04
 setup_environment:
 	conda create -n series-tiempo --no-default-packages
-	source activate series-tiempo
-	conda install pycurl
+	conda install -n series-tiempo pycurl
 	# sudo apt-get update && sudo apt-get install gcc && sudo apt-get install python-pycurl
 	# sudo apt-get install libcurl4-gnutls-dev
-	pip install -r requirements.txt
+	`dirname $(SERIES_TIEMPO_PYTHON)`/pip install -r requirements.txt
 
 update_environment:
 	git pull
-	$(dirname "${SERIES_TIEMPO_PYTHON}")/pip install -r requirements.txt --upgrade
+	`dirname $(SERIES_TIEMPO_PYTHON)`/pip install -r requirements.txt --upgrade
 
 create_dir:
 	mkdir -p catalogo
