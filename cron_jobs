@@ -1,4 +1,5 @@
 
+
 # m h  dom mon dow   command
-30 08 * * * cd $SERIES_TIEMPO_DIR && make all
-30 14 * * * cd $SERIES_TIEMPO_DIR && make all
+30 08 * * * cd $SERIES_TIEMPO_DIR && git pull && make all
+30 14 * * * cd $SERIES_TIEMPO_DIR && git pull && make all

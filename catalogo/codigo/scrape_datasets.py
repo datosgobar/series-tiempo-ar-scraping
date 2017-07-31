@@ -38,7 +38,7 @@ REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 MINIMUM_VALUES = 3
-MAX_MISSING_PROPORTION = 0.66
+MAX_MISSING_PROPORTION = 0.90
 
 logging.basicConfig(
     filename=os.path.join(LOGS_DIR, 'scrape_datasets.log'),
@@ -179,6 +179,9 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
     # coordenadas de los headers de las series
     params["headers_coord"] = list(df_fields.field_identifierCell)
 
+    # coordenadas de los headers de las series
+    params["headers_value"] = list(df_fields.field_id)
+
     # fila donde empiezan los datos
     params["data_starts"] = map(row_from_cell_coord,
                                 df_fields.field_dataStartCell)
@@ -199,8 +202,8 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
     return params
 
 
-def scrape_dataframe(xl, worksheet, headers_coord, data_starts, frequency,
-                     time_header_coord, series_names):
+def scrape_dataframe(xl, worksheet, headers_coord, headers_value, data_starts,
+                     frequency, time_header_coord, series_names):
     params = deepcopy(XLSERIES_PARAMS)
     params["headers_coord"] = headers_coord
     params["data_starts"] = data_starts
@@ -234,6 +237,19 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
     df = scrape_dataframe(xl, **distribution_params)
 
     # VALIDACIONES
+    # 0. Las celdas de los headers deben estar en blanco o contener un id
+    worksheet = distribution_params["worksheet"]
+    headers_coord = distribution_params["headers_coord"]
+    headers_value = distribution_params["headers_value"]
+    for header_coord, header_value in zip(headers_coord, headers_value):
+        ws_header_value = xl.wb[worksheet][header_coord].value
+        if (
+            ws_header_value and
+            len(unicode(ws_header_value).strip()) > 0 and
+            ws_header_value != header_value
+        ):
+            raise ce.HeaderNotBlankOrIdError(
+                worksheet, header_coord, header_value, ws_header_value)
 
     # 1. No debe haber fechas futuras
     for time_value in df.index:

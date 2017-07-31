@@ -8,6 +8,8 @@ from __future__ import print_function
 from __future__ import with_statement
 import os
 from openpyxl import load_workbook
+import logging
+import logging.config
 
 
 def get_ws_case_insensitive(wb, title):
@@ -29,3 +31,16 @@ def find_ws_name(wb, name):
 
 def row_from_cell_coord(coord):
     return int(filter(lambda x: x.isdigit(), coord))
+
+
+def get_logger(name=__name__):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    logging_formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(logging_formatter)
+    # logger.addHandler(ch)
+
+    return logger

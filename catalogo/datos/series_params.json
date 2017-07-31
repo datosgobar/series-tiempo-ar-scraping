@@ -1,8 +1,26 @@
 {
-	"landing_ied": [
-		"11.3_VIPAA_2004_M_31",
-    	"45.2_ECTDT_0_T_33",
-    	"89.1_TIB_0_0_20",
-    	"115.3_TCRM_0_M_29"
-	]
+  "landing_ied": {
+    "11.3_VIPAA_2004_M_31": {},
+    "45.2_ECTDT_0_T_33": {},
+    "89.1_TIB_0_0_20": {},
+    "115.3_TCRM_0_M_29": {},
+    "142.3_TOTAL_2001_M_26": {},
+    "87.3_IGC_1980_M_27": {},
+    "102.1_I2NG_ABRI_M_22": {
+        "pct_change": 12,
+        "description": "IPC Nivel General. Base abr 2016. Mensual. Variación porcentual interanual",
+        "Units": "Variación porcentual interanual"
+    },
+    "4.2_OGP_2004_T_17": {},
+    "4.2_MGCP_2004_T_25": {},
+    "4.2_DGCP_2004_T_30": {},
+    "4.2_DGE_2004_T_26": {},
+    "4.2_OGI_2004_T_25": {},
+    "4.2_VE_2004_T_21": {},
+    "4.2_DGIT_2004_T_25": {},
+    "11.3_ITC_2004_M_22": {},
+    "11.3_ISD_2004_M_31": {},
+    "12.3_E_2004_M_3": {},
+    "33.2_I_2004_M_4": {}
+  }
 }

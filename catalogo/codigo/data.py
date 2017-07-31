@@ -26,6 +26,7 @@ from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
 from scrape_datasets import get_field_metadata, get_distribution_metadata
+from scrape_datasets import find_distribution_identifier
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -46,7 +47,7 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 def get_time_series_data(
         field_ids,
         catalog_path=DEFAULT_CATALOG_PATH,
-        export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv", datasets_dir=DATASETS_DIR):
+        export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv", datasets_dir=DATASETS_DIR, logger=None):
 
     if isinstance(field_ids, list):
         field_ids = {field_id: None for field_id in field_ids}
@@ -55,6 +56,8 @@ def get_time_series_data(
 
     rows = []
     for field_id in field_ids:
+        if logger:
+            logger.info(field_id)
         df = get_time_series_df(field_id, use_id=True, catalog=catalog)
         distribution_identifier = field_id.split("_")[0]
         field_metadata = get_field_metadata(
@@ -127,49 +130,52 @@ def get_time_series_params(field_ids, catalog=DEFAULT_CATALOG_PATH):
     catalog = readers.read_catalog(catalog)
 
     # busca los ids de dataset y distribucion de la serie
-    series_params = []
+    series_params = {}
     for dataset in catalog["dataset"]:
         for distribution in dataset["distribution"]:
             if "field" in distribution:
                 for field in distribution["field"]:
                     if field["id"] in field_ids:
-
-                        series_params.append((
+                        series_params[field["id"]] = (
                             dataset["identifier"],
                             distribution["identifier"],
                             field["title"]
-                        ))
+                        )
 
-    return series_params
+    return [series_params[field_id] for field_id in field_ids]
 
 
-def get_time_series_by_id(field_ids):
-
-    if not isinstance(field_ids, list):
-        field_ids = [field_ids]
-
-    series_params = get_time_series_params(field_ids)
+def get_time_series_by_id(field_id, fmt="df"):
+    series_params = get_time_series_params([field_id])
+    return get_time_series(*series_params[0], fmt=fmt)
 
 
 def get_time_series(dataset_id, distribution_id, field_title, fmt="df",
                     time_index="indice_tiempo", field_id=None,
-                    datasets_dir=DATASETS_DIR):
+                    datasets_dir=DATASETS_DIR, pct_change=None):
     """Devuelve un dataframe con una serie de tiempo."""
 
     distribution_path = os.path.join(
         datasets_dir, dataset_id, distribution_id + ".csv")
 
-    df = pd.read_csv(distribution_path, index_col=time_index,
-                     parse_dates=True)[[field_title]]
+    serie = pd.read_csv(distribution_path, index_col=time_index,
+                        parse_dates=True)[field_title]
+    if pct_change:
+        serie = serie.pct_change(pct_change)
+
     if field_id:
-        df = df.rename(columns={field_title: field_id})
+        serie = serie.rename(field_id)
 
     if fmt == "df":
-        return df
+        return pd.DataFrame(serie)
+
+    elif fmt == "serie":
+        return serie
 
     elif fmt == "dict" or "list":
         series_dict = json.loads(
-            df.to_json(orient="columns", date_format="iso")).values()[0]
+            pd.DataFrame(serie).to_json(orient="columns", date_format="iso")
+        ).values()[0]
 
         if fmt == "dict":
             return series_dict
@@ -180,23 +186,50 @@ def get_time_series(dataset_id, distribution_id, field_title, fmt="df",
         raise Exception("No se reconoce el formato")
 
 
-def get_time_series_dict(catalog, field_ids, datasets_dir):
+def get_time_series_dict(catalog, field_params, datasets_dir):
 
-    if not isinstance(field_ids, list):
-        field_ids = [field_ids]
-
+    field_ids = field_params.keys()
     series_params = get_time_series_params(field_ids)
 
-    time_series = {
-        field_id: {
-            "metadata": get_field_metadata(catalog, field_id=field_id),
-            "data": get_time_series(*serie_params, fmt="list",
-                                    datasets_dir=datasets_dir)
+    time_series = {}
+    for field_id, serie_params in zip(field_ids, series_params):
+        time_series[field_id] = {
+            "metadata": generate_api_metadata(
+                catalog, field_id, field_params[field_id]),
+            "data": get_time_series(
+                *serie_params, fmt="list",
+                datasets_dir=datasets_dir,
+                pct_change=field_params[field_id].get("pct_change"))
         }
-        for field_id, serie_params in zip(field_ids, series_params)
-    }
 
     return time_series
+
+
+def generate_api_metadata(catalog, field_id, override_metadata=None):
+    field_meta = get_field_metadata(catalog, field_id=field_id)
+    distribution_identifier = find_distribution_identifier(catalog, field_id)
+    dataset_identifier = distribution_identifier.split(".")[0]
+
+    distrib_meta = get_distribution_metadata(catalog, distribution_identifier,
+                                             dataset_identifier)
+
+    frequency = None
+    for field in distrib_meta["field"]:
+        if field["specialType"] == "time_index":
+            frequency = field["specialTypeDetail"]
+            break
+
+    api_metadata = {
+        "title": field_meta["title"],
+        "frequency": frequency,
+        "units": field_meta["units"],
+        "type": field_meta["type"],
+        "id": field_meta["id"],
+        "description": field_meta["description"]
+    }
+    api_metadata.update(override_metadata)
+
+    return api_metadata
 
 
 def generate_time_series_jsons(ts_dict, jsons_dir=SERIES_DIR):

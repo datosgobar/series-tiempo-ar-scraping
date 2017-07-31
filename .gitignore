@@ -108,3 +108,6 @@ catalogo/datos/datasets_test
 generate-catalog-errors.txt
 catalogo/datos/dumps
 catalogo/datos/series
+ca.pem
+config_webdav.yaml
+ca_webdav.pem

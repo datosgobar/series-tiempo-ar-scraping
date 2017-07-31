@@ -11,13 +11,13 @@ import os
 import sys
 import pandas as pd
 import arrow
-from openpyxl import load_workbook
 import logging
-import logging.config
-
+from openpyxl import load_workbook
 from pydatajson import DataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
+
+from helpers import get_logger
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -42,7 +42,21 @@ def read_xlsx_catalog(catalog_xlsx_path):
     catalogo = readers.read_catalog(
         catalog_xlsx_path, default_values=default_values)
 
+    clean_catalog(catalogo)
+
     return catalogo
+
+
+def clean_catalog(catalog):
+
+    for dataset in catalog["dataset"]:
+        for distribution in dataset["distribution"]:
+            if "field" in distribution:
+                for field in distribution["field"]:
+                    if "title" in field:
+                        field["title"] = field["title"].replace(" ", "")
+                    if "id" in field:
+                        field["id"] = field["id"].replace(" ", "")
 
 
 def write_json_catalog(catalog, catalog_json_path):
@@ -77,8 +91,8 @@ def validate_and_filter(catalog):
         datasets_errors,
         os.path.join(REPORTES_DIR, "reporte-datasets-error.json")
     )
-
     # genera catálogo filtrado por los datasets que no tienen error
+
     dj.generate_datasets_report(
         catalog, harvest='valid',
         export_path=os.path.join(REPORTES_DIR, "reporte-datasets.xlsx")
@@ -90,15 +104,7 @@ def validate_and_filter(catalog):
 
 
 def main(catalog_xlsx_path, catalog_json_path):
-    # crea el logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    logging_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(logging_formatter)
-    logger.addHandler(ch)
+    logger = get_logger(__name__)
 
     logger.info("Comienza a leer {}".format(catalog_xlsx_path))
     catalog = read_xlsx_catalog(catalog_xlsx_path)
