@@ -35,7 +35,7 @@ from email.utils import COMMASPACE, formatdate
 SMTP_SERVER = "smtp.gmail.com"
 # PORT = 465  # port if using SMTP_SSL
 PORT = 587
-CONFIG_EMAIL_PATH = "catalogo/codigo/email/config_email.yaml"
+CONFIG_EMAIL_PATH = "catalogo/codigo/config/config_email.yaml"
 
 
 def send_email(subject, message, to=None, files=None, email_user=None,
