@@ -308,14 +308,17 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
             iso_end_index, iso_half_temporal, dataset_meta["temporal"])
 
     # 6. Los ids de fields no deben repetirse en todo un catálogo
-    fields = []
+    field_ids = []
     for dataset in catalog["dataset"]:
-        for distrib in dataset["distribution"]:
-            if "field" in distrib:
-                for field in distrib["field"]:
+        for distribution in dataset["distribution"]:
+            if ("field" in distribution and
+                    distribution["identifier"] != distrib_meta["identifier"]):
+                for field in distribution["field"]:
                     if field["title"] != "indice_tiempo":
-                        fields.append(field)
-    _assert_repeated_value("id", fields, ce.FieldIdRepetitionError)
+                        field_ids.append(field["id"])
+    for field_distrib in distrib_meta["field"]:
+        if field_distrib["id"] in field_ids:
+            raise ce.FieldIdRepetitionError(field_distrib["id"])
 
     # 7. Los títulos de fields no deben repetirse en una distribución
     fields = distrib_meta["field"]

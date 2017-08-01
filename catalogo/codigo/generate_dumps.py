@@ -43,9 +43,9 @@ def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
         # genera un dump de series de tiempo
         df = get_time_series_data(
             dump_params, catalog_json_path, dump_path,
-            datasets_dir=datasets_dir, logger=logger
+            datasets_dir=datasets_dir
         )
-        print("\n{}  Series: {} Values: {}".format(
+        logger.info("\n{}  Series: {} Values: {}".format(
             dump_file_name.ljust(40),
             unicode(len(df.field_id.unique())).ljust(3),
             unicode(len(df)).ljust(6)
