@@ -51,8 +51,8 @@ def upload_series(webdav, series_dir, remote_dir_name="series", logger=None):
         if not webdav.exists(remote_dir):
             webdav.mkdir(remote_dir)
 
-        if logger:
-            logger.info("Cargando {}".format(serie_path))
+        # if logger:
+        #     logger.info("Cargando {}".format(serie_path))
 
         webdav.upload(
             remote_path=os.path.join(remote_dir, filename),
