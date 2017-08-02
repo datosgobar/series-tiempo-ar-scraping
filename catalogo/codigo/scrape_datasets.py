@@ -39,6 +39,7 @@ NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 MINIMUM_VALUES = 3
 MAX_MISSING_PROPORTION = 0.90
+MIN_TEMPORAL_FRACTION = 10
 
 logging.basicConfig(
     filename=os.path.join(LOGS_DIR, 'scrape_datasets.log'),
@@ -297,8 +298,9 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
                 iso_time_value, iso_ini_temporal)
 
     # 5. Las series deben terminar después de la mitad del rango "temporal"
-    half_temporal = arrow.get(ini_temporal) + (arrow.get(end_temporal) -
-                                               arrow.get(ini_temporal)) / 2
+    half_temporal = arrow.get(ini_temporal) + (
+        arrow.get(end_temporal) - arrow.get(ini_temporal)
+    ) / MIN_TEMPORAL_FRACTION
     end_time_value_str = "{}-{}-{}".format(
         df.index[-1].year, df.index[-1].month, df.index[-1].day)
     iso_end_index = arrow.get(end_time_value_str).isoformat()
