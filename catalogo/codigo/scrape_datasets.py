@@ -38,7 +38,7 @@ REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 MINIMUM_VALUES = 3
-MAX_MISSING_PROPORTION = 0.90
+MAX_MISSING_PROPORTION = 0.95
 MIN_TEMPORAL_FRACTION = 10
 
 logging.basicConfig(
@@ -236,6 +236,9 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
     )
 
     df = scrape_dataframe(xl, **distribution_params)
+
+    if isinstance(df, list):
+        df = pd.concat(df, axis=1)
 
     # VALIDACIONES
     # 0. Las celdas de los headers deben estar en blanco o contener un id
