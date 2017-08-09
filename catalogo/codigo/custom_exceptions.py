@@ -9,6 +9,22 @@ from __future__ import with_statement
 import os
 
 
+class FieldTitleTooLongError(ValueError):
+
+    def __init__(self, field, field_len, max_field_len):
+        msg = "'{}' tiene '{}' caracteres. Maximo: '{}'".format(
+            field, field_len, max_field_len)
+        super(FieldTitleTooLongError, self).__init__(msg)
+
+
+class InvalidFieldTitleError(ValueError):
+
+    def __init__(self, field, char, valid_field_chars):
+        msg = "'{}' usa caracteres invalidos ('{}'). Validos: '{}'".format(
+            field, char, valid_field_chars)
+        super(InvalidFieldTitleError, self).__init__(msg)
+
+
 class HeaderNotBlankOrIdError(ValueError):
 
     def __init__(self, worksheet, header_coord, header_value, ws_header_value):

@@ -116,6 +116,9 @@ def main(catalog_xlsx_path, catalog_json_path):
     logger.info("Valida y filtra el catálogo")
     catalog_filtered = validate_and_filter(catalog)
 
+    # logger.info("Setea el draft status de todas las distribuciones")
+    # for dataset in catalog["dataset"]:
+
     logger.info("Escribe catálogo filtrado {}".format(catalog_json_path))
     write_json_catalog(catalog_filtered, catalog_json_path)
 

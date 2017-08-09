@@ -11,3 +11,5 @@ requests
 pyyaml
 webdavclient
 pycurl
+sqlalchemy
+psycopg2

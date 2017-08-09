@@ -111,3 +111,7 @@ catalogo/datos/series
 ca.pem
 config_webdav.yaml
 ca_webdav.pem
+reporte-field-title-too-long.xlsx
+reporte-invalid-field-titles.xlsx
+datasets_ind.zip
+catalogo/datos/datasets_ind

@@ -24,16 +24,11 @@ from dateutil.parser import parse as parse_time
 
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
+from paths import LOGS_DIR, REPORTES_DIR
 
 sys.path.insert(0, os.path.abspath(".."))
 
 PRESERVE_WB_OBJ = False
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))))
-LOGS_DIR = os.path.join(PROJECT_DIR, "catalogo", "logs")
-SCHEMAS_DIR = os.path.join(PROJECT_DIR, "catalogo", "codigo", "schemas")
-DATOS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos")
-REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
@@ -271,6 +266,22 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
             raise ce.FieldFewValuesError(
                 field, positive_values, MINIMUM_VALUES
             )
+
+    # 2. Los titulos de los campos deben tener caracteres ASCII + "_"
+    # valid_field_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
+    # for field in df.columns:
+    #     for char in field:
+    #         if char not in valid_field_chars:
+    #             raise ce.InvalidFieldTitleCharacterError(
+    #                 field, char, valid_field_chars
+    #             )
+
+    # 2. Las series deben tener una cantidad mínima de valores
+    # for field in df.columns:
+    #     if len(field) > MAX_FIELD_TITLE_LEN:
+    #         raise ce.FieldTitleTooLongError(
+    #             field, len(field), MAX_FIELD_TITLE_LEN
+    #         )
 
     # 3. Las series deben tener una proporción máxima de missings
     for field in df.columns:

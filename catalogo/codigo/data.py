@@ -26,6 +26,7 @@ from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
 from scrape_datasets import get_field_metadata, get_distribution_metadata
+from scrape_datasets import get_dataset_metadata
 from scrape_datasets import find_distribution_identifier
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -60,17 +61,29 @@ def get_time_series_data(
             logger.info(field_id)
         df = get_time_series_df(field_id, use_id=True, catalog=catalog)
         distribution_identifier = field_id.split("_")[0]
+        dataset_identifier = distribution_identifier.split(".")[0]
+
+        # tomo la metadata de cada entidad
         field_metadata = get_field_metadata(
             catalog, distribution_identifier, field_id
         )
         distribution_metadata = get_distribution_metadata(
             catalog, distribution_identifier)
+        dataset_metadata = get_dataset_metadata(catalog, dataset_identifier)
+
         time_index_freq = filter(
             lambda x: x.get("specialType") == "time_index",
             distribution_metadata["field"])[0]["specialTypeDetail"]
 
         for field_time, field_value in df[field_id].to_dict().iteritems():
             row = {
+                "dataset_identifier": dataset_metadata["identifier"],
+                "dataset_title": dataset_metadata["title"],
+                "dataset_theme": dataset_metadata["theme"],
+                "dataset_source": dataset_metadata["source"],
+                "dataset_contactPoint_fn": dataset_metadata["contactPoint"]["fn"],
+                "distribution_identifier": distribution_identifier,
+                "distribution_title": distribution_metadata["title"],
                 "field_id": field_id,
                 "field_time": field_time,
                 "field_value": field_value,
@@ -84,6 +97,9 @@ def get_time_series_data(
             rows.append(row)
 
     cols = [
+        "dataset_identifier", "dataset_title",
+        "dataset_theme", "dataset_source", "dataset_contactPoint_fn",
+        "distribution_identifier", "distribution_title",
         "field_id", "field_time", "field_value",
         "field_short_description", "field_units", "field_title",
         "field_description", "distribution_time_index_freq"

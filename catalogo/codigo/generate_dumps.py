@@ -30,6 +30,12 @@ DUMPS_PARAMS_PATH = os.path.join(
 CATALOG_PATH = os.path.join(PROJECT_DIR, "catalogo", "datos", "data.json")
 
 
+# TODO: agregar al dump
+# theme_label
+# dataset_title
+# distribution_title
+# dataset_identifier
+
 def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
          datasets_dir=DATASETS_DIR, dumps_dir=DUMPS_DIR):
     logger = get_logger(__name__)
