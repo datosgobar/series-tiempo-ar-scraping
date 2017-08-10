@@ -1,5 +1,5 @@
 
 
 # m h  dom mon dow   command
-30 08 * * * cd $SERIES_TIEMPO_DIR && make update_environment && make all
-30 14 * * * cd $SERIES_TIEMPO_DIR && make update_environment && make all
+30 08 * * * cd $SERIES_TIEMPO_DIR && make update_environment && make all --ignore-errors
+30 14 * * * cd $SERIES_TIEMPO_DIR && make update_environment && make all --ignore-errors

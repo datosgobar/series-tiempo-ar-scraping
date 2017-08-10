@@ -13,3 +13,4 @@ webdavclient
 pycurl
 sqlalchemy
 psycopg2
+bs4
