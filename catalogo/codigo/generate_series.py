@@ -27,8 +27,9 @@ def main(catalog_json_path, series_params_path, datasets_dir, series_dir):
         series_params = json.load(f, encoding='utf-8')
 
     # genera series para la landing de IED
-    ts_dict = get_time_series_dict(catalog, series_params["landing_ied"],
-                                   datasets_dir=datasets_dir)
+    ts_dict = get_time_series_dict(
+        catalog, series_params["landing_ied"],
+        datasets_dir=datasets_dir, dump_mode=True)
     generate_time_series_jsons(ts_dict, series_dir)
 
 

@@ -35,6 +35,7 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 MINIMUM_VALUES = 3
 MAX_MISSING_PROPORTION = 0.95
 MIN_TEMPORAL_FRACTION = 10
+MAX_FIELD_TITLE_LEN = 60
 
 logging.basicConfig(
     filename=os.path.join(LOGS_DIR, 'scrape_datasets.log'),
@@ -236,7 +237,7 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
         df = pd.concat(df, axis=1)
 
     # VALIDACIONES
-    # 0. Las celdas de los headers deben estar en blanco o contener un id
+    # Las celdas de los headers deben estar en blanco o contener un id
     worksheet = distribution_params["worksheet"]
     headers_coord = distribution_params["headers_coord"]
     headers_value = distribution_params["headers_value"]
@@ -250,7 +251,7 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
             raise ce.HeaderNotBlankOrIdError(
                 worksheet, header_coord, header_value, ws_header_value)
 
-    # 1. No debe haber fechas futuras
+    # No debe haber fechas futuras
     for time_value in df.index:
         time_value = arrow.get(time_value.year, time_value.month,
                                time_value.day)
@@ -259,7 +260,7 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
             iso_now = arrow.now().isoformat()
             raise ce.TimeIndexFutureTimeValueError(iso_time_value, iso_now)
 
-    # 2. Las series deben tener una cantidad mínima de valores
+    # Las series deben tener una cantidad mínima de valores
     for field in df.columns:
         positive_values = len(df[field][df[field].notnull()])
         if not positive_values >= MINIMUM_VALUES:
@@ -267,23 +268,23 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
                 field, positive_values, MINIMUM_VALUES
             )
 
-    # 2. Los titulos de los campos deben tener caracteres ASCII + "_"
-    # valid_field_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
-    # for field in df.columns:
-    #     for char in field:
-    #         if char not in valid_field_chars:
-    #             raise ce.InvalidFieldTitleCharacterError(
-    #                 field, char, valid_field_chars
-    #             )
+    # Los titulos de los campos deben tener caracteres ASCII + "_"
+    valid_field_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
+    for field in df.columns:
+        for char in field:
+            if char not in valid_field_chars:
+                raise ce.InvalidFieldTitleError(
+                    field, char, valid_field_chars
+                )
 
-    # 2. Las series deben tener una cantidad mínima de valores
-    # for field in df.columns:
-    #     if len(field) > MAX_FIELD_TITLE_LEN:
-    #         raise ce.FieldTitleTooLongError(
-    #             field, len(field), MAX_FIELD_TITLE_LEN
-    #         )
+    # Los nombres de los campos tienen que tener un máximo de caracteres
+    for field in df.columns:
+        if len(field) > MAX_FIELD_TITLE_LEN:
+            raise ce.FieldTitleTooLongError(
+                field, len(field), MAX_FIELD_TITLE_LEN
+            )
 
-    # 3. Las series deben tener una proporción máxima de missings
+    # Las series deben tener una proporción máxima de missings
     for field in df.columns:
         total_values = len(df[field])
         positive_values = len(df[field][df[field].notnull()])

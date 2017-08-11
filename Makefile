@@ -3,6 +3,7 @@
 all: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report catalogo/datos/series/ catalogo/datos/dumps/
+# transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
 load: update_series
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
@@ -97,7 +98,7 @@ update_datasets: catalogo/datos/datasets/
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_datasets.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
 
 update_series: catalogo/datos/series/
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_series.py "$<" "catalogo/codigo/config/config_webdav.yaml"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_series.py "$<" "catalogo/codigo/config/config_webdav.yaml" "catalogo/datos/series_params.json"
 
 update_dumps: catalogo/datos/dumps/
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_dumps.py "$<" "catalogo/codigo/config/config_dumps.yaml"

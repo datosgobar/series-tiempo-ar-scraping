@@ -128,16 +128,24 @@ def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH,
 
     # toma las series y genera un data frame concatenado
     if use_id:
-        time_series = [
-            get_time_series(*serie_params, field_id=field_id,
-                            datasets_dir=datasets_dir)
-            for field_id, serie_params in zip(field_ids, series_params)
-        ]
+        time_series = []
+        for field_id, serie_params in zip(field_ids, series_params):
+            # try:
+            time_series.append(
+                get_time_series(*serie_params, field_id=field_id,
+                                datasets_dir=datasets_dir)
+            )
+            # except Exception as e:
+            #     print(e)
     else:
-        time_series = [
-            get_time_series(*serie_params, datasets_dir=datasets_dir)
-            for serie_params in series_params
-        ]
+        time_series = []
+        for serie_params in series_params:
+            # try:
+            time_series.append(
+                get_time_series(*serie_params, datasets_dir=datasets_dir)
+            )
+            # except Exception as e:
+            #     print(e)
 
     return pd.concat(time_series, axis=1)
 
@@ -202,21 +210,37 @@ def get_time_series(dataset_id, distribution_id, field_title, fmt="df",
         raise Exception("No se reconoce el formato")
 
 
-def get_time_series_dict(catalog, field_params, datasets_dir):
+def get_time_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
 
-    field_ids = field_params.keys()
+    if dump_mode:
+        field_ids = []
+        for dataset in catalog["dataset"]:
+            for distribution in dataset["distribution"]:
+                if "field" in distribution:
+                    for field in distribution["field"]:
+                        if field["title"] != "indice_tiempo":
+                            field_ids.append(field["id"])
+    else:
+        field_ids = field_params.keys()
+
     series_params = get_time_series_params(field_ids)
 
     time_series = {}
     for field_id, serie_params in zip(field_ids, series_params):
-        time_series[field_id] = {
-            "metadata": generate_api_metadata(
-                catalog, field_id, field_params[field_id]),
-            "data": get_time_series(
-                *serie_params, fmt="list",
-                datasets_dir=datasets_dir,
-                pct_change=field_params[field_id].get("pct_change"))
-        }
+        try:
+            time_series[field_id] = {
+                "metadata": generate_api_metadata(
+                    catalog, field_id, field_params.get(field_id)),
+                "data": get_time_series(
+                    *serie_params, fmt="list",
+                    datasets_dir=datasets_dir,
+                    pct_change=field_params[field_id].get(
+                        "pct_change") if field_params.get(field_id) else None
+                )
+            }
+        except Exception as e:
+            print(field_id, e)
+            continue
 
     return time_series
 
@@ -243,7 +267,8 @@ def generate_api_metadata(catalog, field_id, override_metadata=None):
         "id": field_meta["id"],
         "description": field_meta["description"]
     }
-    api_metadata.update(override_metadata)
+    if override_metadata:
+        api_metadata.update(override_metadata)
 
     return api_metadata
 
@@ -253,5 +278,9 @@ def generate_time_series_jsons(ts_dict, jsons_dir=SERIES_DIR):
     for series_id, value in ts_dict.iteritems():
         file_name = "{}.json".format(series_id)
 
-        with open(os.path.join(jsons_dir, file_name), "wb") as f:
-            json.dump(value, f)
+        try:
+            with open(os.path.join(jsons_dir, file_name), "wb") as f:
+                json.dump(value, f)
+
+        except Exception as e:
+            print(series_id, e)
