@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import with_statement
+
 import os
 import sys
 import pandas as pd
@@ -22,33 +23,98 @@ from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 import json
 from pydatajson.helpers import parse_repeating_time_interval as parse_freq
+from unicodecsv import DictReader
+from collections import OrderedDict
 
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
 from scrape_datasets import get_field_metadata, get_distribution_metadata
 from scrape_datasets import get_dataset_metadata
 from scrape_datasets import find_distribution_identifier
+from paths import DATASETS_DIR, DEFAULT_CATALOG_PATH, SERIES_DIR
 
 sys.path.insert(0, os.path.abspath(".."))
-
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))))
-LOGS_DIR = os.path.join(PROJECT_DIR, "catalogo", "logs")
-SCHEMAS_DIR = os.path.join(PROJECT_DIR, "catalogo", "codigo", "schemas")
-DATOS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos")
-REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
-SERIES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "series")
-DATASETS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "datasets")
-DEFAULT_CATALOG_PATH = os.path.join(DATOS_DIR, "data.json")
 
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 
 
+def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
+                  datasets_dir=DATASETS_DIR, catalog=DEFAULT_CATALOG_PATH,
+                  index_col="indice_tiempo"):
+    catalog = readers.read_catalog(catalog)
+
+    rows_dump = []
+    for dataset in catalog["dataset"]:
+        for distribution in dataset["distribution"]:
+            if "field" not in distribution:
+                continue
+
+            distribution_path = os.path.join(
+                DATASETS_DIR, unicode(dataset["identifier"]),
+                "{}.csv".format(unicode(distribution["identifier"]))
+            )
+
+            if not os.path.exists(distribution_path):
+                continue
+
+            # hasheo metadata de field por field_title
+            fields = {
+                field["title"]: field
+                for field in distribution["field"]
+            }
+
+            # parsea CSV a filas del dump
+            with open(distribution_path, "r") as f:
+                r = DictReader(f, encoding="utf-8-sig")
+
+                for row in r:
+                    for field_title, value in row.iteritems():
+                        time_index = field_title == index_col
+                        exists_field = field_title in fields
+
+                        if time_index or not exists_field:
+                            continue
+
+                        row_dump = OrderedDict()
+
+                        row_dump["dataset_id"] = dataset["identifier"]
+                        row_dump["distribucion_id"] = distribution[
+                            "identifier"]
+                        row_dump["serie_id"] = fields[field_title]["id"]
+                        row_dump["indice_tiempo"] = row[index_col]
+                        row_dump["indice_frecuencia"] = fields[
+                            index_col]["specialTypeDetail"]
+                        row_dump["valor"] = value
+                        row_dump["serie_titulo"] = field_title
+                        row_dump["serie_unidades"] = fields[
+                            field_title].get("units")
+                        row_dump["serie_unidades"] = fields[
+                            field_title].get("units")
+                        row_dump["serie_descripcion"] = fields[
+                            field_title]["description"]
+                        row_dump["dataset_titulo"] = dataset["title"]
+                        row_dump["dataset_descripcion"] = dataset[
+                            "description"]
+                        row_dump["dataset_responsable"] = dataset["source"]
+                        row_dump["dataset_fuente"] = dataset["source"]
+                        row_dump["distribucion_titulo"] = distribution["title"]
+                        row_dump["distribucion_descripcion"] = distribution[
+                            "description"]
+
+                        rows_dump.append(row_dump)
+
+    df = pd.DataFrame(rows_dump)
+
+    return df
+
+
 def get_time_series_data(
         field_ids,
         catalog_path=DEFAULT_CATALOG_PATH,
-        export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv", datasets_dir=DATASETS_DIR, logger=None):
+        export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv",
+        datasets_dir=DATASETS_DIR, logger=None
+):
 
     if isinstance(field_ids, list):
         field_ids = {field_id: None for field_id in field_ids}
