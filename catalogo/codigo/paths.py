@@ -16,6 +16,8 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
 CATALOG_DIR = os.path.join("catalogo")
 LOGS_DIR = os.path.join("catalogo", "logs")
 DATOS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos")
+DEFAULT_CATALOG_PATH = os.path.join(
+    PROJECT_DIR, "catalogo", "datos", "data.json")
 DUMPS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "dumps")
 EXCELS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "ied")
 SERIES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "series")
