@@ -1,6 +1,6 @@
 .PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
 
-all: extraction transformation
+all: extraction transformation load
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report catalogo/datos/series/ catalogo/datos/dumps/
 # transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
