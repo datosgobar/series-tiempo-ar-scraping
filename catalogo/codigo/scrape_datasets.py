@@ -474,6 +474,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
     all_report_distributions = []
     msg = "Archivo {}: {} ({})"
     for ied_xlsx_path in ied_xlsx_paths:
+        print(ied_xlsx_path)
 
         try:
             report_datasets, report_distributions = scrape_file(

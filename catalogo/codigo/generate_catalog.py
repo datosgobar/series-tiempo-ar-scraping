@@ -71,7 +71,7 @@ def write_json_catalog(catalog, catalog_json_path):
 
 def validate_and_filter(catalog):
     """Valida y filtra un catálogo en data.json."""
-    dj = DataJson("catalog.json", SCHEMAS_DIR)
+    dj = DataJson(schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
 
     # valida todo el catálogo para saber si está ok
     global_validation = dj.is_valid_catalog(catalog)
