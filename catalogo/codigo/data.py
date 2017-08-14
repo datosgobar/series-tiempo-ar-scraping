@@ -25,8 +25,6 @@ from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
-from scrape_datasets import get_field_metadata, get_distribution_metadata
-from scrape_datasets import get_dataset_metadata
 from scrape_datasets import find_distribution_identifier
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -53,7 +51,7 @@ def get_time_series_data(
     if isinstance(field_ids, list):
         field_ids = {field_id: None for field_id in field_ids}
 
-    catalog = readers.read_catalog(catalog_path)
+    catalog = pydatajson.DataJson(catalog_path)
 
     rows = []
     for field_id in field_ids:
@@ -64,12 +62,10 @@ def get_time_series_data(
         dataset_identifier = distribution_identifier.split(".")[0]
 
         # tomo la metadata de cada entidad
-        field_metadata = get_field_metadata(
-            catalog, distribution_identifier, field_id
-        )
-        distribution_metadata = get_distribution_metadata(
-            catalog, distribution_identifier)
-        dataset_metadata = get_dataset_metadata(catalog, dataset_identifier)
+        field_metadata = catalog.get_field(field_id)
+        distribution_metadata = catalog.get_distribution(
+            distribution_identifier)
+        dataset_metadata = catalog.get_dataset(dataset_identifier)
 
         time_index_freq = filter(
             lambda x: x.get("specialType") == "time_index",
@@ -114,7 +110,7 @@ def get_time_series_data(
 
 def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH,
                        datasets_dir=DATASETS_DIR):
-    catalog = readers.read_catalog(catalog)
+    catalog = pydatajson.DataJson(catalog)
 
     if not isinstance(field_ids, list):
         if isinstance(field_ids, dict):
@@ -151,7 +147,7 @@ def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH,
 
 
 def get_time_series_params(field_ids, catalog=DEFAULT_CATALOG_PATH):
-    catalog = readers.read_catalog(catalog)
+    catalog = pydatajson.DataJson(catalog)
 
     # busca los ids de dataset y distribucion de la serie
     series_params = {}
@@ -246,12 +242,11 @@ def get_time_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
 
 
 def generate_api_metadata(catalog, field_id, override_metadata=None):
-    field_meta = get_field_metadata(catalog, field_id=field_id)
+    field_meta = catalog.get_field(field_id=field_id)
     distribution_identifier = find_distribution_identifier(catalog, field_id)
     dataset_identifier = distribution_identifier.split(".")[0]
 
-    distrib_meta = get_distribution_metadata(catalog, distribution_identifier,
-                                             dataset_identifier)
+    distrib_meta = catalog.get_distribution(distribution_identifier)
 
     frequency = None
     for field in distrib_meta["field"]:

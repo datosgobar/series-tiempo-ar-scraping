@@ -65,38 +65,6 @@ XLSERIES_PARAMS = {
 }
 
 
-def get_dataset_metadata(catalog, dataset_identifier):
-    datasets = filter(lambda x: x.get("identifier") == dataset_identifier,
-                      catalog["dataset"])
-
-    if len(datasets) > 1:
-        raise ce.DatasetIdRepetitionError(dataset_identifier, datasets)
-    elif len(datasets) == 0:
-        return None
-    else:
-        return datasets[0]
-
-
-def get_distribution_metadata(catalog, distribution_identifier,
-                              dataset_identifier=None):
-
-    dataset_identifier = (dataset_identifier or
-                          distribution_identifier.split(".")[0])
-    dataset = get_dataset_metadata(catalog, dataset_identifier)
-
-    distributions = filter(
-        lambda x: x.get("identifier") == distribution_identifier,
-        dataset["distribution"])
-
-    if len(distributions) > 1:
-        raise ce.DistributionIdRepetitionError(
-            distribution_identifier, distributions)
-    elif len(distributions) < 1:
-        raise ce.DistributionIdNonExistentError(distribution_identifier)
-
-    return distributions[0]
-
-
 def find_distribution_identifier(catalog, field_id):
 
     for dataset in catalog["dataset"]:
@@ -107,43 +75,6 @@ def find_distribution_identifier(catalog, field_id):
                         return distribution["identifier"]
 
     raise Exception("No se puedo encontrar la serie {}".format(field_id))
-
-
-def get_field_metadata(catalog, distribution_identifier=None, field_id=None,
-                       field_title=None, dataset_identifier=None):
-
-    if not distribution_identifier:
-        msg = "Se necesita id del campo si no se provee id de la distribucion"
-        assert field_id, msg
-        distribution_identifier = find_distribution_identifier(
-            catalog, field_id)
-
-    distribution = get_distribution_metadata(catalog, distribution_identifier,
-                                             dataset_identifier)
-
-    assert field_id or field_title, "Se necesita el titulo o id del campo."
-
-    if field_id:
-        fields = filter(lambda x: x.get("id") == field_id,
-                        distribution["field"])
-
-        if len(fields) > 1:
-            raise ce.FieldIdRepetitionError(field_id, fields)
-        elif len(fields) < 1:
-            raise ce.FieldIdNonExistentError(field_id)
-
-    else:
-        fields = filter(lambda x: x.get("title") == field_title,
-                        distribution["field"])
-        msg = "Hay mas de 1 field con titulo {}: {}".format(field_title,
-                                                            fields)
-
-        if len(fields) > 1:
-            raise ce.FieldTitleRepetitionError(field_title, fields)
-        elif len(fields) < 1:
-            raise ce.FieldTitleNonExistentError(field_title)
-
-    return fields[0]
 
 
 def _convert_frequency(freq_iso8601):
@@ -184,8 +115,8 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
                                 df_fields.field_dataStartCell)
 
     # frecuencia de las series
-    field = get_field_metadata(catalog, distribution_identifier,
-                               field_title="indice_tiempo")
+    field = catalog.get_field(distribution_identifier=distribution_identifier,
+                              title="indice_tiempo")
     params["frequency"] = _convert_frequency(field["specialTypeDetail"])
 
     # coordenadas del header del indice de tiempo
@@ -224,12 +155,8 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
 
     distribution_params = gen_distribution_params(
         etl_params, catalog, distribution_identifier)
-    distrib_meta = get_distribution_metadata(
-        catalog, distribution_identifier
-    )
-    dataset_meta = get_dataset_metadata(
-        catalog, distribution_identifier.split(".")[0]
-    )
+    distrib_meta = catalog.get_distribution(distribution_identifier)
+    dataset_meta = catalog.get_dataset(distribution_identifier.split(".")[0])
 
     df = scrape_dataframe(xl, **distribution_params)
 
@@ -366,7 +293,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
         "distributions_error": [],
     }
 
-    dataset_meta = get_dataset_metadata(catalog, dataset_identifier)
+    dataset_meta = catalog.get_dataset(dataset_identifier)
 
     if dataset_meta:
         dataset_dir = os.path.join(datasets_dir, dataset_identifier)
@@ -529,7 +456,7 @@ def generate_summary_indicators(report_files, report_datasets,
 def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
          replace=False, debug_mode=False):
 
-    catalog = pydatajson.readers.read_catalog(catalog_json_path)
+    catalog = pydatajson.DataJson(catalog_json_path)
 
     etl_params = pd.read_csv(etl_params_path,
                              dtype={"distribution_identifier": "str"})
