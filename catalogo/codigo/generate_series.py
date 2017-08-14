@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 def main(catalog_json_path, series_params_path, datasets_dir, series_dir):
 
-    catalog = pydatajson.readers.read_catalog(catalog_json_path)
+    catalog = pydatajson.DataJson(catalog_json_path)
 
     with open(series_params_path, "r") as f:
         series_params = json.load(f, encoding='utf-8')

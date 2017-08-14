@@ -242,7 +242,7 @@ def get_time_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
 
 
 def generate_api_metadata(catalog, field_id, override_metadata=None):
-    field_meta = catalog.get_field(field_id=field_id)
+    field_meta = catalog.get_field(field_id)
     distribution_identifier = find_distribution_identifier(catalog, field_id)
     dataset_identifier = distribution_identifier.split(".")[0]
 
