@@ -91,17 +91,17 @@ catalogo/datos/dumps/: catalogo/datos/data.json catalogo/datos/dumps_params.json
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_dumps.py $^ catalogo/datos/datasets/ "$@"
 
 # load
-update_catalog: catalogo/datos/data.json
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_catalog.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
-
-update_datasets: catalogo/datos/datasets/
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_datasets.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
-
 update_series: catalogo/datos/series/
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_series.py "$<" "catalogo/codigo/config/config_webdav.yaml" "catalogo/datos/series_params.json"
 
 update_dumps: catalogo/datos/dumps/
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_dumps.py "$<" "catalogo/codigo/config/config_dumps.yaml"
+
+update_catalog: catalogo/datos/data.json
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_catalog.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
+
+update_datasets: catalogo/datos/datasets/
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_datasets.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
 
 # clean
 clean:
