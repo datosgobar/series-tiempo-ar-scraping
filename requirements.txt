@@ -16,3 +16,4 @@ psycopg2
 bs4
 xlsxwriter
 sqlalchemy
+easywebdav

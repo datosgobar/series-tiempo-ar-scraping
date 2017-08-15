@@ -12,10 +12,14 @@ import sys
 import arrow
 import pydatajson
 import json
+import zipfile
+import datetime
+import pandas as pd
 
 from helpers import get_logger
-from data import get_time_series_data
-from paths import CATALOG_PATH, DUMPS_PARAMS_PATH, DATASETS_DIR, DUMPS_DIR
+from data import get_time_series_data, generate_dump
+from paths import CATALOG_PATH, DUMPS_PARAMS_PATH
+from paths import DATASETS_DIR, DUMPS_DIR
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -26,14 +30,39 @@ sys.path.insert(0, os.path.abspath(".."))
 # distribution_title
 # dataset_identifier
 
+def print_info(archive_name):
+    zf = zipfile.ZipFile(archive_name)
+    for info in zf.infolist():
+        print(info.filename)
+        print('\tComment:\t', info.comment)
+        print('\tModified:\t', datetime.datetime(*info.date_time))
+        print('\tSystem:\t\t', info.create_system, '(0 = Windows, 3 = Unix)')
+        print('\tZIP version:\t', info.create_version)
+        print('\tCompressed:\t', info.compress_size, 'bytes')
+        print('\tUncompressed:\t', info.file_size, 'bytes')
+
+
+def compress_file(from_path, to_path):
+    print("Comprimiendo {} en {}".format(from_path, to_path))
+    zf = zipfile.ZipFile(to_path, 'w', zipfile.ZIP_DEFLATED)
+    try:
+        zf.write(from_path)
+    finally:
+        zf.close()
+
+    print_info(to_path)
+
+
 def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
          datasets_dir=DATASETS_DIR, dumps_dir=DUMPS_DIR):
     logger = get_logger(__name__)
 
+    # genera dumps específicos y parciales de la base para proyectos concretos
     with open(dumps_params_path, "r") as f:
         dumps_params = json.load(f, encoding='utf-8')
 
     for dump_file_name, dump_params in dumps_params.iteritems():
+        print("Generando dump específico {}".format(dump_file_name))
         dump_path = os.path.join(dumps_dir, dump_file_name)
 
         # genera un dump de series de tiempo
@@ -46,6 +75,32 @@ def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
             unicode(len(df.field_id.unique())).ljust(3),
             unicode(len(df)).ljust(6)
         ))
+
+    # genera dumps completos de la base en distintos formatos
+    dump_path = os.path.join(DUMPS_DIR, "series-tiempo.{}")
+    print("Generando dump completo en DataFrame.")
+    df = generate_dump()
+
+    # CSV
+    print("Generando dump completo en CSV.")
+    path = dump_path.format("csv")
+    df.to_csv(path, encoding="utf-8", sep=str(","), index=False)
+    print("{}MB".format(os.path.getsize(path) / 1000000))
+    zip_path = os.path.join(os.path.dirname(path), "series-tiempo-csv.zip")
+    compress_file(path, zip_path)
+    print("{}MB".format(os.path.getsize(zip_path) / 1000000))
+
+    # EXCEL
+    print("Generando dump completo en XLSX.")
+    path = dump_path.format("xlsx")
+    writer = pd.ExcelWriter(path, engine='xlsxwriter')
+    df.to_excel(writer, "data", merge_cells=False,
+                encoding="utf-8", index=False)
+    writer.save()
+    print("{}MB".format(os.path.getsize(path) / 1000000))
+    zip_path = os.path.join(os.path.dirname(path), "series-tiempo-xlsx.zip")
+    compress_file(path, zip_path)
+    print("{}MB".format(os.path.getsize(zip_path) / 1000000))
 
 
 if __name__ == '__main__':

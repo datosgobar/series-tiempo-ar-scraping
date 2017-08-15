@@ -11,6 +11,7 @@ from __future__ import with_statement
 import os
 import sys
 import pandas as pd
+import numpy as np
 import arrow
 from openpyxl import load_workbook
 import logging
@@ -29,7 +30,7 @@ from collections import OrderedDict
 from helpers import row_from_cell_coord
 import custom_exceptions as ce
 from scrape_datasets import find_distribution_identifier
-from paths import DATASETS_DIR, DEFAULT_CATALOG_PATH, SERIES_DIR
+from paths import DATASETS_DIR, CATALOG_PATH, SERIES_DIR
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -38,7 +39,7 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 
 
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
-                  datasets_dir=DATASETS_DIR, catalog=DEFAULT_CATALOG_PATH,
+                  datasets_dir=DATASETS_DIR, catalog=CATALOG_PATH,
                   index_col="indice_tiempo"):
     catalog = readers.read_catalog(catalog)
 
@@ -103,13 +104,16 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                         rows_dump.append(row_dump)
 
     df = pd.DataFrame(rows_dump)
+    df['valor'] = df['valor'].convert_objects(convert_numeric=True)
+    df['indice_tiempo'] = df[
+        'indice_tiempo'].convert_objects(convert_dates=True)
 
     return df
 
 
 def get_time_series_data(
         field_ids,
-        catalog_path=DEFAULT_CATALOG_PATH,
+        catalog_path=CATALOG_PATH,
         export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv",
         datasets_dir=DATASETS_DIR, logger=None
 ):
@@ -174,7 +178,7 @@ def get_time_series_data(
     return df
 
 
-def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH,
+def get_time_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
                        datasets_dir=DATASETS_DIR):
     catalog = pydatajson.DataJson(catalog)
 
@@ -212,7 +216,7 @@ def get_time_series_df(field_ids, use_id=False, catalog=DEFAULT_CATALOG_PATH,
     return pd.concat(time_series, axis=1)
 
 
-def get_time_series_params(field_ids, catalog=DEFAULT_CATALOG_PATH):
+def get_time_series_params(field_ids, catalog=CATALOG_PATH):
     catalog = pydatajson.DataJson(catalog)
 
     # busca los ids de dataset y distribucion de la serie
