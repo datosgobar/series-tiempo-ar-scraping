@@ -88,17 +88,15 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                         row_dump["serie_titulo"] = field_title
                         row_dump["serie_unidades"] = fields[
                             field_title].get("units")
-                        row_dump["serie_unidades"] = fields[
-                            field_title].get("units")
                         row_dump["serie_descripcion"] = fields[
                             field_title]["description"]
-                        row_dump["dataset_titulo"] = dataset["title"]
-                        row_dump["dataset_descripcion"] = dataset[
+                        row_dump["distribucion_titulo"] = distribution["title"]
+                        row_dump["distribucion_descripcion"] = distribution[
                             "description"]
                         row_dump["dataset_responsable"] = dataset["source"]
                         row_dump["dataset_fuente"] = dataset["source"]
-                        row_dump["distribucion_titulo"] = distribution["title"]
-                        row_dump["distribucion_descripcion"] = distribution[
+                        row_dump["dataset_titulo"] = dataset["title"]
+                        row_dump["dataset_descripcion"] = dataset[
                             "description"]
 
                         rows_dump.append(row_dump)
@@ -106,7 +104,7 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
     df = pd.DataFrame(rows_dump)
     df['valor'] = df['valor'].convert_objects(convert_numeric=True)
     df['distribucion_indice_tiempo'] = df[
-        'distribucion_indice_tiempo'].convert_objects(convert_dates=True)
+        'distribucion_indice_tiempo'].astype('datetime64[ns]')
 
     return df
 

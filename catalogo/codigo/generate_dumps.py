@@ -53,6 +53,26 @@ def compress_file(from_path, to_path):
     print_info(to_path)
 
 
+def generate_series_summary(df):
+    drop_cols = ["distribucion_indice_tiempo", "valor"]
+    index_cols = ["dataset_id", "distribucion_id", "serie_id"]
+    series_cols = df.columns.drop(drop_cols)
+    series_group = df.groupby(index_cols)
+
+    df_series = df.drop(
+        drop_cols, axis=1).drop_duplicates().set_index(index_cols)
+
+    # indicadores resumen sobre las series
+    df_series["distribucion_indice_inicio"] = series_group[
+        "distribucion_indice_tiempo"].min()
+    df_series["distribucion_indice_final"] = series_group[
+        "distribucion_indice_tiempo"].max()
+    df_series["valor_ultimo"] = series_group.apply(
+        lambda x: x.loc[x.distribucion_indice_tiempo.argmax(), "valor"])
+
+    return df_series
+
+
 def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
          datasets_dir=DATASETS_DIR, dumps_dir=DUMPS_DIR):
     logger = get_logger(__name__)
@@ -80,6 +100,11 @@ def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
     dump_path = os.path.join(DUMPS_DIR, "series-tiempo.{}")
     print("Generando dump completo en DataFrame.")
     df = generate_dump()
+    df_series = generate_series_summary(df)
+    resumen_path = os.path.join(
+        os.path.dirname(dump_path), "series-tiempo-resumen.xlsx")
+    df_series.to_excel(resumen_path, "resumen",
+                       index=True, index_label=True, merge_cells=False)
 
     # CSV
     print("Generando dump completo en CSV.")
