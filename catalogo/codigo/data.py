@@ -105,8 +105,8 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
 
     df = pd.DataFrame(rows_dump)
     df['valor'] = df['valor'].convert_objects(convert_numeric=True)
-    df['indice_tiempo'] = df[
-        'indice_tiempo'].convert_objects(convert_dates=True)
+    df['distribucion_indice_tiempo'] = df[
+        'distribucion_indice_tiempo'].convert_objects(convert_dates=True)
 
     return df
 
