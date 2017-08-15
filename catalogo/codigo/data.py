@@ -81,8 +81,8 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                         row_dump["distribucion_id"] = distribution[
                             "identifier"]
                         row_dump["serie_id"] = fields[field_title]["id"]
-                        row_dump["indice_tiempo"] = row[index_col]
-                        row_dump["indice_frecuencia"] = fields[
+                        row_dump["distribucion_indice_tiempo"] = row[index_col]
+                        row_dump["distribucion_indice_frecuencia"] = fields[
                             index_col]["specialTypeDetail"]
                         row_dump["valor"] = value
                         row_dump["serie_titulo"] = field_title
