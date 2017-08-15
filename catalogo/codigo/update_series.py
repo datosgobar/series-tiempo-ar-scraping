@@ -57,8 +57,11 @@ def main(series_dir, config_webdav_path, series_params_path=None):
     logger = get_logger(__name__)
 
     webdav = get_webdav_connection(config_webdav_path)
-    upload_series(webdav, series_dir, logger=logger,
-                  series_params_path=series_params_path)
+    try:
+        upload_series(webdav, series_dir, logger=logger,
+                      series_params_path=series_params_path)
+    except Exception as e:
+        print(e)
 
 
 if __name__ == '__main__':

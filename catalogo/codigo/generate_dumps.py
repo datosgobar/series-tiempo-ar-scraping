@@ -15,6 +15,7 @@ import json
 import zipfile
 import datetime
 import pandas as pd
+from sqlalchemy import create_engine
 
 from helpers import get_logger
 from data import get_time_series_data, generate_dump
@@ -124,6 +125,16 @@ def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
     writer.save()
     print("{}MB".format(os.path.getsize(path) / 1000000))
     zip_path = os.path.join(os.path.dirname(path), "series-tiempo-xlsx.zip")
+    compress_file(path, zip_path)
+    print("{}MB".format(os.path.getsize(zip_path) / 1000000))
+
+    # SQLITE
+    print("Generando dump completo en SQLITE.")
+    path = dump_path.format("db")
+    engine = create_engine('sqlite:///{}'.format(path), echo=True)
+    df.to_sql("series_tiempo", engine, index=False, if_exists="replace")
+    print("{}MB".format(os.path.getsize(path) / 1000000))
+    zip_path = os.path.join(os.path.dirname(path), "series-tiempo-db.zip")
     compress_file(path, zip_path)
     print("{}MB".format(os.path.getsize(zip_path) / 1000000))
 

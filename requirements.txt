@@ -17,3 +17,4 @@ bs4
 xlsxwriter
 sqlalchemy
 easywebdav
+pyodbc

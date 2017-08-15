@@ -42,7 +42,8 @@ def upload_dumps(webdav, dumps_dir, logger=None, dumps_params_path=None,
     for index, dump_path in enumerate(dumps_paths):
 
         if ("tablero-ministerial-ied.csv" not in dump_path and
-                "series-tiempo.csv" not in dump_path):
+                "series-tiempo.csv" not in dump_path and
+                "series-tiempo.db" not in dump_path):
             filename = os.path.basename(dump_path)
             dump_remote_path = os.path.join(remote_dir, filename)
 
@@ -60,8 +61,11 @@ def main(dumps_dir, config_ind_path, config_webdav_path,
     logger = get_logger(__name__)
 
     webdav = get_webdav_connection(config_webdav_path)
-    upload_dumps(webdav, dumps_dir, logger=logger,
-                 dumps_params_path=dumps_params_path)
+    try:
+        upload_dumps(webdav, dumps_dir, logger=logger,
+                     dumps_params_path=dumps_params_path)
+    except Exception as e:
+        print(e)
 
 
 if __name__ == '__main__':
