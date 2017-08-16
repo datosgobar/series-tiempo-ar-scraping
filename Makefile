@@ -1,6 +1,7 @@
 .PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
 
 all: extraction transformation load
+et: extraction transformation
 extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
 transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report catalogo/datos/series/ catalogo/datos/dumps/
 # transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
@@ -98,7 +99,7 @@ update_dumps: catalogo/datos/dumps/
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_dumps.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
 
 update_catalog: catalogo/datos/data.json
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_catalog.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
+	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_catalog.py "$<" "catalogo/codigo/config/config_ind.yaml"
 
 update_datasets: catalogo/datos/datasets/
 	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_datasets.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
