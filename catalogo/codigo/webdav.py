@@ -28,14 +28,14 @@ def get_webdav_connection(config_webdav_path):
     with open(config_webdav_path, 'r') as f:
         params = yaml.load(f)["webdav"]
 
+    pem_path = os.path.join(os.path.dirname(config_webdav_path), params["pem"])
+    print(pem_path)
     webdav = easywebdav.connect(
-        params["host"], username=params["user"],
-        password=params["pass"], protocol='https',
+        params["host"],
         port=params["port"],
-        verify_ssl=os.path.join(
-            os.path.dirname(config_webdav_path),
-            params["pem"]
-        )
+        protocol='https', verify_ssl=pem_path,
+        # protocol='http',
+        username=params["user"], password=params["pass"]
     )
 
     return webdav

@@ -18,3 +18,4 @@ xlsxwriter
 sqlalchemy
 easywebdav
 pyodbc
+pysftp
