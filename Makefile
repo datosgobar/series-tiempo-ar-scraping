@@ -8,6 +8,8 @@ transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transform
 load: update_series update_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
+server:
+	cd catalogo/datos && python -m SimpleHTTPServer 8080
 
 # setup
 install_anaconda:
