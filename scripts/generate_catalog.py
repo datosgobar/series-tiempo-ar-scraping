@@ -17,16 +17,11 @@ from pydatajson import DataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
 
-from helpers import get_logger
+from helpers import get_logger, ensure_dir_exists
+from paths import SCHEMAS_DIR, REPORTES_DIR
 
 sys.path.insert(0, os.path.abspath(".."))
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))))
-LOGS_DIR = os.path.join(PROJECT_DIR, "catalogo", "logs")
-SCHEMAS_DIR = os.path.join(PROJECT_DIR, "catalogo", "codigo", "schemas")
-DATOS_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos")
-REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
@@ -62,11 +57,15 @@ def clean_catalog(catalog):
 def write_json_catalog(catalog, catalog_json_path):
     """Escribe catálogo en JSON y guarda una copia con fecha."""
     dir_datos = os.path.dirname(catalog_json_path)
+    catalog_backup_json_path = os.path.join(
+        dir_datos, "backup", "catalog", "sspm", "data-{}.json".format(TODAY))
+
+    # crea los directorios necesarios
+    ensure_dir_exists(os.path.dirname(catalog_json_path))
+    ensure_dir_exists(os.path.dirname(catalog_backup_json_path))
 
     writers.write_json_catalog(catalog, catalog_json_path)
-    writers.write_json_catalog(catalog, os.path.join(
-        dir_datos, "catalogos", "data-{}.json".format(TODAY))
-    )
+    writers.write_json_catalog(catalog, catalog_backup_json_path)
 
 
 def validate_and_filter(catalog):

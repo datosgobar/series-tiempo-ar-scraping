@@ -1,20 +1,33 @@
-.PHONY: all clean download_catalog download_excels update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
+.PHONY: all clean download_catalog download_sources update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
 
 all: extraction transformation load
 et: extraction transformation
-extraction: download_catalog catalogo/datos/catalogo-sspm.xlsx catalogo/datos/excels_urls.txt download_excels
-transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report catalogo/datos/series/ catalogo/datos/dumps/
-# transformation: catalogo/datos/data.json catalogo/datos/datasets/ send_transformation_report
+extraction: download_catalog data/input/catalog/sspm/catalog.xlsx data/params/sources_urls.txt download_sources
+transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dumps/
+# transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
 load: update_series update_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
-server:
-	cd catalogo/datos && python -m SimpleHTTPServer 8080
+start_python_server:
+	cd data/output && python -m SimpleHTTPServer 8080
 
 # setup
 install_anaconda:
 	wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
 	bash Miniconda2-latest-Linux-x86_64.sh
+
+install_nginx:
+	sudo service apache2 stop
+	sudo apt-get update && sudo apt-get install nginx
+	sudo ufw allow 'Nginx HTTP'
+	sudo service nginx restart
+
+start_nginx:
+	sudo service nginx restart
+	sudo nginx -p . -c scripts/config/nginx.conf
+
+stop_nginx:
+	sudo systemctl stop nginx
 
 clone_repo:
 	git clone https://github.com/datosgobar/series-tiempo.git
@@ -33,17 +46,20 @@ update_environment: create_dir
 	`dirname $(SERIES_TIEMPO_PYTHON)`/pip install -r requirements.txt --upgrade
 
 create_dir:
-	mkdir -p catalogo
-	mkdir -p catalogo/logs
-	mkdir -p catalogo/datos
-	mkdir -p catalogo/datos/dumps
-	mkdir -p catalogo/datos/ied
-	mkdir -p catalogo/datos/series
-	mkdir -p catalogo/datos/datasets
-	mkdir -p catalogo/datos/datasets_test
-	mkdir -p catalogo/datos/catalogos
-	mkdir -p catalogo/datos/reportes
-	mkdir -p catalogo/codigo
+	mkdir -p logs
+	mkdir -p docs
+	mkdir -p scripts
+	mkdir -p data
+	mkdir -p data/input
+	mkdir -p data/input/catalog
+	mkdir -p data/output
+	mkdir -p data/output/catalog
+	mkdir -p data/output/series
+	mkdir -p data/output/dump
+	mkdir -p data/params
+	mkdir -p data/reports
+	mkdir -p data/backup
+	mkdir -p data/backup/catalog
 
 install_cron: cron_jobs
 	@echo "LANG=en_US.UTF-8" >> .cronfile
@@ -59,67 +75,64 @@ install_cron: cron_jobs
 	touch cron_jobs
 
 # extraction
-download_catalog: catalogo/datos/catalogo_sspm_url.txt
-	wget -N -i catalogo/datos/catalogo_sspm_url.txt --directory-prefix=catalogo/datos --no-check-certificate -O catalogo/datos/catalogo-sspm-downloaded.xlsx
+download_catalog: data/params/catalog_url.txt
+	wget -N -i "$<" --directory-prefix=data --no-check-certificate -O data/input/catalog/sspm/catalog.xlsx
 
-catalogo/datos/catalogo-sspm.xlsx: catalogo/datos/catalogo-sspm-downloaded.xlsx
-	[ -n $(`cmp "$<" "$@"`) ] && cp "$<" "$@"
+data/params/sources_urls.txt: data/input/catalog/sspm/catalog.xlsx
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_sources_urls.py "$<" "$@"
 
-catalogo/datos/excels_urls.txt: catalogo/datos/catalogo-sspm.xlsx
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_excels_urls.py "$<" "$@"
-
-download_excels:
-	wget -N -i catalogo/datos/excels_urls.txt --directory-prefix=catalogo/datos/ied/
+download_sources:
+	wget -N -i data/params/sources_urls.txt --directory-prefix=data/input/catalog/sspm/sources
 
 # transformation
-catalogo/datos/data.json: catalogo/datos/catalogo-sspm.xlsx
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@"
-	# $(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_catalog.py "$<" "$@" > catalogo/datos/generate-catalog-errors.txt
+data/output/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
+	# $(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@" > data/generate-catalog-errors.txt
 
 # TODO: revisar como se usan adecuadamenten los directorios
-catalogo/datos/datasets/: catalogo/datos/data.json catalogo/datos/etl_params.csv
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" replace
-	# $(SERIES_TIEMPO_PYTHON) catalogo/codigo/scrape_datasets.py $^ catalogo/datos/ied/ "$@" skip
+data/output/catalog/sspm/dataset/: data/output/catalog/sspm/data.json data/params/etl_params.csv
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/sspm/sources/ "$@" replace
+	# $(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/sspm/sources/ "$@" skip
 
-catalogo/datos/etl_params.csv: catalogo/datos/catalogo-sspm.xlsx
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_etl_params.py "$<" "$@"
+data/params/etl_params.csv: data/input/catalog/sspm/catalog.xlsx
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_etl_params.py "$<" "$@"
 
 send_transformation_report:
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/send_email.py catalogo/datos/reportes/mail_subject.txt catalogo/datos/reportes/mail_message.txt
+	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reportes/mail_subject.txt data/reportes/mail_message.txt
 
-catalogo/datos/series/: catalogo/datos/data.json catalogo/datos/series_params.json
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_series.py $^ catalogo/datos/datasets/ "$@"
+data/output/series/: data/output/catalog/sspm/data.json data/params/series_params.json
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/catalog/sspm/dataset/ "$@"
 
-catalogo/datos/dumps/: catalogo/datos/data.json catalogo/datos/dumps_params.json
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/generate_dumps.py $^ catalogo/datos/datasets/ "$@"
+data/output/dump/: data/output/catalog/sspm/data.json data/params/dumps_params.json
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py $^ data/output/catalog/sspm/dataset/ "$@"
 
 # load
-update_series: catalogo/datos/series/
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_series.py "$<" "catalogo/codigo/config/config_webdav.yaml" "catalogo/datos/series_params.json"
+update_series: data/output/series/
+	$(SERIES_TIEMPO_PYTHON) scripts/update_series.py "$<" "scripts/config/config_webdav.yaml" "data/params/series_params.json"
 
-update_dumps: catalogo/datos/dumps/
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_dumps.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
+update_dumps: data/output/dumps/
+	$(SERIES_TIEMPO_PYTHON) scripts/update_dumps.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
 
-update_catalog: catalogo/datos/data.json
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_catalog.py "$<" "catalogo/codigo/config/config_ind.yaml"
+update_catalog: data/output/catalog/sspm/data.json
+	$(SERIES_TIEMPO_PYTHON) scripts/update_catalog.py "$<" "scripts/config/config_ind.yaml"
 
-update_datasets: catalogo/datos/datasets/
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/update_datasets.py "$<" "catalogo/codigo/config/config_ind.yaml" "catalogo/codigo/config/config_webdav.yaml"
+update_datasets: data/output/catalog/sspm/dataset/
+	$(SERIES_TIEMPO_PYTHON) scripts/update_datasets.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
 
 # clean
 clean:
-	rm -f catalogo/datos/catalogo-sspm-downloaded.xlsx
-	rm -f catalogo/datos/catalogo-sspm.xlsx
-	rm -f catalogo/datos/excels_urls.txt
-	rm -rf catalogo/datos/ied/
-	rm -f catalogo/datos/data.json
-	rm -f catalogo/datos/etl_params.csv
-	rm -rf catalogo/datos/datasets/
+	rm -f data/input/catalog/sspm/catalog-downloaded.xlsx
+	rm -f data/input/catalog/sspm/catalog.xlsx
+	rm -f data/params/sources_urls.txt
+	rm -rf data/input/catalog/sspm/sources/
+	rm -f data/output/catalog/sspm/data.json
+	rm -f data/params/etl_params.csv
+	rm -rf data/output/catalog/sspm/dataset/
 	make create_dir
 
 # test
-profiling_test: catalogo/datos/data.json catalogo/datos/etl_params_test.csv
-	$(SERIES_TIEMPO_PYTHON) catalogo/codigo/profiling.py $^ catalogo/datos/ied/ catalogo/datos/datasets_test/
+profiling_test: data/output/catalog/sspm/data.json data/etl_params_test.csv
+	$(SERIES_TIEMPO_PYTHON) scripts/profiling.py $^ data/input/catalog/sspm/sources/ data/datasets_test/
 
 test_crontab:
 	echo $(SERIES_TIEMPO_PYTHON)

@@ -13,10 +13,8 @@ import sys
 import pandas as pd
 
 from helpers import find_ws_name
+from paths import REPORTES_DIR
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))))
-REPORTES_DIR = os.path.join(PROJECT_DIR, "catalogo", "datos", "reportes")
 PARAMS_FIELDS = [
     "distribution_iedFileURL", "distribution_iedFileSheet",
     "distribution_identifier", "distribution_title", "field_title", "field_id",
@@ -67,12 +65,11 @@ def get_params_from_model(catalog_xlsx_path,
     return df_etl_params
 
 
-def main(catalog_xlsx_path, excels_urls_path):
+def main(catalog_xlsx_path, etl_params_path):
 
     df_etl_params = get_params_from_model(catalog_xlsx_path)
     df_etl_params[PARAMS_FIELDS].to_csv(
-        "catalogo/datos/etl_params.csv",
-        encoding="utf8", index=False
+        etl_params_path, encoding="utf8", index=False
     )
 
 

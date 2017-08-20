@@ -12,6 +12,12 @@ import logging
 import logging.config
 
 
+def ensure_dir_exists(directory):
+    """Se asegura de que un directorio exista."""
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
 def get_ws_case_insensitive(wb, title):
     """Devuelve una hoja en un workbook sin importar mayúsculas/minúsculas."""
     return wb[find_ws_name(wb, title)]
