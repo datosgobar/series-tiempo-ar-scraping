@@ -570,8 +570,6 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
     print("Escribiendo nueva version de {}".format(catalog_json_path))
     write_json_catalog(catalog, catalog_json_path)
     print(message)
-    # hours = round((NOW - arrow.now()).total_seconds() / 60.0 / 60.0)
-    # print("Scraping completado en {} horas".format(hours))
 
 
 if __name__ == '__main__':
