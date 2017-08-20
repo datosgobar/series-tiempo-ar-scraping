@@ -38,6 +38,7 @@ def main(catalogs_dir, sources_urls_path):
 
     with open(sources_urls_path, "wb") as f:
         f.write("\n".join(urls_series))
+        f.write("\n")
 
 
 if __name__ == '__main__':

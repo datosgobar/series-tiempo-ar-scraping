@@ -138,12 +138,12 @@ update_datasets: data/output/catalog/sspm/dataset/
 
 # clean
 clean:
-	rm -f data/input/catalog/sspm/catalog.xlsx
+	rm -rf data/input/catalog/
+	rm -rf data/output/catalog/
+	rm -rf data/output/dump/
+	rm -rf data/output/series/
 	rm -f data/params/sources_urls.txt
-	rm -rf data/input/catalog/sspm/sources/
-	rm -f data/output/catalog/sspm/data.json
 	rm -f data/params/etl_params.csv
-	rm -rf data/output/catalog/sspm/dataset/
 	make create_dir
 
 # test
