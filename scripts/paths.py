@@ -18,6 +18,7 @@ DATOS_DIR = os.path.join(PROJECT_DIR, "data")
 DUMPS_DIR = os.path.join(DATOS_DIR, "output", "dump")
 CATALOG_PATH = os.path.join(
     DATOS_DIR, "output", "catalog", "sspm", "data.json")
+BACKUP_CATALOG_DIR = os.path.join(DATOS_DIR, "backup", "catalog")
 DUMPS_PARAMS_PATH = os.path.join(
     DATOS_DIR, "params", "dumps_params.json")
 SOURCES_DIR = os.path.join(DATOS_DIR, "catalog", "sspm", "source")

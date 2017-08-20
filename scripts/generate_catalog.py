@@ -18,7 +18,7 @@ import pydatajson.readers as readers
 import pydatajson.writers as writers
 
 from helpers import get_logger, ensure_dir_exists
-from paths import SCHEMAS_DIR, REPORTES_DIR
+from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -56,9 +56,8 @@ def clean_catalog(catalog):
 
 def write_json_catalog(catalog, catalog_json_path):
     """Escribe catálogo en JSON y guarda una copia con fecha."""
-    dir_datos = os.path.dirname(catalog_json_path)
     catalog_backup_json_path = os.path.join(
-        dir_datos, "backup", "catalog", "sspm", "data-{}.json".format(TODAY))
+        BACKUP_CATALOG_DIR, "sspm", "data-{}.json".format(TODAY))
 
     # crea los directorios necesarios
     ensure_dir_exists(os.path.dirname(catalog_json_path))

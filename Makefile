@@ -107,8 +107,8 @@ data/output/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
 	# $(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@" > data/generate-catalog-errors.txt
 
 # TODO: revisar como se usan adecuadamenten los directorios
-data/output/catalog/sspm/dataset/: data/output/catalog/sspm/data.json data/params/etl_params.csv
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/sspm/sources/ "$@" replace
+data/output/catalog/sspm/dataset/: data/output/catalog/sspm/data.json data/params/etl_params.csv data/input/catalog/sspm/sources/
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" replace
 	# $(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/sspm/sources/ "$@" skip
 
 data/params/etl_params.csv: data/input/catalog/sspm/catalog.xlsx

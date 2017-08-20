@@ -14,15 +14,15 @@ import arrow
 from openpyxl import load_workbook
 import logging
 from copy import deepcopy
-import pydatajson
 from pydatajson import DataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
+from pydatajson.helpers import title_to_name
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from dateutil.parser import parse as parse_time
 
-from helpers import row_from_cell_coord
+import helpers
 import custom_exceptions as ce
 from paths import LOGS_DIR, REPORTES_DIR
 
@@ -111,7 +111,7 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
     params["headers_value"] = list(df_fields.field_id)
 
     # fila donde empiezan los datos
-    params["data_starts"] = map(row_from_cell_coord,
+    params["data_starts"] = map(helpers.row_from_cell_coord,
                                 df_fields.field_dataStartCell)
 
     # frecuencia de las series
@@ -297,8 +297,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
 
     if dataset_meta:
         dataset_dir = os.path.join(datasets_dir, dataset_identifier)
-        if not os.path.isdir(dataset_dir):
-            os.mkdir(dataset_dir)
+        helpers.ensure_dir_exists(dataset_dir)
         res["dataset_status"] = "OK"
     else:
         res["dataset_status"] = "ERROR: metadata"
@@ -315,8 +314,12 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
     for distribution_identifier in distribution_ids:
         msg = "Distribución {}: {} ({})"
         try:
+            distrib_meta = catalog.get_distribution(distribution_identifier)
+            distribution_name = title_to_name(distrib_meta["title"])
             dist_path = os.path.join(
-                dataset_dir, "{}.csv".format(distribution_identifier))
+                dataset_dir, "distribution", distribution_identifier,
+                "download", "{}.csv".format(distribution_name)
+            )
 
             # chequea si ante la existencia del archivo hay que reemplazarlo o
             # saltearlo
@@ -330,6 +333,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
                 else:
                     distribution_complete = distribution
 
+                helpers.ensure_dir_exists(os.path.dirname(dist_path))
                 distribution_complete.to_csv(
                     dist_path, encoding="utf-8-sig",
                     index_label="indice_tiempo")
@@ -354,7 +358,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
 
 
 def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
-                replace=True):
+                replace=True, debug_mode=False):
     xl = XlSeries(ied_xlsx_path)
     ied_xlsx_filename = os.path.basename(ied_xlsx_path)
 
@@ -370,7 +374,7 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
     for dataset_identifier in dataset_ids:
         result = scrape_dataset(
             xl, etl_params, catalog, dataset_identifier, datasets_dir,
-            replace=replace
+            replace=replace, debug_mode=debug_mode
         )
 
         report_datasets.append({
@@ -456,7 +460,7 @@ def generate_summary_indicators(report_files, report_datasets,
 def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
          replace=False, debug_mode=False):
 
-    catalog = pydatajson.DataJson(catalog_json_path)
+    catalog = DataJson(catalog_json_path)
 
     etl_params = pd.read_csv(etl_params_path,
                              dtype={"distribution_identifier": "str"})
@@ -479,7 +483,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
         try:
             report_datasets, report_distributions = scrape_file(
                 ied_xlsx_path, etl_params, catalog, datasets_dir,
-                replace=replace)
+                replace=replace, debug_mode=debug_mode)
             all_report_datasets.append(report_datasets)
             all_report_distributions.append(report_distributions)
 
@@ -553,4 +557,4 @@ if __name__ == '__main__':
     if len(sys.argv) >= 6 and sys.argv[5]:
         replace = True if sys.argv[5] == "replace" else False
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-         replace=replace)
+         replace=replace, debug_mode=False)
