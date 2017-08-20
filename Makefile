@@ -82,11 +82,22 @@ download_catalog: data/params/catalog_url.txt
 		wget -N -O "data/input/catalog/$$catalog_id/catalog.xlsx" "$$url" --no-check-certificate ; \
 	done < "$<"
 
-data/params/sources_urls.txt: data/input/catalog/sspm/catalog.xlsx
+data/params/sources_urls.txt: data/input/catalog/
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_sources_urls.py "$<" "$@"
 
-download_sources:
-	wget -N -i data/params/sources_urls.txt --directory-prefix=data/input/catalog/sspm/sources
+define  validate_url
+  [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]
+endef
+
+download_sources: data/params/sources_urls.txt
+	# descarga las fuentes de cada catálogo
+	while read catalog_id url; do \
+		mkdir -p "data/input/catalog/$$catalog_id/sources" ; \
+		if $(call validate_url, "$$url"); then \
+			wget -N --directory-prefix="data/input/catalog/$$catalog_id/sources" "$$url" --no-check-certificate ; else \
+			echo "URL $$url NO EXISTE" ; \
+		fi ; \
+	done < "$<"
 
 # transformation
 data/output/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
