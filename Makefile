@@ -1,3 +1,5 @@
+SHELL = bash
+
 .PHONY: all clean download_catalog download_sources update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
 
 all: extraction transformation load
