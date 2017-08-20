@@ -2,7 +2,7 @@
 
 all: extraction transformation load
 et: extraction transformation
-extraction: download_catalog data/input/catalog/sspm/catalog.xlsx data/params/sources_urls.txt download_sources
+extraction: download_catalog data/params/sources_urls.txt download_sources
 transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dumps/
 # transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
 load: update_series update_dumps
@@ -136,7 +136,6 @@ update_datasets: data/output/catalog/sspm/dataset/
 
 # clean
 clean:
-	rm -f data/input/catalog/sspm/catalog-downloaded.xlsx
 	rm -f data/input/catalog/sspm/catalog.xlsx
 	rm -f data/params/sources_urls.txt
 	rm -rf data/input/catalog/sspm/sources/
