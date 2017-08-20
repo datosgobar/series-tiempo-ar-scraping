@@ -78,7 +78,7 @@ install_cron: cron_jobs
 download_catalog: data/params/catalog_url.txt
 	# descarga cada catalogo en una carpeta propia
 	while read catalog_id url; do \
-		mkdir -p data/input/catalog/$catalog_id/ ; \
+		mkdir -p "data/input/catalog/$$catalog_id/" ; \
 		wget -N -O "data/input/catalog/$$catalog_id/catalog.xlsx" "$$url" --no-check-certificate ; \
 	done < "$<"
 
