@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import with_statement
 import os
+import yaml
 import sys
 import pandas as pd
 import arrow
@@ -21,10 +22,12 @@ from pydatajson.helpers import title_to_name
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from dateutil.parser import parse as parse_time
+from urlparse import urljoin
 
 import helpers
 import custom_exceptions as ce
-from paths import LOGS_DIR, REPORTES_DIR
+from paths import LOGS_DIR, REPORTES_DIR, CONFIG_SERVER_PATH
+from generate_catalog import write_json_catalog
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -32,7 +35,7 @@ PRESERVE_WB_OBJ = False
 
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
-MINIMUM_VALUES = 3
+MINIMUM_VALUES = 2
 MAX_MISSING_PROPORTION = 0.95
 MIN_TEMPORAL_FRACTION = 10
 MAX_FIELD_TITLE_LEN = 60
@@ -284,8 +287,22 @@ def _assert_repeated_value(field_name, field_values, exception):
         raise exception(repeated_fields=field_dups)
 
 
+def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
+
+    with open(config_server_path, 'r') as f:
+        server_params = yaml.load(f)
+
+    base_url = server_params["host"]
+
+    return urljoin(
+        base_url,
+        os.path.join("catalog", dist_path.split("catalog/")[1])
+    )
+
+
 def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
-                   debug_mode=False, replace=True):
+                   debug_mode=False, replace=True,
+                   config_server_path=CONFIG_SERVER_PATH):
 
     res = {
         "dataset_status": None,
@@ -320,6 +337,8 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
                 dataset_dir, "distribution", distribution_identifier,
                 "download", "{}.csv".format(distribution_name)
             )
+            dist_url = get_distribution_url(dist_path, config_server_path)
+            distrib_meta["downloadURL"] = dist_url
 
             # chequea si ante la existencia del archivo hay que reemplazarlo o
             # saltearlo
@@ -548,6 +567,8 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
     with open(os.path.join(REPORTES_DIR, "mail_message.txt"), "wb") as f:
         f.write(message)
 
+    print("Escribiendo nueva version de {}".format(catalog_json_path))
+    write_json_catalog(catalog, catalog_json_path)
     print(message)
     # hours = round((NOW - arrow.now()).total_seconds() / 60.0 / 60.0)
     # print("Scraping completado en {} horas".format(hours))

@@ -29,3 +29,7 @@ CATALOGS_HISTORY_DIR = os.path.join(DATOS_DIR, "catalog", "sspm")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 CODIGO_DIR = os.path.join(PROJECT_DIR, "scripts")
 SCHEMAS_DIR = os.path.join(PROJECT_DIR, "scripts", "schemas")
+CONFIG_EMAIL_PATH = os.path.join(
+    PROJECT_DIR, "scripts", "config", "config_email.yaml")
+CONFIG_SERVER_PATH = os.path.join(
+    PROJECT_DIR, "scripts", "config", "config_server.yaml")

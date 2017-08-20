@@ -2,11 +2,12 @@ SHELL = bash
 
 .PHONY: all clean download_catalog download_sources update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
 
-all: extraction transformation load
+all: extraction transformation
+# all: extraction transformation load
 et: extraction transformation
 extraction: download_catalog data/params/sources_urls.txt download_sources
-transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dumps/
-# transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
+# transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dumps/
+transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
 load: update_series update_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 

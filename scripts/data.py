@@ -10,6 +10,7 @@ from __future__ import with_statement
 
 import os
 import sys
+import glob
 import pandas as pd
 import numpy as np
 import arrow
@@ -194,22 +195,22 @@ def get_time_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
     if use_id:
         time_series = []
         for field_id, serie_params in zip(field_ids, series_params):
-            # try:
-            time_series.append(
-                get_time_series(*serie_params, field_id=field_id,
-                                datasets_dir=datasets_dir)
-            )
-            # except Exception as e:
-            #     print(e)
+            try:
+                time_series.append(
+                    get_time_series(*serie_params, field_id=field_id,
+                                    datasets_dir=datasets_dir)
+                )
+            except Exception as e:
+                print(e)
     else:
         time_series = []
         for serie_params in series_params:
-            # try:
-            time_series.append(
-                get_time_series(*serie_params, datasets_dir=datasets_dir)
-            )
-            # except Exception as e:
-            #     print(e)
+            try:
+                time_series.append(
+                    get_time_series(*serie_params, datasets_dir=datasets_dir)
+                )
+            except Exception as e:
+                print(e)
 
     return pd.concat(time_series, axis=1)
 
@@ -243,8 +244,19 @@ def get_time_series(dataset_id, distribution_id, field_title, fmt="df",
                     datasets_dir=DATASETS_DIR, pct_change=None):
     """Devuelve un dataframe con una serie de tiempo."""
 
-    distribution_path = os.path.join(
-        datasets_dir, dataset_id, distribution_id + ".csv")
+    distribution_download_dir = os.path.join(
+        datasets_dir, dataset_id, "distribution", distribution_id, "download"
+    )
+    distribution_csv_files = glob.glob(
+        os.path.join(distribution_download_dir, "*.csv")
+    )
+
+    if len(distribution_csv_files) > 0:
+        distribution_path = distribution_csv_files[0]
+    else:
+        raise Exception(
+            "No hay archivos para la distribucion {} del dataset {}".format(
+                distribution_id, dataset_id))
 
     serie = pd.read_csv(distribution_path, index_col=time_index,
                         parse_dates=True)[field_title]
