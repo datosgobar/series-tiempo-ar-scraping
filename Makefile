@@ -76,7 +76,11 @@ install_cron: cron_jobs
 
 # extraction
 download_catalog: data/params/catalog_url.txt
-	wget -N -i "$<" --directory-prefix=data --no-check-certificate -O data/input/catalog/sspm/catalog.xlsx
+	# descarga cada catalogo en una carpeta propia
+	while read catalog_id url; do \
+		mkdir -p data/input/catalog/$catalog_id/ ; \
+		wget -N -O "data/input/catalog/$$catalog_id/catalog.xlsx" "$$url" --no-check-certificate ; \
+	done < "$<"
 
 data/params/sources_urls.txt: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_sources_urls.py "$<" "$@"
