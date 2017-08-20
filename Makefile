@@ -116,7 +116,7 @@ data/params/etl_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_etl_params.py "$<" "$@"
 
 send_transformation_report:
-	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reportes/mail_subject.txt data/reportes/mail_message.txt
+	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
 data/output/series/: data/output/catalog/sspm/data.json data/params/series_params.json
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/catalog/sspm/dataset/ "$@"
