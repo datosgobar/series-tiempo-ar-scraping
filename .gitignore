@@ -118,6 +118,7 @@ data/reports
 /data/params/*
 
 # Exceptions
+!scripts/config/mime.types
 !scripts/config/nginx.conf
 !scripts/config/*sample*
 !/data/params/*sample*

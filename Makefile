@@ -26,11 +26,10 @@ install_nginx:
 	sudo service nginx restart
 
 start_nginx:
-	sudo service nginx restart
 	sudo nginx -p . -c scripts/config/nginx.conf
 
 stop_nginx:
-	sudo systemctl stop nginx
+	sudo nginx -s stop
 
 clone_repo:
 	git clone https://github.com/datosgobar/series-tiempo.git
