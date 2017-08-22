@@ -94,7 +94,6 @@ excels_urls.txt
 ~$catalogo-sspm.xlsx
 actividad_ied.xlsx
 etl_params.csv
-data.json
 config_ind.yaml
 catalogo-sspm-downloaded.xlsx
 catalogo_sspm_url.txt
@@ -123,3 +122,4 @@ data/reports
 !scripts/config/*sample*
 !/data/params/*sample*
 
+catalogo
