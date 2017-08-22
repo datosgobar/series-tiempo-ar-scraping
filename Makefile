@@ -1,14 +1,14 @@
 SHELL = bash
 
-.PHONY: all clean download_catalog download_sources update_catalog update_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
+.PHONY: all clean download_catalog download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
 
 all: extraction transformation
 # all: extraction transformation load
 et: extraction transformation
 extraction: download_catalog data/params/sources_urls.txt download_sources
-# transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dumps/
-transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
-load: update_series update_dumps
+transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
+# transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
+load: upload_series upload_dump
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
 start_python_server:
@@ -124,17 +124,17 @@ data/output/dump/: data/output/catalog/sspm/data.json data/params/dumps_params.j
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py $^ data/output/catalog/sspm/dataset/ "$@"
 
 # load
-update_series: data/output/series/
-	$(SERIES_TIEMPO_PYTHON) scripts/update_series.py "$<" "scripts/config/config_webdav.yaml" "data/params/series_params.json"
+upload_series: data/output/series/
+	$(SERIES_TIEMPO_PYTHON) scripts/upload_series.py "$<" "scripts/config/config_webdav.yaml" "data/params/series_params.json"
 
-update_dumps: data/output/dumps/
-	$(SERIES_TIEMPO_PYTHON) scripts/update_dumps.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
+upload_dump: data/output/dumps/
+	$(SERIES_TIEMPO_PYTHON) scripts/upload_dump.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
 
-update_catalog: data/output/catalog/sspm/data.json
-	$(SERIES_TIEMPO_PYTHON) scripts/update_catalog.py "$<" "scripts/config/config_ind.yaml"
+upload_catalog: data/output/catalog/sspm/data.json
+	$(SERIES_TIEMPO_PYTHON) scripts/upload_catalog.py "$<" "scripts/config/config_ind.yaml"
 
-update_datasets: data/output/catalog/sspm/dataset/
-	$(SERIES_TIEMPO_PYTHON) scripts/update_datasets.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
+upload_datasets: data/output/catalog/sspm/dataset/
+	$(SERIES_TIEMPO_PYTHON) scripts/upload_datasets.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
 
 # clean
 clean:

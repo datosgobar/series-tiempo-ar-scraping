@@ -14,24 +14,18 @@ import glob
 import pandas as pd
 import numpy as np
 import arrow
-from openpyxl import load_workbook
-import logging
-from copy import deepcopy
-import pydatajson
-from pydatajson import DataJson
-import pydatajson.readers as readers
-import pydatajson.writers as writers
-from xlseries.strategies.clean.parse_time import TimeIsNotComposed
-from xlseries import XlSeries
 import json
-from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 from unicodecsv import DictReader
 from collections import OrderedDict
+import pydatajson
+import pydatajson.readers as readers
+import pydatajson.writers as writers
+from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 
-from helpers import row_from_cell_coord
 import custom_exceptions as ce
 from scrape_datasets import find_distribution_identifier
-from paths import DATASETS_DIR, CATALOG_PATH, SERIES_DIR
+from paths import CATALOGS_DIR, CATALOG_PATH, SERIES_DIR, get_distribution_path
+from paths import get_catalogs_path
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -40,7 +34,7 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 
 
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
-                  datasets_dir=DATASETS_DIR, catalog=CATALOG_PATH,
+                  catalogs_dir=CATALOGS_DIR, catalog=CATALOG_PATH,
                   index_col="indice_tiempo"):
     catalog = readers.read_catalog(catalog)
 
@@ -110,11 +104,11 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
     return df
 
 
-def get_time_series_data(
+def get_series_data(
         field_ids,
         catalog_path=CATALOG_PATH,
         export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv",
-        datasets_dir=DATASETS_DIR, logger=None
+        catalogs_dir=CATALOGS_DIR, logger=None
 ):
 
     if isinstance(field_ids, list):
@@ -126,7 +120,7 @@ def get_time_series_data(
     for field_id in field_ids:
         if logger:
             logger.info(field_id)
-        df = get_time_series_df(field_id, use_id=True, catalog=catalog)
+        df = get_series_df(field_id, use_id=True, catalog=catalog)
         distribution_identifier = field_id.split("_")[0]
         dataset_identifier = distribution_identifier.split(".")[0]
 
@@ -177,8 +171,8 @@ def get_time_series_data(
     return df
 
 
-def get_time_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
-                       datasets_dir=DATASETS_DIR):
+def get_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
+                  catalogs_dir=CATALOGS_DIR):
     catalog = pydatajson.DataJson(catalog)
 
     if not isinstance(field_ids, list):
@@ -187,7 +181,7 @@ def get_time_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
         else:
             field_ids = [field_ids]
 
-    series_params = get_time_series_params(field_ids)
+    series_params = get_series_params(field_ids)
     assert len(series_params) > 0, "{} no están en la metadata".format(
         field_ids)
 
@@ -197,8 +191,8 @@ def get_time_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
         for field_id, serie_params in zip(field_ids, series_params):
             try:
                 time_series.append(
-                    get_time_series(*serie_params, field_id=field_id,
-                                    datasets_dir=datasets_dir)
+                    get_series(*serie_params, series_name=field_id,
+                               catalogs_dir=datasets_dir)
                 )
             except Exception as e:
                 print(e)
@@ -207,7 +201,7 @@ def get_time_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
         for serie_params in series_params:
             try:
                 time_series.append(
-                    get_time_series(*serie_params, datasets_dir=datasets_dir)
+                    get_series(*serie_params, catalogs_dir=datasets_dir)
                 )
             except Exception as e:
                 print(e)
@@ -215,57 +209,66 @@ def get_time_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
     return pd.concat(time_series, axis=1)
 
 
-def get_time_series_params(field_ids, catalog=CATALOG_PATH):
-    catalog = pydatajson.DataJson(catalog)
+def get_series_params(field_ids, catalogs_dir=CATALOGS_DIR):
 
-    # busca los ids de dataset y distribucion de la serie
-    series_params = {}
-    for dataset in catalog["dataset"]:
-        for distribution in dataset["distribution"]:
-            if "field" in distribution:
-                for field in distribution["field"]:
-                    if field["id"] in field_ids:
-                        series_params[field["id"]] = (
-                            dataset["identifier"],
-                            distribution["identifier"],
-                            field["title"]
-                        )
+    # carga los catálogos que encuentre
+    catalogs = [
+        (os.path.basename(os.path.dirname(catalog_path)),
+         pydatajson.DataJson(catalog_path))
+        for catalog_path in get_catalogs_path(catalogs_dir)
+    ]
 
-    return [series_params[field_id] for field_id in field_ids]
+    # busca los ids de las series en todos los catálogos
+    series_params = []
+    for field_id in field_ids:
+        for catalog_id, catalog in catalogs:
+            field_location = catalog.get_field_location(field_id)
+            if field_location:
+                series_params.append((
+                    catalog_id,
+                    field_location["dataset_identifier"],
+                    field_location["distribution_identifier"],
+                    field_location["field_title"]
+                ))
+            break
+
+    return series_params
 
 
-def get_time_series_by_id(field_id, fmt="df"):
-    series_params = get_time_series_params([field_id])
-    return get_time_series(*series_params[0], fmt=fmt)
+def get_series_by_id(
+        field_id, fmt="df", time_index="indice_tiempo",
+        catalogs_dir=CATALOGS_DIR, pct_change=None, series_name=None
+):
+    series_params = get_series_params([field_id], catalogs_dir=CATALOGS_DIR)
 
-
-def get_time_series(dataset_id, distribution_id, field_title, fmt="df",
-                    time_index="indice_tiempo", field_id=None,
-                    datasets_dir=DATASETS_DIR, pct_change=None):
-    """Devuelve un dataframe con una serie de tiempo."""
-
-    distribution_download_dir = os.path.join(
-        datasets_dir, dataset_id, "distribution", distribution_id, "download"
+    return get_series(
+        *series_params[0], fmt=fmt, time_index=time_index,
+        catalogs_dir=catalogs_dir, pct_change=pct_change,
+        series_name=series_name
     )
-    distribution_csv_files = glob.glob(
-        os.path.join(distribution_download_dir, "*.csv")
-    )
 
-    if len(distribution_csv_files) > 0:
-        distribution_path = distribution_csv_files[0]
-    else:
-        raise Exception(
-            "No hay archivos para la distribucion {} del dataset {}".format(
-                distribution_id, dataset_id))
+
+def get_series(
+    catalog_id, dataset_id, distribution_id, field_title,
+    fmt="df", time_index="indice_tiempo",
+    catalogs_dir=CATALOGS_DIR, pct_change=None, series_name=None
+):
+    """Devuelve los datos de una serie de tiempo en diversos formatos."""
+
+    distribution_path = get_distribution_path(
+        catalog_id, dataset_id, distribution_id, catalogs_dir=catalogs_dir)
 
     serie = pd.read_csv(distribution_path, index_col=time_index,
                         parse_dates=True)[field_title]
+
+    # modificaciones a la serie
     if pct_change:
         serie = serie.pct_change(pct_change)
 
-    if field_id:
-        serie = serie.rename(field_id)
+    if series_name:
+        serie = serie.rename(series_name)
 
+    # formato
     if fmt == "df":
         return pd.DataFrame(serie)
 
@@ -286,7 +289,7 @@ def get_time_series(dataset_id, distribution_id, field_title, fmt="df",
         raise Exception("No se reconoce el formato")
 
 
-def get_time_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
+def get_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
 
     if dump_mode:
         field_ids = []
@@ -299,7 +302,7 @@ def get_time_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
     else:
         field_ids = field_params.keys()
 
-    series_params = get_time_series_params(field_ids)
+    series_params = get_series_params(field_ids)
 
     time_series = {}
     for field_id, serie_params in zip(field_ids, series_params):
@@ -307,9 +310,9 @@ def get_time_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
             time_series[field_id] = {
                 "metadata": generate_api_metadata(
                     catalog, field_id, field_params.get(field_id)),
-                "data": get_time_series(
+                "data": get_series(
                     *serie_params, fmt="list",
-                    datasets_dir=datasets_dir,
+                    catalogs_dir=datasets_dir,
                     pct_change=field_params[field_id].get(
                         "pct_change") if field_params.get(field_id) else None
                 )

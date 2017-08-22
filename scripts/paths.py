@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import with_statement
 import os
+import glob
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))
@@ -15,6 +16,8 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(
 # directorios del repositorio
 LOGS_DIR = os.path.join(PROJECT_DIR, "logs")
 DATOS_DIR = os.path.join(PROJECT_DIR, "data")
+CATALOGS_DIR = os.path.join(DATOS_DIR, "output")
+TEST_CATALOGS_DIR = os.path.join(DATOS_DIR, "tests")
 DUMPS_DIR = os.path.join(DATOS_DIR, "output", "dump")
 CATALOG_PATH = os.path.join(
     DATOS_DIR, "output", "catalog", "sspm", "data.json")
@@ -33,3 +36,29 @@ CONFIG_EMAIL_PATH = os.path.join(
     PROJECT_DIR, "scripts", "config", "config_email.yaml")
 CONFIG_SERVER_PATH = os.path.join(
     PROJECT_DIR, "scripts", "config", "config_server.yaml")
+
+
+def get_distribution_path(catalog_id, dataset_id, distribution_id,
+                          catalogs_dir=CATALOGS_DIR):
+    distribution_download_dir = os.path.join(
+        catalogs_dir, "catalog", catalog_id, "dataset", dataset_id,
+        "distribution", distribution_id, "download"
+    )
+    distribution_csv_files = glob.glob(
+        os.path.join(distribution_download_dir, "*.csv")
+    )
+
+    if len(distribution_csv_files) == 1:
+        return distribution_csv_files[0]
+    elif len(distribution_csv_files) == 0:
+        raise Exception(
+            "No hay archivos para la distribucion {} del dataset {}".format(
+                distribution_id, dataset_id))
+    else:
+        raise Exception(
+            "Hay {} archivos para la distribucion {} del dataset {}".format(
+                len(distribution_csv_files), distribution_id, dataset_id))
+
+
+def get_catalogs_path(catalogs_dir=CATALOGS_DIR):
+    return glob.glob(os.path.join(catalogs_dir, "catalog", "*", "*.json"))
