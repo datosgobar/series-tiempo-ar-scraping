@@ -1,6 +1,6 @@
 SHELL = bash
 
-.PHONY: all clean download_catalog download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir
+.PHONY: all clean download_catalog download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources
 
 all: extraction transformation
 # all: extraction transformation load
@@ -87,19 +87,8 @@ download_catalog: data/params/catalog_url.txt
 data/params/sources_urls.txt: data/input/catalog/
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_sources_urls.py "$<" "$@"
 
-define  validate_url
-  [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]
-endef
-
-download_sources: data/params/sources_urls.txt
-	# descarga las fuentes de cada catálogo
-	while read catalog_id url; do \
-		mkdir -p "data/input/catalog/$$catalog_id/sources" ; \
-		if $(call validate_url, "$$url"); then \
-			wget -N --directory-prefix="data/input/catalog/$$catalog_id/sources" "$$url" --no-check-certificate ; else \
-			echo "URL $$url NO EXISTE" ; \
-		fi ; \
-	done < "$<"
+download_sources:
+	bash scripts/download_sources.sh "data/params/sources_urls.txt"
 
 # transformation
 data/output/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
