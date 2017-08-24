@@ -2,13 +2,12 @@ SHELL = bash
 
 .PHONY: all clean download_catalog download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/output/dump/
 
-all: extraction transformation
-# all: extraction transformation load
+all: extraction transformation load
 et: extraction transformation
 extraction: download_catalog data/params/sources_urls.txt download_sources
 transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
 # transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
-load: upload_series upload_dump
+load: upload_series upload_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
 start_python_server:
@@ -113,11 +112,11 @@ data/output/dump/:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output "$@"
 
 # load
-upload_series: data/output/series/
-	$(SERIES_TIEMPO_PYTHON) scripts/upload_series.py "$<" "scripts/config/config_webdav.yaml" "data/params/series_params.json"
+upload_series:
+	$(SERIES_TIEMPO_PYTHON) scripts/upload_series.py data/output/series/ "scripts/config/config_webdav.yaml" "data/params/series_params.json"
 
-upload_dump: data/output/dumps/
-	$(SERIES_TIEMPO_PYTHON) scripts/upload_dump.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
+upload_dumps:
+	$(SERIES_TIEMPO_PYTHON) scripts/upload_dumps.py data/output/dump/ "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
 
 upload_catalog: data/output/catalog/sspm/data.json
 	$(SERIES_TIEMPO_PYTHON) scripts/upload_catalog.py "$<" "scripts/config/config_ind.yaml"
