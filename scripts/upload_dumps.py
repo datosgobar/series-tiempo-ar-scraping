@@ -18,7 +18,7 @@ import os
 import glob
 
 from helpers import get_logger
-from data import get_time_series_dict, generate_time_series_jsons
+from data import get_series_dict, generate_series_jsons
 
 sys.path.insert(0, os.path.abspath(".."))
 

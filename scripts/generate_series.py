@@ -13,13 +13,13 @@ import arrow
 import pydatajson
 import json
 
-from data import get_time_series_dict, generate_time_series_jsons
+from data import get_series_dict, generate_series_jsons
 
 
 sys.path.insert(0, os.path.abspath(".."))
 
 
-def main(catalog_json_path, series_params_path, datasets_dir, series_dir):
+def main(catalog_json_path, series_params_path, catalogs_dir, series_dir):
 
     catalog = pydatajson.DataJson(catalog_json_path)
 
@@ -27,10 +27,11 @@ def main(catalog_json_path, series_params_path, datasets_dir, series_dir):
         series_params = json.load(f, encoding='utf-8')
 
     # genera series para la landing de IED
-    ts_dict = get_time_series_dict(
+    ts_dict = get_series_dict(
         catalog, series_params["landing_ied"],
-        datasets_dir=datasets_dir, dump_mode=False)
-    generate_time_series_jsons(ts_dict, series_dir)
+        catalogs_dir=catalogs_dir, dump_mode=False
+    )
+    generate_series_jsons(ts_dict, series_dir)
 
 
 if __name__ == '__main__':

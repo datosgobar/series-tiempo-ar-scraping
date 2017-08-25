@@ -44,21 +44,31 @@ def get_distribution_path(catalog_id, dataset_id, distribution_id,
         catalogs_dir, "catalog", catalog_id, "dataset", dataset_id,
         "distribution", distribution_id, "download"
     )
-    distribution_csv_files = glob.glob(
-        os.path.join(distribution_download_dir, "*.csv")
-    )
+    glob_pattern = os.path.join(distribution_download_dir, "*.csv")
+    distribution_csv_files = glob.glob(glob_pattern)
 
     if len(distribution_csv_files) == 1:
         return distribution_csv_files[0]
     elif len(distribution_csv_files) == 0:
         raise Exception(
-            "No hay archivos para la distribucion {} del dataset {}".format(
-                distribution_id, dataset_id))
+            "Sin archivos para la distribucion {} del dataset {}\n{}".format(
+                distribution_id, dataset_id, glob_pattern))
     else:
         raise Exception(
-            "Hay {} archivos para la distribucion {} del dataset {}".format(
-                len(distribution_csv_files), distribution_id, dataset_id))
+            "{} archivos para la distribucion {} del dataset {}\n{}".format(
+                len(distribution_csv_files), distribution_id,
+                dataset_id, glob_pattern)
+        )
 
 
 def get_catalogs_path(catalogs_dir=CATALOGS_DIR):
     return glob.glob(os.path.join(catalogs_dir, "catalog", "*", "*.json"))
+
+
+def get_catalog_path(catalog_id, catalogs_dir=CATALOGS_DIR):
+    return os.path.join(catalogs_dir, "catalog", catalog_id, "data.json")
+
+
+def get_catalog_ids(catalogs_dir=CATALOGS_DIR):
+    return [os.path.basename(os.path.dirname(catalog_path))
+            for catalog_path in get_catalogs_path(catalogs_dir)]

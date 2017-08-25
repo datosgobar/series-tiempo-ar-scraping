@@ -25,7 +25,7 @@ from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 import custom_exceptions as ce
 from scrape_datasets import find_distribution_identifier
 from paths import CATALOGS_DIR, CATALOG_PATH, SERIES_DIR, get_distribution_path
-from paths import get_catalogs_path
+from paths import get_catalogs_path, get_catalog_path, get_catalog_ids
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -34,67 +34,71 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 
 
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
-                  catalogs_dir=CATALOGS_DIR, catalog=CATALOG_PATH,
-                  index_col="indice_tiempo"):
-    catalog = readers.read_catalog(catalog)
+                  catalogs_dir=CATALOGS_DIR, index_col="indice_tiempo"):
 
     rows_dump = []
-    for dataset in catalog["dataset"]:
-        for distribution in dataset["distribution"]:
-            if "field" not in distribution:
-                continue
+    for catalog_id in get_catalog_ids(catalogs_dir):
+        catalog = get_catalog(catalog_id)
+        for dataset in catalog["dataset"]:
+            for distribution in dataset["distribution"]:
+                if "field" not in distribution:
+                    continue
 
-            distribution_path = os.path.join(
-                DATASETS_DIR, unicode(dataset["identifier"]),
-                "{}.csv".format(unicode(distribution["identifier"]))
-            )
+                try:
+                    distribution_path = get_distribution_path(
+                        catalog_id,
+                        dataset["identifier"],
+                        distribution["identifier"],
+                        catalogs_dir
+                    )
+                except:
+                    continue
 
-            if not os.path.exists(distribution_path):
-                continue
+                # hasheo metadata de field por field_title
+                fields = {
+                    field["title"]: field
+                    for field in distribution["field"]
+                }
 
-            # hasheo metadata de field por field_title
-            fields = {
-                field["title"]: field
-                for field in distribution["field"]
-            }
+                # parsea CSV a filas del dump
+                with open(distribution_path, "r") as f:
+                    r = DictReader(f, encoding="utf-8-sig")
 
-            # parsea CSV a filas del dump
-            with open(distribution_path, "r") as f:
-                r = DictReader(f, encoding="utf-8-sig")
+                    for row in r:
+                        for field_title, value in row.iteritems():
+                            time_index = field_title == index_col
+                            exists_field = field_title in fields
 
-                for row in r:
-                    for field_title, value in row.iteritems():
-                        time_index = field_title == index_col
-                        exists_field = field_title in fields
+                            if time_index or not exists_field:
+                                continue
 
-                        if time_index or not exists_field:
-                            continue
+                            row_dump = OrderedDict()
 
-                        row_dump = OrderedDict()
+                            row_dump["dataset_id"] = dataset["identifier"]
+                            row_dump["distribucion_id"] = distribution[
+                                "identifier"]
+                            row_dump["serie_id"] = fields[field_title]["id"]
+                            row_dump["distribucion_indice_tiempo"] = row[
+                                index_col]
+                            row_dump["distribucion_indice_frecuencia"] = fields[
+                                index_col]["specialTypeDetail"]
+                            row_dump["valor"] = value
+                            row_dump["serie_titulo"] = field_title
+                            row_dump["serie_unidades"] = fields[
+                                field_title].get("units")
+                            row_dump["serie_descripcion"] = fields[
+                                field_title]["description"]
+                            row_dump["distribucion_titulo"] = distribution[
+                                "title"]
+                            row_dump["distribucion_descripcion"] = distribution[
+                                "description"]
+                            row_dump["dataset_responsable"] = dataset["source"]
+                            row_dump["dataset_fuente"] = dataset["source"]
+                            row_dump["dataset_titulo"] = dataset["title"]
+                            row_dump["dataset_descripcion"] = dataset[
+                                "description"]
 
-                        row_dump["dataset_id"] = dataset["identifier"]
-                        row_dump["distribucion_id"] = distribution[
-                            "identifier"]
-                        row_dump["serie_id"] = fields[field_title]["id"]
-                        row_dump["distribucion_indice_tiempo"] = row[index_col]
-                        row_dump["distribucion_indice_frecuencia"] = fields[
-                            index_col]["specialTypeDetail"]
-                        row_dump["valor"] = value
-                        row_dump["serie_titulo"] = field_title
-                        row_dump["serie_unidades"] = fields[
-                            field_title].get("units")
-                        row_dump["serie_descripcion"] = fields[
-                            field_title]["description"]
-                        row_dump["distribucion_titulo"] = distribution["title"]
-                        row_dump["distribucion_descripcion"] = distribution[
-                            "description"]
-                        row_dump["dataset_responsable"] = dataset["source"]
-                        row_dump["dataset_fuente"] = dataset["source"]
-                        row_dump["dataset_titulo"] = dataset["title"]
-                        row_dump["dataset_descripcion"] = dataset[
-                            "description"]
-
-                        rows_dump.append(row_dump)
+                            rows_dump.append(row_dump)
 
     df = pd.DataFrame(rows_dump)
     df['valor'] = df['valor'].convert_objects(convert_numeric=True)
@@ -104,9 +108,12 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
     return df
 
 
+def get_catalog(catalog_id, catalogs_dir=CATALOGS_DIR):
+    return pydatajson.DataJson(get_catalog_path(catalog_id))
+
+
 def get_series_data(
         field_ids,
-        catalog_path=CATALOG_PATH,
         export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv",
         catalogs_dir=CATALOGS_DIR, logger=None
 ):
@@ -114,13 +121,19 @@ def get_series_data(
     if isinstance(field_ids, list):
         field_ids = {field_id: None for field_id in field_ids}
 
-    catalog = pydatajson.DataJson(catalog_path)
+    # carga los catalogos necesarios
+    catalog_ids = [
+        field_params[0]
+        for field_params in get_series_params(field_ids)
+    ]
 
     rows = []
-    for field_id in field_ids:
+    for catalog_id, field_id in zip(catalog_ids, field_ids):
+        catalog = get_catalog(catalog_id)
+
         if logger:
             logger.info(field_id)
-        df = get_series_df(field_id, use_id=True, catalog=catalog)
+        df = get_series_df(field_id, use_id=True, catalogs_dir=catalogs_dir)
         distribution_identifier = field_id.split("_")[0]
         dataset_identifier = distribution_identifier.split(".")[0]
 
@@ -171,9 +184,7 @@ def get_series_data(
     return df
 
 
-def get_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
-                  catalogs_dir=CATALOGS_DIR):
-    catalog = pydatajson.DataJson(catalog)
+def get_series_df(field_ids, use_id=False, catalogs_dir=CATALOGS_DIR):
 
     if not isinstance(field_ids, list):
         if isinstance(field_ids, dict):
@@ -182,6 +193,7 @@ def get_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
             field_ids = [field_ids]
 
     series_params = get_series_params(field_ids)
+    print(series_params[:10])
     assert len(series_params) > 0, "{} no están en la metadata".format(
         field_ids)
 
@@ -192,7 +204,7 @@ def get_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
             try:
                 time_series.append(
                     get_series(*serie_params, series_name=field_id,
-                               catalogs_dir=datasets_dir)
+                               catalogs_dir=catalogs_dir)
                 )
             except Exception as e:
                 print(e)
@@ -201,7 +213,7 @@ def get_series_df(field_ids, use_id=False, catalog=CATALOG_PATH,
         for serie_params in series_params:
             try:
                 time_series.append(
-                    get_series(*serie_params, catalogs_dir=datasets_dir)
+                    get_series(*serie_params, catalogs_dir=catalogs_dir)
                 )
             except Exception as e:
                 print(e)
@@ -289,7 +301,7 @@ def get_series(
         raise Exception("No se reconoce el formato")
 
 
-def get_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
+def get_series_dict(catalog, field_params, catalogs_dir, dump_mode=False):
 
     if dump_mode:
         field_ids = []
@@ -312,7 +324,7 @@ def get_series_dict(catalog, field_params, datasets_dir, dump_mode=False):
                     catalog, field_id, field_params.get(field_id)),
                 "data": get_series(
                     *serie_params, fmt="list",
-                    catalogs_dir=datasets_dir,
+                    catalogs_dir=catalogs_dir,
                     pct_change=field_params[field_id].get(
                         "pct_change") if field_params.get(field_id) else None
                 )
@@ -351,7 +363,7 @@ def generate_api_metadata(catalog, field_id, override_metadata=None):
     return api_metadata
 
 
-def generate_time_series_jsons(ts_dict, jsons_dir=SERIES_DIR):
+def generate_series_jsons(ts_dict, jsons_dir=SERIES_DIR):
 
     for series_id, value in ts_dict.iteritems():
         file_name = "{}.json".format(series_id)

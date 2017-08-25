@@ -19,9 +19,9 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 from helpers import get_logger
-from data import get_time_series_data, generate_dump
+from data import get_series_data, generate_dump
 from paths import CATALOG_PATH, DUMPS_PARAMS_PATH
-from paths import DATASETS_DIR, DUMPS_DIR
+from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -75,33 +75,13 @@ def generate_series_summary(df):
     return df_series
 
 
-def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
-         datasets_dir=DATASETS_DIR, dumps_dir=DUMPS_DIR):
+def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR):
     logger = get_logger(__name__)
-
-    # genera dumps específicos y parciales de la base para proyectos concretos
-    with open(dumps_params_path, "r") as f:
-        dumps_params = json.load(f, encoding='utf-8')
-
-    for dump_file_name, dump_params in dumps_params.iteritems():
-        print("Generando dump específico {}".format(dump_file_name))
-        dump_path = os.path.join(dumps_dir, dump_file_name)
-
-        # genera un dump de series de tiempo
-        df = get_time_series_data(
-            dump_params, catalog_json_path, dump_path,
-            datasets_dir=datasets_dir
-        )
-        logger.info("\n{}  Series: {} Values: {}".format(
-            dump_file_name.ljust(40),
-            unicode(len(df.field_id.unique())).ljust(3),
-            unicode(len(df)).ljust(6)
-        ))
 
     # genera dumps completos de la base en distintos formatos
     dump_path = os.path.join(DUMPS_DIR, "series-tiempo.{}")
     print("Generando dump completo en DataFrame.")
-    df = generate_dump()
+    df = generate_dump(catalogs_dir=catalogs_dir)
     df_series = generate_series_summary(df)
     resumen_path = os.path.join(
         os.path.dirname(dump_path), "series-tiempo-resumen.xlsx")
@@ -141,4 +121,4 @@ def main(catalog_json_path=CATALOG_PATH, dumps_params_path=DUMPS_PARAMS_PATH,
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    main(sys.argv[1], sys.argv[2])
