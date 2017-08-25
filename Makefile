@@ -1,6 +1,6 @@
 SHELL = bash
 
-.PHONY: all clean download_catalog download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources
+.PHONY: all clean download_catalog download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/sources_urls.txt
 
 all: extraction transformation
 # all: extraction transformation load
