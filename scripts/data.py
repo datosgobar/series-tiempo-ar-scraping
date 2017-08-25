@@ -301,9 +301,9 @@ def get_series(
         raise Exception("No se reconoce el formato")
 
 
-def get_series_dict(catalog, field_params, catalogs_dir, dump_mode=False):
+def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None):
 
-    if dump_mode:
+    if not field_ids:
         field_ids = []
         for dataset in catalog["dataset"]:
             for distribution in dataset["distribution"]:
@@ -311,8 +311,6 @@ def get_series_dict(catalog, field_params, catalogs_dir, dump_mode=False):
                     for field in distribution["field"]:
                         if field["title"] != "indice_tiempo":
                             field_ids.append(field["id"])
-    else:
-        field_ids = field_params.keys()
 
     series_params = get_series_params(field_ids)
 
@@ -321,12 +319,11 @@ def get_series_dict(catalog, field_params, catalogs_dir, dump_mode=False):
         try:
             time_series[field_id] = {
                 "metadata": generate_api_metadata(
-                    catalog, field_id, field_params.get(field_id)),
+                    catalog, field_id, metadata_included=metadata_included
+                ),
                 "data": get_series(
                     *serie_params, fmt="list",
-                    catalogs_dir=catalogs_dir,
-                    pct_change=field_params[field_id].get(
-                        "pct_change") if field_params.get(field_id) else None
+                    catalogs_dir=catalogs_dir
                 )
             }
         except Exception as e:
@@ -336,27 +333,43 @@ def get_series_dict(catalog, field_params, catalogs_dir, dump_mode=False):
     return time_series
 
 
-def generate_api_metadata(catalog, field_id, override_metadata=None):
+def generate_api_metadata(catalog, field_id, override_metadata=None,
+                          metadata_included=None):
+
+    # busca el dataset y distribucion al que pertenece la serie
+    field_location = catalog.get_field_location(field_id)
+
+    # extrae la metadata de dataset, distribution y field
     field_meta = catalog.get_field(field_id)
-    distribution_identifier = find_distribution_identifier(catalog, field_id)
-    dataset_identifier = distribution_identifier.split(".")[0]
+    distrib_meta = catalog.get_distribution(
+        field_location["distribution_identifier"])
+    dataset_meta = catalog.get_dataset(field_location["dataset_identifier"])
 
-    distrib_meta = catalog.get_distribution(distribution_identifier)
+    # copia todos los campos de metadata de dataset, distribution y field
+    api_metadata = {}
+    print(field_id, type(field_meta), type(distrib_meta), type(dataset_meta))
+    for key, value in field_meta.iteritems():
+        field_name = "field_{}".format(key)
+        if not metadata_included or field_name in metadata_included:
+            api_metadata[field_name] = value
+    for key, value in distrib_meta.iteritems():
+        field_name = "distribution_{}".format(key)
+        if not metadata_included or field_name in metadata_included:
+            api_metadata[field_name] = value
+    for key, value in dataset_meta.iteritems():
+        field_name = "dataset_{}".format(key)
+        if not metadata_included or field_name in metadata_included:
+            api_metadata[field_name] = value
 
+    # agrega frecuencia de la serie
     frequency = None
     for field in distrib_meta["field"]:
         if field["specialType"] == "time_index":
             frequency = field["specialTypeDetail"]
             break
+    api_metadata["distribution_index_frequency"] = frequency
 
-    api_metadata = {
-        "title": field_meta["title"],
-        "frequency": frequency,
-        "units": field_meta["units"],
-        "type": field_meta["type"],
-        "id": field_meta["id"],
-        "description": field_meta["description"]
-    }
+    # opcionalmente reemplaza campos de metadata por otros valores
     if override_metadata:
         api_metadata.update(override_metadata)
 
@@ -370,7 +383,7 @@ def generate_series_jsons(ts_dict, jsons_dir=SERIES_DIR):
 
         try:
             with open(os.path.join(jsons_dir, file_name), "wb") as f:
-                json.dump(value, f)
+                json.dump(value, f, sort_keys=True)
 
         except Exception as e:
             print(series_id, e)

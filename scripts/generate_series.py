@@ -28,8 +28,9 @@ def main(catalog_json_path, series_params_path, catalogs_dir, series_dir):
 
     # genera series para la landing de IED
     ts_dict = get_series_dict(
-        catalog, series_params["landing_ied"],
-        catalogs_dir=catalogs_dir, dump_mode=False
+        catalog, series_params["series_ids_included"],
+        catalogs_dir=catalogs_dir,
+        metadata_included=series_params["metadata_fields_included"]
     )
     generate_series_jsons(ts_dict, series_dir)
 
