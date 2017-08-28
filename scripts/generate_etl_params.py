@@ -62,7 +62,8 @@ def get_params_from_model(catalog_xlsx_path,
 
     df_etl_params = merged[merged['_merge'] == 'both']
 
-    return df_etl_params
+    # remueve parametros insuficientes
+    return df_etl_params.dropna()
 
 
 def main(catalog_xlsx_path, etl_params_path):

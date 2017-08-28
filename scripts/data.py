@@ -59,6 +59,12 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                     field["title"]: field
                     for field in distribution["field"]
                 }
+                if not fields.get(index_col):
+                    print("Distribución {} no tiene field {}".format(
+                        distribution["identifier"],
+                        index_col
+                    ))
+                    continue
 
                 # parsea CSV a filas del dump
                 with open(distribution_path, "r") as f:
