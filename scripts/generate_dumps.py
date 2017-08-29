@@ -13,12 +13,13 @@ import sys
 import arrow
 import pydatajson
 import json
-import zipfile
 import datetime
 import pandas as pd
+import numpy as np
 from sqlalchemy import create_engine
+from pydatajson.helpers import parse_repeating_time_interval_to_days
 
-from helpers import get_logger
+from helpers import get_logger, freq_iso_to_pandas, compress_file, timeit
 from data import get_series_data, generate_dump
 from paths import CATALOG_PATH, DUMPS_PARAMS_PATH
 from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
@@ -26,33 +27,10 @@ from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
 sys.path.insert(0, os.path.abspath(".."))
 
 
-# TODO: agregar al dump
-# theme_label
-# dataset_title
-# distribution_title
-# dataset_identifier
-
-def print_info(archive_name):
-    zf = zipfile.ZipFile(archive_name)
-    for info in zf.infolist():
-        print(info.filename)
-        print('\tComment:\t', info.comment)
-        print('\tModified:\t', datetime.datetime(*info.date_time))
-        print('\tSystem:\t\t', info.create_system, '(0 = Windows, 3 = Unix)')
-        print('\tZIP version:\t', info.create_version)
-        print('\tCompressed:\t', info.compress_size, 'bytes')
-        print('\tUncompressed:\t', info.file_size, 'bytes')
-
-
-def compress_file(from_path, to_path):
-    print("Comprimiendo {} en {}".format(from_path, to_path))
-    zf = zipfile.ZipFile(to_path, 'w', zipfile.ZIP_DEFLATED)
-    try:
-        zf.write(from_path)
-    finally:
-        zf.close()
-
-    print_info(to_path)
+def _get_valor_anterior_anio(series_dataframe):
+    series = pd.Series(list(series_dataframe.valor), list(
+        series_dataframe.distribucion_indice_tiempo)).sort_index()
+    return series.get(series.index[-1] - pd.DateOffset(years=1))
 
 
 def generate_series_summary(df):
@@ -65,59 +43,133 @@ def generate_series_summary(df):
         drop_cols, axis=1).drop_duplicates().set_index(index_cols)
 
     # indicadores resumen sobre las series
-    df_series["distribucion_indice_inicio"] = series_group[
+    # rango temporal de la serie
+    df_series["serie_indice_inicio"] = series_group[
         "distribucion_indice_tiempo"].min()
-    df_series["distribucion_indice_final"] = series_group[
+    df_series["serie_indice_final"] = series_group[
         "distribucion_indice_tiempo"].max()
+    df_series["serie_valores_cant"] = series_group[
+        "distribucion_indice_tiempo"].count()
+
+    # estado de actualización de los datos
+    df_series["serie_dias_no_cubiertos"] = df_series.apply(
+        lambda x: (pd.datetime.now() - pd.to_datetime(x["serie_indice_final"]).to_period(
+            freq_iso_to_pandas("R/P3M", how="end")).to_timestamp(how="end")).days,
+        axis=1)
+    df_series["serie_actualizada"] = df_series.apply(
+        lambda x: x["serie_dias_no_cubiertos"] < 2 *
+        parse_repeating_time_interval_to_days(
+            x["distribucion_indice_frecuencia"]),
+        axis=1)
+
+    # valores representativos nominales
     df_series["valor_ultimo"] = series_group.apply(
         lambda x: x.loc[x.distribucion_indice_tiempo.argmax(), "valor"])
+    df_series["valor_anterior"] = series_group.apply(
+        lambda x: pd.Series(list(x.valor), list(
+            x.distribucion_indice_tiempo)).sort_index()[-2]
+    )
+    df_series["valor_anterior_anio"] = series_group.apply(
+        _get_valor_anterior_anio)
 
-    return df_series
+    # valores representativos en variación porcentual
+    df_series["var_pct_anterior"] = df_series[
+        "valor_ultimo"] / df_series["valor_anterior"] - 1
+    df_series["var_pct_anterior_anio"] = df_series[
+        "valor_ultimo"] / df_series["valor_anterior_anio"] - 1
+
+    return df_series.reset_index()
+
+
+def save_to_csv(df, path):
+    df.to_csv(path, encoding="utf-8", sep=str(","), index=False)
+
+
+def save_to_xlsx(df, path, sheet_name="data"):
+    writer = pd.ExcelWriter(path, engine='xlsxwriter')
+    df.to_excel(writer, sheet_name, merge_cells=False,
+                encoding="utf-8", index=False)
+    writer.save()
+
+
+def save_to_dta(df, path, str_limit=244):
+    df_stata = df.copy()
+    for col in df_stata.columns:
+        # limita el largo de los campos de texto
+        if df_stata[col].dtype.name == "object":
+            df_stata[col] = df_stata[col].str[:str_limit]
+        # limita la precisión de los números decimales
+        elif "float" in df_stata[col].dtype.name:
+            df_stata[col] = df_stata[col].astype(np.float16)
+
+    df_stata.to_stata(path, write_index=False)
+
+
+def save_to_db(df, path):
+    engine = create_engine('sqlite:///{}'.format(path), echo=True)
+    df.to_sql("series_tiempo", engine, index=False, if_exists="replace")
+
+
+DF_SAVE_METHODS = {
+    "csv": save_to_csv,
+    "xlsx": save_to_xlsx,
+    "dta": save_to_dta,
+    "db": save_to_db
+}
+
+
+# @timeit
+def save_dump(df_dump, df_series,
+              fmt="CSV", base_name="series-tiempo", base_dir=DUMPS_DIR):
+
+    # crea paths a los archivos que va a generar
+    base_path = os.path.join(base_dir, "{}".format(base_name))
+    dump_path = "{}.{}".format(base_path, fmt.lower())
+    dump_path_zip = "{}-{}.zip".format(base_path, fmt.lower())
+    resumen_path = "{}-resumen.{}".format(base_path, fmt.lower())
+
+    # elige el método para guardar el dump según el formato requerido
+    save_method = DF_SAVE_METHODS[fmt.lower()]
+
+    print()
+
+    # crea dump completo
+    print("Guardando dump completo en {}...".format(fmt), end=" ")
+    save_method(df_dump, dump_path)
+    print("{}MB".format(os.path.getsize(dump_path) / 1000000))
+
+    # crea dump desnormalizado
+
+    # crea resumen de series
+    print("Guardando resumen de series en {}...".format(fmt), end=" ")
+    save_method(df_series, resumen_path)
+    print("{}MB".format(os.path.getsize(resumen_path) / 1000000))
+
+    # crea créditos
+
+    # crea dump completo comprimido
+    print("Comprimiendo dump en {}...".format(fmt), end=" ")
+    compress_file(dump_path, dump_path_zip)
+    print("{}MB".format(os.path.getsize(dump_path_zip) / 1000000))
 
 
 def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR):
+    # genera dumps completos de la base en distintos formatos
     logger = get_logger(__name__)
 
-    # genera dumps completos de la base en distintos formatos
-    dump_path = os.path.join(DUMPS_DIR, "series-tiempo.{}")
+    # genera dump completo de la base de series
     print("Generando dump completo en DataFrame.")
-    df = generate_dump(catalogs_dir=catalogs_dir)
-    df_series = generate_series_summary(df)
-    resumen_path = os.path.join(
-        os.path.dirname(dump_path), "series-tiempo-resumen.xlsx")
-    df_series.to_excel(resumen_path, "resumen",
-                       index=True, index_label=True, merge_cells=False)
+    df_dump = generate_dump(catalogs_dir=catalogs_dir)
 
-    # CSV
-    print("Generando dump completo en CSV.")
-    path = dump_path.format("csv")
-    df.to_csv(path, encoding="utf-8", sep=str(","), index=False)
-    print("{}MB".format(os.path.getsize(path) / 1000000))
-    zip_path = os.path.join(os.path.dirname(path), "series-tiempo-csv.zip")
-    compress_file(path, zip_path)
-    print("{}MB".format(os.path.getsize(zip_path) / 1000000))
+    # genera resumen descriptivo de series del dump
+    print("Generando resumen de series en DataFrame.")
+    df_series = generate_series_summary(df_dump)
 
-    # EXCEL
-    print("Generando dump completo en XLSX.")
-    path = dump_path.format("xlsx")
-    writer = pd.ExcelWriter(path, engine='xlsxwriter')
-    df.to_excel(writer, "data", merge_cells=False,
-                encoding="utf-8", index=False)
-    writer.save()
-    print("{}MB".format(os.path.getsize(path) / 1000000))
-    zip_path = os.path.join(os.path.dirname(path), "series-tiempo-xlsx.zip")
-    compress_file(path, zip_path)
-    print("{}MB".format(os.path.getsize(zip_path) / 1000000))
-
-    # SQLITE
-    print("Generando dump completo en SQLITE.")
-    path = dump_path.format("db")
-    engine = create_engine('sqlite:///{}'.format(path), echo=True)
-    df.to_sql("series_tiempo", engine, index=False, if_exists="replace")
-    print("{}MB".format(os.path.getsize(path) / 1000000))
-    zip_path = os.path.join(os.path.dirname(path), "series-tiempo-db.zip")
-    compress_file(path, zip_path)
-    print("{}MB".format(os.path.getsize(zip_path) / 1000000))
+    # guarda los contenidos del dump en diversos formatos
+    save_dump(df_dump, df_series, "CSV")
+    save_dump(df_dump, df_series, "XLSX")
+    save_dump(df_dump, df_series, "DTA")
+    save_dump(df_dump, df_series, "DB")
 
 
 if __name__ == '__main__':

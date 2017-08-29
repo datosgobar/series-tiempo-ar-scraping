@@ -199,7 +199,6 @@ def get_series_df(field_ids, use_id=False, catalogs_dir=CATALOGS_DIR):
             field_ids = [field_ids]
 
     series_params = get_series_params(field_ids)
-    print(series_params[:10])
     assert len(series_params) > 0, "{} no están en la metadata".format(
         field_ids)
 
@@ -353,7 +352,6 @@ def generate_api_metadata(catalog, field_id, override_metadata=None,
 
     # copia todos los campos de metadata de dataset, distribution y field
     api_metadata = {}
-    print(field_id, type(field_meta), type(distrib_meta), type(dataset_meta))
     for key, value in field_meta.iteritems():
         field_name = "field_{}".format(key)
         if not metadata_included or field_name in metadata_included:

@@ -80,17 +80,6 @@ def find_distribution_identifier(catalog, field_id):
     raise Exception("No se puedo encontrar la serie {}".format(field_id))
 
 
-def _convert_frequency(freq_iso8601):
-    frequencies_map = {
-        "R/P1Y": "Y",
-        "R/P6M": "S",
-        "R/P3M": "Q",
-        "R/P1M": "M",
-        "R/P1D": "D"
-    }
-    return frequencies_map[freq_iso8601]
-
-
 def gen_distribution_params(etl_params, catalog, distribution_identifier):
     df_distrib = etl_params[
         etl_params.distribution_identifier == distribution_identifier
@@ -120,7 +109,8 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
     # frecuencia de las series
     field = catalog.get_field(distribution_identifier=distribution_identifier,
                               title="indice_tiempo")
-    params["frequency"] = _convert_frequency(field["specialTypeDetail"])
+    params["frequency"] = helpers.freq_iso_to_xlseries(
+        field["specialTypeDetail"])
 
     # coordenadas del header del indice de tiempo
     params["time_header_coord"] = df_distrib[

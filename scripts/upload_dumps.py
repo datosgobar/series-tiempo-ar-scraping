@@ -42,6 +42,7 @@ def upload_dumps(webdav, dumps_dir, logger=None, dumps_params_path=None,
     for index, dump_path in enumerate(dumps_paths):
 
         if ("tablero-ministerial-ied.csv" not in dump_path and
+                "series-tiempo.dta" not in dump_path and
                 "series-tiempo.csv" not in dump_path and
                 "series-tiempo.db" not in dump_path):
             filename = os.path.basename(dump_path)
