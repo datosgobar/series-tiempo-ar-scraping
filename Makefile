@@ -83,11 +83,15 @@ download_catalog: data/params/catalog_url.txt
 		wget -N -O "data/input/catalog/$$catalog_id/catalog.xlsx" "$$url" --no-check-certificate ; \
 	done < "$<"
 
-data/params/sources_urls.txt: data/input/catalog/
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_sources_urls.py "$<" "$@"
+data/params/scraping_urls.txt: data/input/catalog/
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "$<" scraping "$@"
+
+data/params/distribution_urls.txt: data/input/catalog/
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "$<" distribution "$@"
 
 download_sources:
-	bash scripts/download_sources.sh "data/params/sources_urls.txt"
+	bash scripts/download_scraping_sources.sh "data/params/scraping_urls.txt"
+	bash scripts/download_distributions.sh "data/params/distribution_urls.txt"
 
 # transformation
 data/output/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
