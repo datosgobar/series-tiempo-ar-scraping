@@ -5,7 +5,7 @@ SHELL = bash
 all: extraction transformation load
 et: extraction transformation
 extraction: download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
+transformation: data/output/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
 # transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
 load: upload_series upload_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
