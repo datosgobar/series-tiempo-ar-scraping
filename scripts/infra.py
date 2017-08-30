@@ -12,7 +12,6 @@ import sys
 import arrow
 import pydatajson
 import json
-from webdav import get_webdav_connection
 import yaml
 import os
 import glob
