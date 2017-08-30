@@ -80,6 +80,7 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
 
                             row_dump = OrderedDict()
 
+                            row_dump["catalog_id"] = catalog_id
                             row_dump["dataset_id"] = dataset["identifier"]
                             row_dump["distribucion_id"] = distribution[
                                 "identifier"]

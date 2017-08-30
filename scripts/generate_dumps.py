@@ -26,6 +26,12 @@ from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
 
 sys.path.insert(0, os.path.abspath(".."))
 
+# campos extra que definen una observación.
+OBSERVATIONS_COLS = ["distribucion_indice_tiempo", "valor"]
+
+# ids que definen una serie.
+SERIES_INDEX_COLS = ["catalog_id", "dataset_id", "distribucion_id", "serie_id"]
+
 
 def _get_valor_anterior_anio(series_dataframe):
     series = pd.Series(list(series_dataframe.valor), list(
@@ -33,16 +39,28 @@ def _get_valor_anterior_anio(series_dataframe):
     return series.get(series.index[-1] - pd.DateOffset(years=1))
 
 
-def generate_series_summary(df):
-    drop_cols = ["distribucion_indice_tiempo", "valor"]
-    index_cols = ["dataset_id", "distribucion_id", "serie_id"]
-    series_cols = df.columns.drop(drop_cols)
-    series_group = df.groupby(index_cols)
+def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
+                            observations_cols=OBSERVATIONS_COLS):
+    """Genera y devuelve metadatos del dump a nivel de serie.
 
-    df_series = df.drop(
-        drop_cols, axis=1).drop_duplicates().set_index(index_cols)
+    Args:
+        df (pandas.DataFrame): Dump completo de la base de series de tiempo.
+        series_index_cols (list): Ids que definen una serie.
+        observations_cols (list): Campos extra que definen una observación.
 
-    # indicadores resumen sobre las series
+    Returns:
+        pandas.DataFrame: Metadatos de series más indicadores calculados.
+    """
+
+    # toma las columnas relevantes para detalle a nivel de series
+    series_cols = df.columns.drop(observations_cols)
+
+    # agrupa por serie y elimina columnas innecesarias
+    series_group = df.groupby(series_index_cols)
+    df_series = df.drop(observations_cols, axis=1).drop_duplicates()
+    df_series.set_index(series_index_cols, inplace=True)
+
+    # CALCULA INDICADORES resumen sobre las series
     # rango temporal de la serie
     df_series["serie_indice_inicio"] = series_group[
         "distribucion_indice_tiempo"].min()
@@ -52,10 +70,15 @@ def generate_series_summary(df):
         "distribucion_indice_tiempo"].count()
 
     # estado de actualización de los datos
+    # calcula días que pasaron por encima de período cubierto por datos
     df_series["serie_dias_no_cubiertos"] = df_series.apply(
-        lambda x: (pd.datetime.now() - pd.to_datetime(x["serie_indice_final"]).to_period(
-            freq_iso_to_pandas("R/P3M", how="end")).to_timestamp(how="end")).days,
+        lambda x: (pd.datetime.now() - pd.to_datetime(x[
+            "serie_indice_final"]).to_period(
+            freq_iso_to_pandas(x[
+                "distribucion_indice_frecuencia"],
+                how="end")).to_timestamp(how="end")).days,
         axis=1)
+    # si pasaron 2 períodos no cubiertos por datos, serie está desactualizada
     df_series["serie_actualizada"] = df_series.apply(
         lambda x: x["serie_dias_no_cubiertos"] < 2 *
         parse_repeating_time_interval_to_days(
@@ -122,42 +145,48 @@ DF_SAVE_METHODS = {
 
 
 # @timeit
-def save_dump(df_dump, df_series,
+def save_dump(df_dump, df_series, df_values,
               fmt="CSV", base_name="series-tiempo", base_dir=DUMPS_DIR):
 
     # crea paths a los archivos que va a generar
     base_path = os.path.join(base_dir, "{}".format(base_name))
     dump_path = "{}.{}".format(base_path, fmt.lower())
     dump_path_zip = "{}-{}.zip".format(base_path, fmt.lower())
-    resumen_path = "{}-resumen.{}".format(base_path, fmt.lower())
+    summary_path = "{}-resumen.{}".format(base_path, fmt.lower())
+    values_path = "{}-observaciones.{}".format(base_path, fmt.lower())
 
     # elige el método para guardar el dump según el formato requerido
     save_method = DF_SAVE_METHODS[fmt.lower()]
 
     print()
 
-    # crea dump completo
+    # guarda dump completo
     print("Guardando dump completo en {}...".format(fmt), end=" ")
     save_method(df_dump, dump_path)
     print("{}MB".format(os.path.getsize(dump_path) / 1000000))
 
-    # crea dump desnormalizado
-
-    # crea resumen de series
+    # guarda resumen de series
     print("Guardando resumen de series en {}...".format(fmt), end=" ")
-    save_method(df_series, resumen_path)
-    print("{}MB".format(os.path.getsize(resumen_path) / 1000000))
+    save_method(df_series, summary_path)
+    print("{}MB".format(os.path.getsize(summary_path) / 1000000))
 
-    # crea créditos
+    # guarda dump mínimo de observaciones
+    print("Guardando dump de observaciones en {}...".format(fmt), end=" ")
+    save_method(df_values, values_path)
+    print("{}MB".format(os.path.getsize(values_path) / 1000000))
 
-    # crea dump completo comprimido
+    # guarda créditos
+
+    # guarda dump completo comprimido
     print("Comprimiendo dump en {}...".format(fmt), end=" ")
     compress_file(dump_path, dump_path_zip)
     print("{}MB".format(os.path.getsize(dump_path_zip) / 1000000))
 
 
-def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR):
-    # genera dumps completos de la base en distintos formatos
+def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
+         series_index_cols=SERIES_INDEX_COLS,
+         observations_cols=OBSERVATIONS_COLS):
+    """Genera dumps completos de la base en distintos formatos"""
     logger = get_logger(__name__)
 
     # genera dump completo de la base de series
@@ -166,13 +195,18 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR):
 
     # genera resumen descriptivo de series del dump
     print("Generando resumen de series en DataFrame.")
-    df_series = generate_series_summary(df_dump)
+    df_series = generate_series_summary(
+        df_dump, series_index_cols, observations_cols)
+
+    # genera dump mínimo con las observaciones
+    print("Generando dump mínimo de observaciones en DataFrame.")
+    df_values = df_dump[observations_cols + series_index_cols]
 
     # guarda los contenidos del dump en diversos formatos
-    save_dump(df_dump, df_series, "CSV")
-    save_dump(df_dump, df_series, "XLSX")
-    save_dump(df_dump, df_series, "DTA")
-    save_dump(df_dump, df_series, "DB")
+    save_dump(df_dump, df_series, df_values, fmt="CSV", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, fmt="XLSX", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, fmt="DTA", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, fmt="DB", base_dir=dumps_dir)
 
 
 if __name__ == '__main__':
