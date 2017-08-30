@@ -42,9 +42,7 @@ def validate_distribution_scraping(
                 worksheet, header_coord, header_value, ws_header_value)
 
 
-def validate_distribution(df, catalog, dataset_meta, distrib_meta,
-                          distribution_identifier):
-
+def validate_TimeIndexFutureTimeValueError(df):
     # No debe haber fechas futuras
     for time_value in df.index:
         time_value = arrow.get(time_value.year, time_value.month,
@@ -54,6 +52,8 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
             iso_now = arrow.now().isoformat()
             raise ce.TimeIndexFutureTimeValueError(iso_time_value, iso_now)
 
+
+def validate_FieldFewValuesError(df):
     # Las series deben tener una cantidad mínima de valores
     for field in df.columns:
         positive_values = len(df[field][df[field].notnull()])
@@ -61,6 +61,13 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
             raise ce.FieldFewValuesError(
                 field, positive_values, MINIMUM_VALUES
             )
+
+
+def validate_distribution(df, catalog, dataset_meta, distrib_meta,
+                          distribution_identifier):
+
+    validate_TimeIndexFutureTimeValueError(df)
+    validate_FieldFewValuesError(df)
 
     # Los titulos de los campos deben tener caracteres ASCII + "_"
     valid_field_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
