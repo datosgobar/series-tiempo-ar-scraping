@@ -95,12 +95,15 @@ def save_to_xlsx(df, path, sheet_name="data"):
 def save_to_dta(df, path, str_limit=244):
     df_stata = df.copy()
     for col in df_stata.columns:
+
         # limita el largo de los campos de texto
         if df_stata[col].dtype.name == "object":
             df_stata[col] = df_stata[col].str[:str_limit]
-        # limita la precisión de los números decimales
+
+        # elimina los valores infinitos de los tipos decimales
         elif "float" in df_stata[col].dtype.name:
-            df_stata[col] = df_stata[col].astype(np.float16)
+            df_stata[col] = df_stata[col].apply(
+                lambda x: np.nan if np.isinf(x) else x)
 
     df_stata.to_stata(path, write_index=False)
 
