@@ -18,12 +18,15 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 from pydatajson.helpers import parse_repeating_time_interval_to_days
+import logging
 
 from helpers import get_logger, freq_iso_to_pandas, compress_file, timeit
 from data import get_series_data, generate_dump
 from paths import CATALOG_PATH, DUMPS_PARAMS_PATH
 from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
 
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
 sys.path.insert(0, os.path.abspath(".."))
 
 # campos extra que definen una observación.
