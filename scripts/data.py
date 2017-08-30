@@ -107,7 +107,7 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                             rows_dump.append(row_dump)
 
     df = pd.DataFrame(rows_dump)
-    df['valor'] = df['valor'].convert_objects(convert_numeric=True)
+    df['valor'] = pd.to_numeric(df['valor'])
     df['distribucion_indice_tiempo'] = df[
         'distribucion_indice_tiempo'].astype('datetime64[ns]')
 
