@@ -99,12 +99,12 @@ data/output/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
 	# $(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@" > data/generate-catalog-errors.txt
 
 # TODO: revisar como se usan adecuadamenten los directorios
-data/output/catalog/sspm/dataset/: data/output/catalog/sspm/data.json data/params/etl_params.csv data/input/catalog/sspm/sources/
+data/output/catalog/sspm/dataset/: data/output/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" replace
-	# $(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/sspm/sources/ "$@" skip
+	# $(SERIES_TIEMPO_PYTHON) scripts/validate_distributions.py data/output/catalog/sspm/data.json data/input/catalog/sspm/sources/ "$@" skip
 
-data/params/etl_params.csv: data/input/catalog/sspm/catalog.xlsx
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_etl_params.py "$<" "$@"
+data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
 
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
@@ -117,10 +117,10 @@ data/output/dump/:
 
 # load
 upload_series:
-	$(SERIES_TIEMPO_PYTHON) scripts/upload_series.py data/output/series/ "scripts/config/config_webdav.yaml" "data/params/series_params.json"
+	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/series/ series "scripts/config/config_webdav.yaml" "data/params/webdav_series.json"
 
 upload_dumps:
-	$(SERIES_TIEMPO_PYTHON) scripts/upload_dumps.py data/output/dump/ "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
+	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/dump/ dumps "scripts/config/config_webdav.yaml" "data/params/webdav_dumps.json"
 
 upload_catalog: data/output/catalog/sspm/data.json
 	$(SERIES_TIEMPO_PYTHON) scripts/upload_catalog.py "$<" "scripts/config/config_ind.yaml"
@@ -135,11 +135,11 @@ clean:
 	rm -rf data/output/dump/
 	rm -rf data/output/series/
 	rm -f data/params/sources_urls.txt
-	rm -f data/params/etl_params.csv
+	rm -f data/params/scraping_params.csv
 	make create_dir
 
 # test
-profiling_test: data/output/catalog/sspm/data.json data/etl_params_test.csv
+profiling_test: data/output/catalog/sspm/data.json data/scraping_params_test.csv
 	$(SERIES_TIEMPO_PYTHON) scripts/profiling.py $^ data/input/catalog/sspm/sources/ data/datasets_test/
 
 test_crontab:

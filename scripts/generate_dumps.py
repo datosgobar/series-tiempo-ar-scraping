@@ -211,8 +211,8 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
     # guarda los contenidos del dump en diversos formatos
     save_dump(df_dump, df_series, df_values, fmt="CSV", base_dir=dumps_dir)
     save_dump(df_dump, df_series, df_values, fmt="XLSX", base_dir=dumps_dir)
-    save_dump(df_dump, df_series, df_values, fmt="DTA", base_dir=dumps_dir)
     save_dump(df_dump, df_series, df_values, fmt="DB", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, fmt="DTA", base_dir=dumps_dir)
 
 
 if __name__ == '__main__':

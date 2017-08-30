@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Actualiza las series en un servidor webdav
+""" Carga directorios en un servidor webdav
 """
 
 from __future__ import unicode_literals
@@ -38,3 +38,49 @@ def get_webdav_connection(config_webdav_path):
     )
 
     return webdav
+
+
+def upload(webdav, local_dir, remote_dir, params_path=None,
+           remote_root_dir='/remote.php/webdav/', logger=None):
+
+    if params_path:
+        with open(params_path, "r") as f:
+            params = json.load(f, encoding='utf-8')
+    else:
+        params = None
+
+    remote_dir = os.path.join(remote_root_dir, remote_dir)
+
+    if not webdav.exists(remote_dir):
+        webdav.mkdir(remote_dir)
+
+    file_paths = glob.glob(os.path.join(local_dir, "*.*"))
+    for index, file_path in enumerate(file_paths):
+        file_name = os.path.basename(file_path)
+
+        if logger:
+            logger.info("Cargando {}".format(file_path))
+
+        if not params or file_name in params:
+            webdav.upload(
+                remote_path=os.path.join(remote_dir, file_name),
+                local_path_or_fileobj=file_path
+            )
+
+
+def main(local_dir, remote_dir, config_webdav_path, params_path=None):
+    logger = get_logger(__name__)
+
+    webdav = get_webdav_connection(config_webdav_path)
+    try:
+        upload(webdav, local_dir, remote_dir,
+               params_path=params_path, logger=logger)
+    except Exception as e:
+        print(e)
+
+
+if __name__ == '__main__':
+    if len(sys.argv) > 4:
+        main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    else:
+        main(sys.argv[1], sys.argv[2], sys.argv[3])
