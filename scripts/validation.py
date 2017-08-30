@@ -27,21 +27,6 @@ def _assert_repeated_value(field_name, field_values, exception):
         raise exception(repeated_fields=field_dups)
 
 
-def validate_distribution_scraping(
-        xl, worksheet, headers_coord, headers_value):
-
-    # Las celdas de los headers deben estar en blanco o contener un id
-    for header_coord, header_value in zip(headers_coord, headers_value):
-        ws_header_value = xl.wb[worksheet][header_coord].value
-        if (
-            ws_header_value and
-            len(unicode(ws_header_value).strip()) > 0 and
-            ws_header_value != header_value
-        ):
-            raise ce.HeaderNotBlankOrIdError(
-                worksheet, header_coord, header_value, ws_header_value)
-
-
 def validate_TimeIndexFutureTimeValueError(df):
     # No debe haber fechas futuras
     for time_value in df.index:
@@ -63,12 +48,7 @@ def validate_FieldFewValuesError(df):
             )
 
 
-def validate_distribution(df, catalog, dataset_meta, distrib_meta,
-                          distribution_identifier):
-
-    validate_TimeIndexFutureTimeValueError(df)
-    validate_FieldFewValuesError(df)
-
+def validate_InvalidFieldTitleError(df):
     # Los titulos de los campos deben tener caracteres ASCII + "_"
     valid_field_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
     for field in df.columns:
@@ -78,6 +58,8 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
                     field, char, valid_field_chars
                 )
 
+
+def validate_FieldTitleTooLongError(df):
     # Los nombres de los campos tienen que tener un máximo de caracteres
     for field in df.columns:
         if len(field) > MAX_FIELD_TITLE_LEN:
@@ -85,6 +67,8 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
                 field, len(field), MAX_FIELD_TITLE_LEN
             )
 
+
+def validate_FieldTooManyMissingsError(df):
     # Las series deben tener una proporción máxima de missings
     for field in df.columns:
         total_values = len(df[field])
@@ -96,6 +80,8 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
                 field, missing_values, positive_values
             )
 
+
+def validate_using_temporal(df, dataset_meta):
     # realiza validaciones usando el campo "temporal" de metadadta del dataset
     try:
         ini_temporal, end_temporal = dataset_meta["temporal"].split("/")
@@ -125,6 +111,8 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
         raise ce.TimeIndexTooShortError(
             iso_end_index, iso_half_temporal, dataset_meta["temporal"])
 
+
+def validate_FieldIdRepetitionError(catalog, distrib_meta):
     # 6. Los ids de fields no deben repetirse en todo un catálogo
     field_ids = []
     for dataset in catalog["dataset"]:
@@ -138,12 +126,68 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
         if field_distrib["id"] in field_ids:
             raise ce.FieldIdRepetitionError(field_distrib["id"])
 
+
+def validate_FieldTitleRepetitionError(distrib_meta):
     # 7. Los títulos de fields no deben repetirse en una distribución
     fields = distrib_meta["field"]
     _assert_repeated_value("title", fields, ce.FieldTitleRepetitionError)
 
+
+def validate_FieldDescriptionRepetitionError(distrib_meta):
     # 8. Las descripciones de fields no deben repetirse en una distribución
     fields = [field for field in distrib_meta["field"]
               if "description" in field]
     _assert_repeated_value("description", fields,
                            ce.FieldDescriptionRepetitionError)
+
+
+EXCEPTIONS = {
+    "TimeIndexFutureTimeValueError": ["57.1"],
+    "FieldFewValuesError": [],
+    "InvalidFieldTitleError": [],
+    "FieldTitleTooLongError": [],
+    "FieldTooManyMissingsError": [],
+    "using_temporal": [],
+    "FieldIdRepetitionError": [],
+    "FieldTitleRepetitionError": [],
+    "FieldDescriptionRepetitionError": []
+}
+
+
+def validate_distribution(df, catalog, dataset_meta, distrib_meta,
+                          distribution_identifier):
+    distrib_id = distribution_identifier
+
+    if distrib_id not in EXCEPTIONS["TimeIndexFutureTimeValueError"]:
+        validate_TimeIndexFutureTimeValueError(df)
+    if distrib_id not in EXCEPTIONS["FieldFewValuesError"]:
+        validate_FieldFewValuesError(df)
+    if distrib_id not in EXCEPTIONS["InvalidFieldTitleError"]:
+        validate_InvalidFieldTitleError(df)
+    if distrib_id not in EXCEPTIONS["FieldTitleTooLongError"]:
+        validate_FieldTitleTooLongError(df)
+    if distrib_id not in EXCEPTIONS["FieldTooManyMissingsError"]:
+        validate_FieldTooManyMissingsError(df)
+    if distrib_id not in EXCEPTIONS["using_temporal"]:
+        validate_using_temporal(df, dataset_meta)
+    if distrib_id not in EXCEPTIONS["FieldIdRepetitionError"]:
+        validate_FieldIdRepetitionError(catalog, distrib_meta)
+    if distrib_id not in EXCEPTIONS["FieldTitleRepetitionError"]:
+        validate_FieldTitleRepetitionError(distrib_meta)
+    if distrib_id not in EXCEPTIONS["FieldDescriptionRepetitionError"]:
+        validate_FieldDescriptionRepetitionError(distrib_meta)
+
+
+def validate_distribution_scraping(
+        xl, worksheet, headers_coord, headers_value):
+
+    # Las celdas de los headers deben estar en blanco o contener un id
+    for header_coord, header_value in zip(headers_coord, headers_value):
+        ws_header_value = xl.wb[worksheet][header_coord].value
+        if (
+            ws_header_value and
+            len(unicode(ws_header_value).strip()) > 0 and
+            ws_header_value != header_value
+        ):
+            raise ce.HeaderNotBlankOrIdError(
+                worksheet, header_coord, header_value, ws_header_value)
