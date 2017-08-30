@@ -178,7 +178,7 @@ def save_dump(df_dump, df_series, df_values,
     # guarda créditos
 
     # guarda dump completo comprimido
-    print("Comprimiendo dump en {}...".format(fmt), end=" ")
+    print("Comprimiendo dump completo en {}...".format(fmt), end=" ")
     compress_file(dump_path, dump_path_zip)
     print("{}MB".format(os.path.getsize(dump_path_zip) / 1000000))
 
@@ -190,17 +190,20 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
     logger = get_logger(__name__)
 
     # genera dump completo de la base de series
-    print("Generando dump completo en DataFrame.")
+    print("Generando dump completo en DataFrame...", end=" ")
     df_dump = generate_dump(catalogs_dir=catalogs_dir)
+    print("{} observaciones".format(len(df_dump)))
 
     # genera resumen descriptivo de series del dump
-    print("Generando resumen de series en DataFrame.")
+    print("Generando resumen de series en DataFrame...", end=" ")
     df_series = generate_series_summary(
         df_dump, series_index_cols, observations_cols)
+    print("{} series".format(len(df_series)))
 
     # genera dump mínimo con las observaciones
-    print("Generando dump mínimo de observaciones en DataFrame.")
+    print("Generando dump mínimo de observaciones en DataFrame...", end=" ")
     df_values = df_dump[observations_cols + series_index_cols]
+    print("{} observaciones".format(len(df_values)))
 
     # guarda los contenidos del dump en diversos formatos
     save_dump(df_dump, df_series, df_values, fmt="CSV", base_dir=dumps_dir)
