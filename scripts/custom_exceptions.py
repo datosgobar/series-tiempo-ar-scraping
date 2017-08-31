@@ -25,6 +25,14 @@ class InvalidFieldTitleError(ValueError):
         super(InvalidFieldTitleError, self).__init__(msg)
 
 
+class InvalidFieldIdError(ValueError):
+
+    def __init__(self, field_id, char, valid_field_chars):
+        msg = "'{}' usa caracteres invalidos ('{}'). Validos: '{}'".format(
+            field, char, valid_field_chars)
+        super(InvalidFieldTitleError, self).__init__(msg)
+
+
 class HeaderNotBlankOrIdError(ValueError):
 
     def __init__(self, worksheet, header_coord, header_value, ws_header_value):

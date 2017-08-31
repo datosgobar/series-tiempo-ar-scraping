@@ -10,6 +10,7 @@ import os
 import sys
 import pandas as pd
 import arrow
+import string
 
 import custom_exceptions as ce
 from dateutil.parser import parse as parse_time
@@ -56,6 +57,18 @@ def validate_InvalidFieldTitleError(df):
             if char not in valid_field_chars:
                 raise ce.InvalidFieldTitleError(
                     field, char, valid_field_chars
+                )
+
+
+def validate_InvalidFieldIdError(distrib_meta):
+    # Los ids de los campos deben tener caracteres ASCII + "_"
+    special_chars = "_-."
+    valid_field_chars = string.ascii_letters + string.digits + special_chars
+    for field_id in [field["id"] for field in distrib_meta["field"]]:
+        for char in field_id:
+            if char not in valid_field_chars:
+                raise ce.InvalidFieldIdError(
+                    field_id, char, valid_field_chars
                 )
 
 
@@ -162,8 +175,6 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
         validate_TimeIndexFutureTimeValueError(df)
     if distrib_id not in EXCEPTIONS["FieldFewValuesError"]:
         validate_FieldFewValuesError(df)
-    if distrib_id not in EXCEPTIONS["InvalidFieldTitleError"]:
-        validate_InvalidFieldTitleError(df)
     if distrib_id not in EXCEPTIONS["FieldTitleTooLongError"]:
         validate_FieldTitleTooLongError(df)
     if distrib_id not in EXCEPTIONS["FieldTooManyMissingsError"]:
@@ -174,8 +185,12 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
         validate_FieldIdRepetitionError(catalog, distrib_meta)
     if distrib_id not in EXCEPTIONS["FieldTitleRepetitionError"]:
         validate_FieldTitleRepetitionError(distrib_meta)
+    if distrib_id not in EXCEPTIONS["InvalidFieldIdError"]:
+        validate_InvalidFieldIdError(distrib_meta)
     if distrib_id not in EXCEPTIONS["FieldDescriptionRepetitionError"]:
         validate_FieldDescriptionRepetitionError(distrib_meta)
+    if distrib_id not in EXCEPTIONS["InvalidFieldTitleError"]:
+        validate_InvalidFieldTitleError(df)
 
 
 def validate_distribution_scraping(
