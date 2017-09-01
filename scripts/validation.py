@@ -158,6 +158,7 @@ EXCEPTIONS = {
     "TimeIndexFutureTimeValueError": ["57.1"],
     "FieldFewValuesError": [],
     "InvalidFieldTitleError": [],
+    "InvalidFieldIdError": [],
     "FieldTitleTooLongError": [],
     "FieldTooManyMissingsError": [],
     "using_temporal": [],
