@@ -5,8 +5,8 @@ SHELL = bash
 all: extraction transformation load
 et: extraction transformation
 extraction: download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
-# transformation: data/output/catalog/sspm/data.json data/output/catalog/sspm/dataset/ send_transformation_report
+transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
+# transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report
 load: upload_series upload_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
@@ -54,7 +54,7 @@ create_dir:
 	mkdir -p data/input
 	mkdir -p data/input/catalog
 	mkdir -p data/output
-	mkdir -p data/output/catalog
+	mkdir -p data/output/server/catalog
 	mkdir -p data/output/series
 	mkdir -p data/output/dump
 	mkdir -p data/params
@@ -94,14 +94,14 @@ download_sources:
 	bash scripts/download_distributions.sh "data/params/distribution_urls.txt"
 
 # transformation
-data/output/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
+data/output/server/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
 	# $(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@" > data/generate-catalog-errors.txt
 
 # TODO: revisar como se usan adecuadamenten los directorios
-data/output/server/catalog/sspm/dataset/: data/output/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
+data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" replace
-	# $(SERIES_TIEMPO_PYTHON) scripts/validate_distributions.py data/output/catalog/sspm/data.json data/input/catalog/sspm/sources/ "$@" skip
+	$(SERIES_TIEMPO_PYTHON) scripts/validate_distributions.py data/output/server/catalog/sspm/data.json data/input/catalog/sspm/dataset/ "$@" replace
 
 data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
@@ -109,7 +109,7 @@ data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
-data/output/series/: data/output/catalog/sspm/data.json data/params/series_params.json
+data/output/series/: data/output/server/catalog/sspm/data.json data/params/series_params.json
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output "$@"
 
 data/output/dump/:
@@ -122,16 +122,16 @@ upload_series:
 upload_dumps:
 	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/dump/ dumps "scripts/config/config_webdav.yaml" "data/params/webdav_dumps.json"
 
-upload_catalog: data/output/catalog/sspm/data.json
+upload_catalog: data/output/server/catalog/sspm/data.json
 	$(SERIES_TIEMPO_PYTHON) scripts/upload_catalog.py "$<" "scripts/config/config_ind.yaml"
 
-upload_datasets: data/output/catalog/sspm/dataset/
+upload_datasets: data/output/server/catalog/sspm/dataset/
 	$(SERIES_TIEMPO_PYTHON) scripts/upload_datasets.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
 
 # clean
 clean:
 	rm -rf data/input/catalog/
-	rm -rf data/output/catalog/
+	rm -rf data/output/server/catalog/
 	rm -rf data/output/dump/
 	rm -rf data/output/series/
 	rm -f data/params/sources_urls.txt
@@ -139,7 +139,7 @@ clean:
 	make create_dir
 
 # test
-profiling_test: data/output/catalog/sspm/data.json data/scraping_params_test.csv
+profiling_test: data/output/server/catalog/sspm/data.json data/scraping_params_test.csv
 	$(SERIES_TIEMPO_PYTHON) scripts/profiling.py $^ data/input/catalog/sspm/sources/ data/datasets_test/
 
 test_crontab:
