@@ -1,6 +1,6 @@
 SHELL = bash
 
-.PHONY: all clean download_catalog download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/sources_urls.txt data/output/dump/
+.PHONY: all clean download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/sources_urls.txt data/output/dump/
 
 all: extraction transformation load
 et: extraction transformation
@@ -83,11 +83,11 @@ download_catalog: data/params/catalog_url.txt
 		wget -N -O "data/input/catalog/$$catalog_id/catalog.xlsx" "$$url" --no-check-certificate ; \
 	done < "$<"
 
-data/params/scraping_urls.txt: data/input/catalog/
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "$<" scraping "$@"
+data/params/scraping_urls.txt:
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py data/input/catalog/ scraping "$@"
 
-data/params/distribution_urls.txt: data/input/catalog/
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "$<" distribution "$@"
+data/params/distribution_urls.txt:
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py data/input/catalog/ distribution "$@"
 
 download_sources:
 	bash scripts/download_scraping_sources.sh "data/params/scraping_urls.txt"
@@ -135,6 +135,7 @@ clean:
 	rm -rf data/output/dump/
 	rm -rf data/output/series/
 	rm -f data/params/sources_urls.txt
+	rm -f data/params/distribution_urls.txt
 	rm -f data/params/scraping_params.csv
 	make create_dir
 
