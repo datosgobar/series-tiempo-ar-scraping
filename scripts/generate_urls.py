@@ -25,7 +25,7 @@ def get_distribution_download_urls(df, catalog_id):
     for index, row in df_no_scraping.iterrows():
         distribution_fileName = "{}.{}".format(
             title_to_name(row["distribution_title"]),
-            row["distribution_format"].split("/")[-1].lower()
+            unicode(row["distribution_format"]).split("/")[-1].lower()
         )
         urls.append("{} {} {} {} {}".format(
             catalog_id, row["dataset_identifier"],
