@@ -187,9 +187,12 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
         return res
 
     # filtro los parametros para un dataset en particular
+    distribution_ids_all = [
+        distribution["identifier"]
+        for distribution in dataset_meta["distribution"]
+    ]
     dataset_params = etl_params[etl_params.apply(
-        lambda x: x[
-            "distribution_identifier"].split(".")[0] == dataset_identifier,
+        lambda x: x["distribution_identifier"] in distribution_ids_all,
         axis=1)]
     distribution_ids = dataset_params.distribution_identifier.unique()
 
