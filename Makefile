@@ -1,6 +1,6 @@
 SHELL = bash
 
-.PHONY: all clean download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/sources_urls.txt data/output/dump/
+.PHONY: all clean download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt data/output/dump/
 
 all: extraction transformation load
 et: extraction transformation
@@ -130,11 +130,9 @@ upload_datasets: data/output/server/catalog/sspm/dataset/
 
 # clean
 clean:
-	rm -rf data/input/catalog/
-	rm -rf data/output/server/catalog/
-	rm -rf data/output/dump/
-	rm -rf data/output/series/
-	rm -f data/params/sources_urls.txt
+	rm -rf data/input/
+	rm -rf data/output/
+	rm -f data/params/scraping_urls.txt
 	rm -f data/params/distribution_urls.txt
 	rm -f data/params/scraping_params.csv
 	make create_dir
