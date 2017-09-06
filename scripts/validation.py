@@ -64,7 +64,8 @@ def validate_InvalidFieldIdError(distrib_meta):
     # Los ids de los campos deben tener caracteres ASCII + "_"
     special_chars = "_-."
     valid_field_chars = string.ascii_letters + string.digits + special_chars
-    for field_id in [field["id"] for field in distrib_meta["field"]]:
+    for field_id in [field["id"] for field in distrib_meta["field"]
+                     if "id" in field]:
         for char in field_id:
             if char not in valid_field_chars:
                 raise ce.InvalidFieldIdError(
@@ -133,7 +134,7 @@ def validate_FieldIdRepetitionError(catalog, distrib_meta):
             if ("field" in distribution and
                     distribution["identifier"] != distrib_meta["identifier"]):
                 for field in distribution["field"]:
-                    if field["title"] != "indice_tiempo":
+                    if field["title"] != "indice_tiempo" and "id" in field:
                         field_ids.append(field["id"])
     for field_distrib in distrib_meta["field"]:
         if field_distrib["id"] in field_ids:
