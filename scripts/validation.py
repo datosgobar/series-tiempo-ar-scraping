@@ -137,7 +137,7 @@ def validate_FieldIdRepetitionError(catalog, distrib_meta):
                     if field["title"] != "indice_tiempo" and "id" in field:
                         field_ids.append(field["id"])
     for field_distrib in distrib_meta["field"]:
-        if field_distrib["id"] in field_ids:
+        if "id" in field_distrib and field_distrib["id"] in field_ids:
             raise ce.FieldIdRepetitionError(field_distrib["id"])
 
 

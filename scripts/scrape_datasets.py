@@ -168,7 +168,8 @@ def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
 
 def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
                    debug_mode=False, replace=True,
-                   config_server_path=CONFIG_SERVER_PATH):
+                   config_server_path=CONFIG_SERVER_PATH,
+                   debug_distribution_ids=None):
 
     res = {
         "dataset_status": None,
@@ -195,6 +196,13 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
         lambda x: x["distribution_identifier"] in distribution_ids_all,
         axis=1)]
     distribution_ids = dataset_params.distribution_identifier.unique()
+
+    # si está en debug mode, se puede especificar sólo algunos ids
+    if debug_mode and debug_distribution_ids:
+        distribution_ids = [
+            distribution_id for distribution_id in distribution_ids
+            if distribution_id in debug_distribution_ids
+        ]
 
     # creo c/u de las distribuciones del dataset
     for distribution_identifier in distribution_ids:
@@ -246,7 +254,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
 
 
 def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
-                replace=True, debug_mode=False):
+                replace=True, debug_mode=False, debug_distribution_ids=None):
     xl = XlSeries(ied_xlsx_path)
     ied_xlsx_filename = os.path.basename(ied_xlsx_path)
 
@@ -262,7 +270,8 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
     for dataset_identifier in dataset_ids:
         result = scrape_dataset(
             xl, etl_params, catalog, dataset_identifier, datasets_dir,
-            replace=replace, debug_mode=debug_mode
+            replace=replace, debug_mode=debug_mode,
+            debug_distribution_ids=debug_distribution_ids
         )
 
         report_datasets.append({
@@ -346,7 +355,7 @@ def generate_summary_indicators(report_files, report_datasets,
 
 
 def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
-         replace=False, debug_mode=False):
+         replace=False, debug_mode=False, debug_distribution_ids=None):
 
     catalog = DataJson(catalog_json_path)
 
@@ -371,7 +380,8 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
         try:
             report_datasets, report_distributions = scrape_file(
                 ied_xlsx_path, etl_params, catalog, datasets_dir,
-                replace=replace, debug_mode=debug_mode)
+                replace=replace, debug_mode=debug_mode,
+                debug_distribution_ids=debug_distribution_ids)
             all_report_datasets.append(report_datasets)
             all_report_distributions.append(report_distributions)
 
@@ -445,4 +455,4 @@ if __name__ == '__main__':
     if len(sys.argv) >= 6 and sys.argv[5]:
         replace = True if sys.argv[5] == "replace" else False
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-         replace=replace, debug_mode=False)
+         replace=replace, debug_mode=False, debug_distribution_ids=[])
