@@ -195,9 +195,17 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
         validate_InvalidFieldTitleError(df)
 
 
-def validate_distribution_scraping(
-        xl, worksheet, headers_coord, headers_value):
+def validate_HeaderIdError(xl, worksheet, headers_coord, headers_value):
+    # Las celdas de los headers deben estar en blanco o contener un id
+    for header_coord, header_value in zip(headers_coord, headers_value):
+        ws_header_value = xl.wb[worksheet][header_coord].value
+        if ws_header_value != header_value:
+            raise ce.HeaderIdError(
+                worksheet, header_coord, header_value, ws_header_value)
 
+
+def validate_HeaderNotBlankOrIdError(xl, worksheet, headers_coord,
+                                     headers_value):
     # Las celdas de los headers deben estar en blanco o contener un id
     for header_coord, header_value in zip(headers_coord, headers_value):
         ws_header_value = xl.wb[worksheet][header_coord].value
@@ -208,3 +216,13 @@ def validate_distribution_scraping(
         ):
             raise ce.HeaderNotBlankOrIdError(
                 worksheet, header_coord, header_value, ws_header_value)
+
+
+def validate_distribution_scraping(
+        xl, worksheet, headers_coord, headers_value, force_ids=True):
+
+    if force_ids:
+        validate_HeaderIdError(xl, worksheet, headers_coord, headers_value)
+    else:
+        validate_HeaderNotBlankOrIdError(xl, worksheet, headers_coord,
+                                         headers_value)
