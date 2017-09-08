@@ -30,15 +30,15 @@ logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
 sys.path.insert(0, os.path.abspath(".."))
 
 # campos extra que definen una observación.
-OBSERVATIONS_COLS = ["distribucion_indice_tiempo", "valor"]
+OBSERVATIONS_COLS = ["indice_tiempo", "valor"]
 
 # ids que definen una serie.
 SERIES_INDEX_COLS = ["catalog_id", "dataset_id", "distribucion_id", "serie_id"]
 
 
-def _get_valor_anterior_anio(series_dataframe):
+def _get_serie_valor_anterior_anio(series_dataframe):
     series = pd.Series(list(series_dataframe.valor), list(
-        series_dataframe.distribucion_indice_tiempo)).sort_index()
+        series_dataframe.indice_tiempo)).sort_index()
     return series.get(series.index[-1] - pd.DateOffset(years=1))
 
 
@@ -65,12 +65,9 @@ def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
 
     # CALCULA INDICADORES resumen sobre las series
     # rango temporal de la serie
-    df_series["serie_indice_inicio"] = series_group[
-        "distribucion_indice_tiempo"].min()
-    df_series["serie_indice_final"] = series_group[
-        "distribucion_indice_tiempo"].max()
-    df_series["serie_valores_cant"] = series_group[
-        "distribucion_indice_tiempo"].count()
+    df_series["serie_indice_inicio"] = series_group["indice_tiempo"].min()
+    df_series["serie_indice_final"] = series_group["indice_tiempo"].max()
+    df_series["serie_valores_cant"] = series_group["indice_tiempo"].count()
 
     # estado de actualización de los datos
     # calcula días que pasaron por encima de período cubierto por datos
@@ -78,31 +75,31 @@ def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
         lambda x: (pd.datetime.now() - pd.to_datetime(x[
             "serie_indice_final"]).to_period(
             freq_iso_to_pandas(x[
-                "distribucion_indice_frecuencia"],
+                "indice_tiempo_frecuencia"],
                 how="end")).to_timestamp(how="end")).days,
         axis=1)
     # si pasaron 2 períodos no cubiertos por datos, serie está desactualizada
     df_series["serie_actualizada"] = df_series.apply(
         lambda x: x["serie_dias_no_cubiertos"] < 2 *
         parse_repeating_time_interval_to_days(
-            x["distribucion_indice_frecuencia"]),
+            x["indice_tiempo_frecuencia"]),
         axis=1)
 
     # valores representativos nominales
-    df_series["valor_ultimo"] = series_group.apply(
-        lambda x: x.loc[x.distribucion_indice_tiempo.argmax(), "valor"])
-    df_series["valor_anterior"] = series_group.apply(
+    df_series["serie_valor_ultimo"] = series_group.apply(
+        lambda x: x.loc[x.indice_tiempo.argmax(), "valor"])
+    df_series["serie_valor_anterior"] = series_group.apply(
         lambda x: pd.Series(list(x.valor), list(
-            x.distribucion_indice_tiempo)).sort_index()[-2]
+            x.indice_tiempo)).sort_index()[-2]
     )
-    df_series["valor_anterior_anio"] = series_group.apply(
-        _get_valor_anterior_anio)
+    df_series["serie_valor_anterior_anio"] = series_group.apply(
+        _get_serie_valor_anterior_anio)
 
     # valores representativos en variación porcentual
-    df_series["var_pct_anterior"] = df_series[
-        "valor_ultimo"] / df_series["valor_anterior"] - 1
-    df_series["var_pct_anterior_anio"] = df_series[
-        "valor_ultimo"] / df_series["valor_anterior_anio"] - 1
+    df_series["serie_var_pct_anterior"] = df_series[
+        "serie_valor_ultimo"] / df_series["serie_valor_anterior"] - 1
+    df_series["serie_var_pct_anterior_anio"] = df_series[
+        "serie_valor_ultimo"] / df_series["serie_valor_anterior_anio"] - 1
 
     return df_series.reset_index()
 
@@ -205,14 +202,14 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
 
     # genera dump mínimo con las observaciones
     print("Generando dump mínimo de observaciones en DataFrame...", end=" ")
-    df_values = df_dump[observations_cols + series_index_cols]
+    df_values = df_dump[series_index_cols + observations_cols]
     print("{} observaciones".format(len(df_values)))
 
     # guarda los contenidos del dump en diversos formatos
     save_dump(df_dump, df_series, df_values, fmt="CSV", base_dir=dumps_dir)
     save_dump(df_dump, df_series, df_values, fmt="XLSX", base_dir=dumps_dir)
-    save_dump(df_dump, df_series, df_values, fmt="DB", base_dir=dumps_dir)
     save_dump(df_dump, df_series, df_values, fmt="DTA", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, fmt="DB", base_dir=dumps_dir)
 
 
 if __name__ == '__main__':
