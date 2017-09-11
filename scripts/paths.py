@@ -16,7 +16,8 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(
 # directorios del repositorio
 LOGS_DIR = os.path.join(PROJECT_DIR, "logs")
 DATOS_DIR = os.path.join(PROJECT_DIR, "data")
-CATALOGS_DIR = os.path.join(DATOS_DIR, "output")
+CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "server")
+CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input")
 TEST_CATALOGS_DIR = os.path.join(DATOS_DIR, "tests")
 DUMPS_DIR = os.path.join(DATOS_DIR, "output", "dump")
 CATALOG_PATH = os.path.join(

@@ -12,6 +12,7 @@ import yaml
 import sys
 import pandas as pd
 import arrow
+import shutil
 from openpyxl import load_workbook
 import logging
 from copy import deepcopy
@@ -22,10 +23,12 @@ from pydatajson.helpers import title_to_name
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from urlparse import urljoin
+from pprint import pprint
 
 import helpers
 import custom_exceptions as ce
 from paths import LOGS_DIR, REPORTES_DIR, CONFIG_SERVER_PATH
+from paths import get_distribution_path, CATALOGS_DIR_INPUT
 from validation import validate_distribution, validate_distribution_scraping
 from generate_catalog import write_json_catalog
 
@@ -153,6 +156,27 @@ def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
     return df
 
 
+def analyze_distribution(catalog, distribution_identifier):
+
+    distrib_meta = catalog.get_distribution(distribution_identifier)
+    dataset_meta = catalog.get_dataset(distribution_identifier.split(".")[0])
+
+    distribution_path = get_distribution_path(
+        "sspm", dataset_meta["identifier"], distribution_identifier,
+        CATALOGS_DIR_INPUT)
+    print("leyendo distribucion {} en {}".format(
+        distribution_identifier, distribution_path))
+
+    time_index = "indice_tiempo"
+    df = pd.read_csv(distribution_path, index_col=time_index,
+                     parse_dates=True)
+
+    validate_distribution(df, catalog, dataset_meta, distrib_meta,
+                          distribution_identifier)
+
+    return distribution_path
+
+
 def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
 
     with open(config_server_path, 'r') as f:
@@ -253,6 +277,84 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
     return res
 
 
+def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
+                    debug_mode=False, replace=True,
+                    config_server_path=CONFIG_SERVER_PATH,
+                    debug_distribution_ids=None):
+
+    res = {
+        "dataset_status": None,
+        "distributions_ok": [],
+        "distributions_error": [],
+    }
+
+    dataset_meta = catalog.get_dataset(dataset_identifier)
+
+    if dataset_meta:
+        dataset_dir = os.path.join(datasets_output_dir, dataset_identifier)
+        helpers.ensure_dir_exists(dataset_dir)
+        res["dataset_status"] = "OK"
+    else:
+        res["dataset_status"] = "ERROR: metadata"
+        return res
+
+    distribution_ids = [distribution["identifier"]
+                        for distribution in dataset_meta["distribution"]]
+
+    # si está en debug mode, se puede especificar sólo algunos ids
+    if debug_mode and debug_distribution_ids:
+        distribution_ids = [
+            distribution_id for distribution_id in distribution_ids
+            if distribution_id in debug_distribution_ids
+        ]
+
+    # creo c/u de las distribuciones del dataset
+    for distribution_identifier in distribution_ids:
+        msg = "Distribución {}: {} ({})"
+        try:
+            distrib_meta = catalog.get_distribution(distribution_identifier)
+            distribution_name = title_to_name(distrib_meta["title"])
+            dist_path = os.path.join(
+                dataset_dir, "distribution", distribution_identifier,
+                "download", "{}.csv".format(distribution_name)
+            )
+            dist_url = get_distribution_url(dist_path, config_server_path)
+            distrib_meta["downloadURL"] = dist_url
+
+            # chequea si ante la existencia del archivo hay que reemplazarlo o
+            # saltearlo
+            if not os.path.exists(dist_path) or replace:
+                status = "Replaced" if os.path.exists(dist_path) else "Created"
+                origin_dist_path = analyze_distribution(
+                    catalog, distribution_identifier)
+
+                if isinstance(distribution, list):
+                    distribution_complete = pd.concat(distribution)
+                else:
+                    distribution_complete = distribution
+
+                helpers.ensure_dir_exists(os.path.dirname(dist_path))
+                shutil.copyfile(origin_dist_path, dist_path)
+            else:
+                status = "Skipped"
+
+            res["distributions_ok"].append((distribution_identifier, status))
+            print(msg.format(distribution_identifier, "OK", status))
+
+        except Exception as e:
+            if isinstance(e, KeyboardInterrupt):
+                raise
+            res["distributions_error"].append(
+                (distribution_identifier, repr(e).encode("utf8")))
+            print(msg.format(distribution_identifier,
+                             "ERROR", repr(e).encode("utf8")))
+            if debug_mode:
+                raise
+            res["dataset_status"] = "ERROR: scraping"
+
+    return res
+
+
 def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
                 replace=True, debug_mode=False, debug_distribution_ids=None):
     xl = XlSeries(ied_xlsx_path)
@@ -301,6 +403,55 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
     return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
 
 
+def analyze_catalog(catalog, datasets_dir,
+                    replace=True, debug_mode=False,
+                    debug_distribution_ids=None):
+    # pprint(catalog.get_distributions())
+    distributions_with_url = filter(
+        lambda x: "downloadURL" in x and bool(x["downloadURL"]),
+        catalog.get_distributions())
+    print("{} distribuciones con `downloadURL`".format(
+        len(distributions_with_url))
+    )
+    dataset_ids = set((distribution["dataset_identifier"]
+                       for distribution in distributions_with_url))
+
+    report_datasets = []
+    report_distributions = []
+    for dataset_identifier in dataset_ids:
+        result = analyze_dataset(
+            catalog, dataset_identifier, datasets_dir,
+            replace=replace, debug_mode=debug_mode,
+            debug_distribution_ids=debug_distribution_ids
+        )
+
+        report_datasets.append({
+            "dataset_identifier": dataset_identifier,
+            "dataset_status": result["dataset_status"],
+            "distribution_iedFileURL": None
+        })
+
+        distribution_result = {
+            "dataset_identifier": dataset_identifier,
+            "distribution_iedFileURL": None
+        }
+
+        for distribution_id, distribution_notes in result["distributions_ok"]:
+            distribution_result["distribution_identifier"] = distribution_id
+            distribution_result["distribution_status"] = "OK"
+            distribution_result["distribution_notes"] = distribution_notes
+            report_distributions.append(distribution_result)
+
+        for distribution_id, distribution_notes in result[
+                "distributions_error"]:
+            distribution_result["distribution_identifier"] = distribution_id
+            distribution_result["distribution_status"] = "ERROR"
+            distribution_result["distribution_notes"] = distribution_notes
+            report_distributions.append(distribution_result)
+
+    return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
+
+
 def generate_summary_message(indicators):
     """Genera asunto y mensaje del mail de reporte a partir de indicadores.
 
@@ -330,13 +481,6 @@ def generate_summary_indicators(report_files, report_datasets,
         report_distributions.distribution_status != "OK"
     ])
     indicators = {
-        "Archivos": len(report_files),
-        "Archivos (OK)": len(report_files[
-            report_files.file_status == "OK"
-        ]),
-        "Archivos (ERROR)": len(report_files[
-            report_files.file_status != "OK"
-        ]),
         "Datasets": len(report_datasets),
         "Datasets (OK)": len(report_datasets[
             report_datasets.dataset_status == "OK"
@@ -351,11 +495,24 @@ def generate_summary_indicators(report_files, report_datasets,
             float(distr_ok) / (distr_ok + distr_error), 3) * 100,
     }
 
+    if report_files and len(report_files) > 0:
+        indicators_files = {
+            "Archivos": len(report_files),
+            "Archivos (OK)": len(report_files[
+                report_files.file_status == "OK"
+            ]),
+            "Archivos (ERROR)": len(report_files[
+                report_files.file_status != "OK"
+            ])
+        }
+        indicators.update(indicators_files)
+
     return indicators
 
 
 def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
-         replace=False, debug_mode=False, debug_distribution_ids=None):
+         replace=False, debug_mode=False, debug_distribution_ids=None,
+         do_scraping=True, do_distributions=True):
 
     catalog = DataJson(catalog_json_path)
 
@@ -369,39 +526,60 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
     ied_xlsx_paths = [os.path.join(ied_data_dir, filename)
                       for filename in ied_xlsx_filenames]
 
-    # scrapea cada excel de ied y genera los reportes
+    # inicializa las listas que contienen los reportes
     report_files = []
     all_report_datasets = []
     all_report_distributions = []
-    msg = "Archivo {}: {} ({})"
-    for ied_xlsx_path in ied_xlsx_paths:
-        print(ied_xlsx_path)
 
+    # PRIMERO: recorre catálogo en busca de distribuciones con series de tiempo
+    if do_distributions:
         try:
-            report_datasets, report_distributions = scrape_file(
-                ied_xlsx_path, etl_params, catalog, datasets_dir,
+            report_datasets, report_distributions = analyze_catalog(
+                catalog, datasets_dir,
                 replace=replace, debug_mode=debug_mode,
                 debug_distribution_ids=debug_distribution_ids)
             all_report_datasets.append(report_datasets)
             all_report_distributions.append(report_distributions)
 
-            report_files.append({
-                "file_name": ied_xlsx_path,
-                "file_status": "OK",
-                "file_notes": ""
-            })
-
         except Exception as e:
+            raise
             if isinstance(e, KeyboardInterrupt):
                 raise
-            report_files.append({
-                "file_name": ied_xlsx_path,
-                "file_status": "ERROR",
-                "file_notes": repr(e).encode("utf8")
-            })
-            print(msg.format(ied_xlsx_path, "ERROR", repr(e).encode("utf8")))
             if debug_mode:
                 raise
+
+    # SEGUNDO   : organiza el scraping por Excel descargado
+    if do_scraping:
+        msg = "Archivo {}: {} ({})"
+        for ied_xlsx_path in ied_xlsx_paths:
+            print(ied_xlsx_path)
+
+            try:
+                report_datasets, report_distributions = scrape_file(
+                    ied_xlsx_path, etl_params, catalog, datasets_dir,
+                    replace=replace, debug_mode=debug_mode,
+                    debug_distribution_ids=debug_distribution_ids)
+                all_report_datasets.append(report_datasets)
+                all_report_distributions.append(report_distributions)
+
+                report_files.append({
+                    "file_name": ied_xlsx_path,
+                    "file_status": "OK",
+                    "file_notes": ""
+                })
+
+            except Exception as e:
+                if isinstance(e, KeyboardInterrupt):
+                    raise
+                report_files.append({
+                    "file_name": ied_xlsx_path,
+                    "file_status": "ERROR",
+                    "file_notes": repr(e).encode("utf8")
+                })
+                print(msg.format(ied_xlsx_path, "ERROR",
+                                 repr(e).encode("utf8")))
+                if debug_mode:
+                    raise
 
     # concatena todos los reportes
     complete_report_files = pd.DataFrame(report_files)
@@ -412,9 +590,10 @@ def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
     cols_rep_files = [
         "file_name", "file_status", "file_notes"
     ]
-    complete_report_files[cols_rep_files].to_excel(
-        os.path.join(REPORTES_DIR, "reporte-files-scraping.xlsx"),
-        encoding="utf-8", index=False)
+    if len(complete_report_files) > 0:
+        complete_report_files[cols_rep_files].to_excel(
+            os.path.join(REPORTES_DIR, "reporte-files-scraping.xlsx"),
+            encoding="utf-8", index=False)
 
     # guarda el reporte de datasets en EXCEL
     cols_rep_dataset = [

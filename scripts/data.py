@@ -306,7 +306,8 @@ def get_series(
         raise Exception("No se reconoce el formato")
 
 
-def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None):
+def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None,
+                    debug_mode=False):
 
     if not field_ids:
         field_ids = []
@@ -314,7 +315,7 @@ def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None):
             for distribution in dataset["distribution"]:
                 if "field" in distribution:
                     for field in distribution["field"]:
-                        if field["title"] != "indice_tiempo":
+                        if field["title"] != "indice_tiempo" and "id" in field:
                             field_ids.append(field["id"])
 
     series_params = get_series_params(field_ids)
@@ -333,7 +334,10 @@ def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None):
             }
         except Exception as e:
             print(field_id, e)
-            continue
+            if debug_mode:
+                raise
+            else:
+                continue
 
     return time_series
 
