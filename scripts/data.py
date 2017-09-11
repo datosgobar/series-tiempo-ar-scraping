@@ -53,6 +53,11 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                 except:
                     continue
 
+                msg = "Agregando {} {} {} desde {}".format(
+                    catalog_id, dataset["identifier"],
+                    distribution["identifier"], distribution_path)
+                # print(msg, end="\r" * len(msg))
+
                 # hasheo metadata de field por field_title
                 fields = {
                     field["title"]: field

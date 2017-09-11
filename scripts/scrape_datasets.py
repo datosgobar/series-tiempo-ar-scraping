@@ -164,8 +164,8 @@ def analyze_distribution(catalog, distribution_identifier):
     distribution_path = get_distribution_path(
         "sspm", dataset_meta["identifier"], distribution_identifier,
         CATALOGS_DIR_INPUT)
-    print("leyendo distribucion {} en {}".format(
-        distribution_identifier, distribution_path))
+    # print("leyendo distribucion {} en {}".format(
+    #     distribution_identifier, distribution_path))
 
     time_index = "indice_tiempo"
     df = pd.read_csv(distribution_path, index_col=time_index,
@@ -495,7 +495,7 @@ def generate_summary_indicators(report_files, report_datasets,
             float(distr_ok) / (distr_ok + distr_error), 3) * 100,
     }
 
-    if report_files and len(report_files) > 0:
+    if report_files is not None and len(report_files) > 0:
         indicators_files = {
             "Archivos": len(report_files),
             "Archivos (OK)": len(report_files[

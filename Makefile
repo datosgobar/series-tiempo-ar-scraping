@@ -11,7 +11,7 @@ load: upload_series upload_dumps
 setup: install_anaconda clone_repo setup_environment create_dir install_cron
 
 start_python_server:
-	cd data/output && python -m SimpleHTTPServer 8080
+	cd data/output/server && python -m SimpleHTTPServer 8080
 
 # setup
 install_anaconda:
@@ -100,7 +100,7 @@ data/output/server/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
 
 # TODO: revisar como se usan adecuadamenten los directorios
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" replace
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" skip
 	# $(SERIES_TIEMPO_PYTHON) scripts/validate_distributions.py data/output/server/catalog/sspm/data.json data/input/catalog/sspm/dataset/ "$@" replace
 
 data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
@@ -110,10 +110,10 @@ send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
 data/output/series/: data/output/server/catalog/sspm/data.json data/params/series_params.json
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output "$@"
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/server "$@"
 
 data/output/dump/:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output "$@"
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@"
 
 # load
 upload_series:
