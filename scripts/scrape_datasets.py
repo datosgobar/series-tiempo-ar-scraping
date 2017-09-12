@@ -409,12 +409,15 @@ def analyze_catalog(catalog, datasets_dir,
     # pprint(catalog.get_distributions())
     distributions_with_url = filter(
         lambda x: "downloadURL" in x and bool(x["downloadURL"]),
-        catalog.get_distributions())
+        catalog.get_distributions()
+    )
     print("{} distribuciones con `downloadURL`".format(
         len(distributions_with_url))
     )
-    dataset_ids = set((distribution["dataset_identifier"]
-                       for distribution in distributions_with_url))
+    dataset_ids = set((
+        distribution["dataset_identifier"]
+        for distribution in distributions_with_url
+    ))
 
     report_datasets = []
     report_distributions = []

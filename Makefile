@@ -8,7 +8,7 @@ extraction: download_catalog data/params/scraping_urls.txt data/params/distribut
 transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
 # transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report
 load: upload_series upload_dumps
-setup: install_anaconda clone_repo setup_environment create_dir install_cron
+setup: install_anaconda setup_environment create_dir install_cron
 
 start_python_server:
 	cd data/output/server && python -m SimpleHTTPServer 8080
@@ -17,6 +17,7 @@ start_python_server:
 install_anaconda:
 	wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
 	bash Miniconda2-latest-Linux-x86_64.sh
+	source ~/.bashrc
 
 install_nginx:
 	sudo service apache2 stop
@@ -30,16 +31,20 @@ start_nginx:
 stop_nginx:
 	sudo nginx -s stop
 
-clone_repo:
-	git clone https://github.com/datosgobar/series-tiempo.git
-	cd series-tiempo
+# clone_repo:
+# 	git clone https://github.com/datosgobar/series-tiempo.git
+# 	cd series-tiempo
 
 # ambiente testeado para un Ubuntu 16.04
 setup_environment:
 	conda create -n series-tiempo --no-default-packages
 	conda install -n series-tiempo pycurl
-	# sudo apt-get update && sudo apt-get install gcc && sudo apt-get install python-pycurl
+	sudo apt-get update && sudo apt-get install gcc
+	# sudo apt-get install python-pycurl
 	# sudo apt-get install libcurl4-gnutls-dev
+	# TODO: FALTA VER COMO LOGRAR QUE SE SETEE ESTA VARIABLE DE ENTORNO
+	# HOY HAY QUE AGREGARLA MANUALMENTE AL .BASHRC PARA QUE FUNCIONE
+	# PREVIA BUSQUEDA EN `conda env list` a ver dónde quedó
 	`dirname $(SERIES_TIEMPO_PYTHON)`/pip install -r requirements.txt
 
 update_environment: create_dir
