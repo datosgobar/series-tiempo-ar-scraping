@@ -19,11 +19,12 @@ install_anaconda:
 	bash Miniconda2-latest-Linux-x86_64.sh
 	source ~/.bashrc
 
+# para esto es necesario frenar cualquier otro servicio web en el puerto 80
 install_nginx:
-	sudo service apache2 stop
-	sudo apt-get update && sudo apt-get install nginx
+	# sudo service apache2 stop
+	sudo apt-get update && sudo apt-get install nginx && sudo apt-get install nginx-extras
 	sudo ufw allow 'Nginx HTTP'
-	sudo service nginx restart
+	# sudo service nginx restart
 
 start_nginx:
 	sudo nginx -p . -c scripts/config/nginx.conf
