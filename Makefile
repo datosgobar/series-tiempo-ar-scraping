@@ -38,6 +38,8 @@ stop_nginx:
 # ambiente testeado para un Ubuntu 16.04
 setup_environment:
 	conda create -n series-tiempo --no-default-packages
+	echo 'export SERIES_TIEMPO_PYTHON=~/miniconda2/envs/series-tiempo/bin/python' >> ~/.bashrc
+	source ~/.bashrc
 	conda install -n series-tiempo pycurl
 	sudo apt-get update && sudo apt-get install gcc
 	# sudo apt-get install python-pycurl
