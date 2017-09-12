@@ -13,6 +13,7 @@ import sys
 import pandas as pd
 import arrow
 import shutil
+import traceback
 from openpyxl import load_workbook
 import logging
 from copy import deepcopy
@@ -266,10 +267,16 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
         except Exception as e:
             if isinstance(e, KeyboardInterrupt):
                 raise
+
             res["distributions_error"].append(
                 (distribution_identifier, repr(e).encode("utf8")))
-            print(msg.format(distribution_identifier,
-                             "ERROR", repr(e).encode("utf8")))
+
+            trace_string = traceback.format_exc()
+            print(msg.format(
+                distribution_identifier, "ERROR",
+                repr(e).encode("utf8")
+            ))
+            print(trace_string)
             if debug_mode:
                 raise
             res["dataset_status"] = "ERROR: scraping"
@@ -346,8 +353,14 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
                 raise
             res["distributions_error"].append(
                 (distribution_identifier, repr(e).encode("utf8")))
-            print(msg.format(distribution_identifier,
-                             "ERROR", repr(e).encode("utf8")))
+
+            trace_string = traceback.format_exc()
+            print(msg.format(
+                distribution_identifier, "ERROR",
+                repr(e).encode("utf8")
+            ))
+            print(trace_string)
+
             if debug_mode:
                 raise
             res["dataset_status"] = "ERROR: scraping"
