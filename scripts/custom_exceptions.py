@@ -9,6 +9,14 @@ from __future__ import with_statement
 import os
 
 
+class InvalidNumericField(ValueError):
+
+    def __init__(self, field_title, values):
+        msg = "'{}' tiene valores no numericos: '{}'".format(
+            field_title, " ".join(list(values)))
+        super(InvalidNumericField, self).__init__(msg)
+
+
 class FieldTitleTooLongError(ValueError):
 
     def __init__(self, field, field_len, max_field_len):
@@ -19,9 +27,17 @@ class FieldTitleTooLongError(ValueError):
 
 class InvalidFieldTitleError(ValueError):
 
-    def __init__(self, field, char, valid_field_chars):
-        msg = "'{}' usa caracteres invalidos ('{}'). Validos: '{}'".format(
-            field, char, valid_field_chars)
+    def __init__(self, field, char=None, valid_field_chars=None,
+                 is_unnamed=None):
+        if is_unnamed:
+            msg = "Existe un campo sin nombre en la distribucion: '{}'"
+        elif char and valid_field_chars:
+            msg = "'{}' usa caracteres invalidos ('{}'). Validos: '{}'".format(
+                field, char, valid_field_chars)
+        else:
+            raise NotImplementedError(
+                "Debe usarse 'is_unnamed' o 'char' + 'valid_field_chars'"
+            )
         super(InvalidFieldTitleError, self).__init__(msg)
 
 

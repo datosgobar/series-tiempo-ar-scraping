@@ -11,6 +11,7 @@ import sys
 import pandas as pd
 import arrow
 import string
+from pandas.api.types import is_numeric_dtype
 
 import custom_exceptions as ce
 from dateutil.parser import parse as parse_time
@@ -53,10 +54,14 @@ def validate_InvalidFieldTitleError(df):
     # Los titulos de los campos deben tener caracteres ASCII + "_"
     valid_field_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
     for field in df.columns:
+        if "unnamed" in field.lower():
+            raise ce.InvalidFieldTitleError(
+                field, is_unnamed=True
+            )
         for char in field:
             if char not in valid_field_chars:
                 raise ce.InvalidFieldTitleError(
-                    field, char, valid_field_chars
+                    field, char=char, valid_field_chars=valid_field_chars
                 )
 
 
@@ -155,6 +160,17 @@ def validate_FieldDescriptionRepetitionError(distrib_meta):
                            ce.FieldDescriptionRepetitionError)
 
 
+def validate_InvalidNumericField(df, distrib_meta):
+    """Las series documentadas deben contener sólo valores numéricos."""
+    fields_title = [
+        field["title"] for field in distrib_meta["field"]
+        if "specialType" not in field or field["specialType"] != "time_index"
+    ]
+    for field_title in fields_title:
+        if not is_numeric_dtype(df[field_title]):
+            raise ce.InvalidNumericField(field["title"], df[field_title])
+
+
 EXCEPTIONS = {
     "TimeIndexFutureTimeValueError": ["57.1"],
     "FieldFewValuesError": [],
@@ -165,7 +181,8 @@ EXCEPTIONS = {
     "using_temporal": [],
     "FieldIdRepetitionError": [],
     "FieldTitleRepetitionError": [],
-    "FieldDescriptionRepetitionError": []
+    "FieldDescriptionRepetitionError": [],
+    "InvalidNumericField": []
 }
 
 
@@ -173,26 +190,35 @@ def validate_distribution(df, catalog, dataset_meta, distrib_meta,
                           distribution_identifier):
     distrib_id = distribution_identifier
 
-    if distrib_id not in EXCEPTIONS["TimeIndexFutureTimeValueError"]:
-        validate_TimeIndexFutureTimeValueError(df)
-    if distrib_id not in EXCEPTIONS["FieldFewValuesError"]:
-        validate_FieldFewValuesError(df)
-    if distrib_id not in EXCEPTIONS["FieldTitleTooLongError"]:
-        validate_FieldTitleTooLongError(df)
-    if distrib_id not in EXCEPTIONS["FieldTooManyMissingsError"]:
-        validate_FieldTooManyMissingsError(df)
-    if distrib_id not in EXCEPTIONS["using_temporal"]:
-        validate_using_temporal(df, dataset_meta)
+    # validaciones sólo de metadatos
+    if distrib_id not in EXCEPTIONS["InvalidFieldIdError"]:
+        validate_InvalidFieldIdError(distrib_meta)
     if distrib_id not in EXCEPTIONS["FieldIdRepetitionError"]:
         validate_FieldIdRepetitionError(catalog, distrib_meta)
     if distrib_id not in EXCEPTIONS["FieldTitleRepetitionError"]:
         validate_FieldTitleRepetitionError(distrib_meta)
-    if distrib_id not in EXCEPTIONS["InvalidFieldIdError"]:
-        validate_InvalidFieldIdError(distrib_meta)
     if distrib_id not in EXCEPTIONS["FieldDescriptionRepetitionError"]:
         validate_FieldDescriptionRepetitionError(distrib_meta)
+
+    # validaciones de headers
     if distrib_id not in EXCEPTIONS["InvalidFieldTitleError"]:
         validate_InvalidFieldTitleError(df)
+    if distrib_id not in EXCEPTIONS["FieldTitleTooLongError"]:
+        validate_FieldTitleTooLongError(df)
+
+    # validaciones de índice de tiempo
+    if distrib_id not in EXCEPTIONS["TimeIndexFutureTimeValueError"]:
+        validate_TimeIndexFutureTimeValueError(df)
+    if distrib_id not in EXCEPTIONS["using_temporal"]:
+        validate_using_temporal(df, dataset_meta)
+
+    # validaciones de los valores de las series
+    if distrib_id not in EXCEPTIONS["InvalidNumericField"]:
+        validate_InvalidNumericField(df, distrib_meta)
+    if distrib_id not in EXCEPTIONS["FieldFewValuesError"]:
+        validate_FieldFewValuesError(df)
+    if distrib_id not in EXCEPTIONS["FieldTooManyMissingsError"]:
+        validate_FieldTooManyMissingsError(df)
 
 
 def validate_HeaderIdError(xl, worksheet, headers_coord, headers_value):

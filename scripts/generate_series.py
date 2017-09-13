@@ -26,11 +26,12 @@ def main(catalog_json_path, series_params_path, catalogs_dir, series_dir):
     with open(series_params_path, "r") as f:
         series_params = json.load(f, encoding='utf-8')
 
-    # genera series para la landing de IED
+    # genera series como archivos individuales en JSON
     ts_dict = get_series_dict(
         catalog, series_params["series_ids_included"],
         catalogs_dir=catalogs_dir,
-        metadata_included=series_params["metadata_fields_included"]
+        metadata_included=series_params["metadata_fields_included"],
+        debug_mode=False
     )
     generate_series_jsons(ts_dict, series_dir)
 

@@ -33,16 +33,34 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 
 
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
-                  catalogs_dir=CATALOGS_DIR, index_col="indice_tiempo"):
+                  catalogs_dir=CATALOGS_DIR):
 
     rows_dump = []
+
+    # itera todas las distribuciones disponibles en busca de series de tiempo
     for catalog_id in get_catalog_ids(catalogs_dir):
         catalog = get_catalog(catalog_id)
         for dataset in catalog["dataset"]:
             for distribution in dataset["distribution"]:
+
+                # tiene que tener series documentadas
                 if "field" not in distribution:
                     continue
 
+                # tiene que tener un campo marcado como "indice de tiempo"
+                index_col = None
+                for field in distribution["field"]:
+                    if ("specialType" in field and
+                            field["specialType"] == "time_index"):
+                        index_col = field["title"]
+                        break
+                if not index_col:
+                    print("Distribución {} no tiene indice de tiempo".format(
+                        distribution["identifier"]
+                    ))
+                    continue
+
+                # tiene que haber un archivo con datos disponible
                 try:
                     distribution_path = get_distribution_path(
                         catalog_id,
@@ -53,6 +71,7 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                 except:
                     continue
 
+                # la distribución está lista para ser agregada
                 msg = "Agregando {} {} {} desde {}".format(
                     catalog_id, dataset["identifier"],
                     distribution["identifier"], distribution_path)
@@ -63,14 +82,8 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                     field["title"]: field
                     for field in distribution["field"]
                 }
-                if not fields.get(index_col):
-                    print("Distribución {} no tiene field {}".format(
-                        distribution["identifier"],
-                        index_col
-                    ))
-                    continue
 
-                # parsea CSV a filas del dump
+                # parsea una distribución en CSV a filas del dump
                 with open(distribution_path, "r") as f:
                     r = DictReader(f, encoding="utf-8-sig")
 
@@ -89,9 +102,9 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                             row_dump["distribucion_id"] = distribution[
                                 "identifier"]
                             row_dump["serie_id"] = fields[field_title]["id"]
-                            row_dump["distribucion_indice_tiempo"] = row[
+                            row_dump["indice_tiempo"] = row[
                                 index_col]
-                            row_dump["distribucion_indice_frecuencia"] = fields[
+                            row_dump["indice_tiempo_frecuencia"] = fields[
                                 index_col]["specialTypeDetail"]
                             row_dump["valor"] = value
                             row_dump["serie_titulo"] = field_title
@@ -111,10 +124,14 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
 
                             rows_dump.append(row_dump)
 
+    # genera un DataFrame conteniendo el dump
     df = pd.DataFrame(rows_dump)
+
+    # convierte los valores en tipos numéricos
     df['valor'] = pd.to_numeric(df['valor'])
-    df['distribucion_indice_tiempo'] = df[
-        'distribucion_indice_tiempo'].astype('datetime64[ns]')
+
+    # convierte los valores del índice de tiempo en tipo fecha
+    df['indice_tiempo'] = df['indice_tiempo'].astype('datetime64[ns]')
 
     return df
 
@@ -241,18 +258,20 @@ def get_series_params(field_ids, catalogs_dir=CATALOGS_DIR):
     ]
 
     # busca los ids de las series en todos los catálogos
-    series_params = []
+    series_params = {}
     for field_id in field_ids:
         for catalog_id, catalog in catalogs:
             field_location = catalog.get_field_location(field_id)
             if field_location:
-                series_params.append((
+                series_params[field_id] = (
                     catalog_id,
                     field_location["dataset_identifier"],
                     field_location["distribution_identifier"],
                     field_location["field_title"]
-                ))
+                )
             break
+        if not field_location:
+            print(field_id, "no existe en ningun catalogo")
 
     return series_params
 
@@ -326,7 +345,7 @@ def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None,
     series_params = get_series_params(field_ids)
 
     time_series = {}
-    for field_id, serie_params in zip(field_ids, series_params):
+    for field_id, serie_params in series_params.items():
         try:
             time_series[field_id] = {
                 "metadata": generate_api_metadata(
@@ -338,7 +357,7 @@ def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None,
                 )
             }
         except Exception as e:
-            print(field_id, e)
+            print(field_id, repr(e))
             if debug_mode:
                 raise
             else:
@@ -352,6 +371,14 @@ def generate_api_metadata(catalog, field_id, override_metadata=None,
 
     # busca el dataset y distribucion al que pertenece la serie
     field_location = catalog.get_field_location(field_id)
+
+    if not field_location:
+        msg = "Serie {} no existe en catalogo {}".format(
+            field_id, catalog["title"])
+        print(msg)
+        return
+
+    # print(field_location)
 
     # extrae la metadata de dataset, distribution y field
     field_meta = catalog.get_field(field_id)
@@ -399,4 +426,6 @@ def generate_series_jsons(ts_dict, jsons_dir=SERIES_DIR):
                 json.dump(value, f, sort_keys=True)
 
         except Exception as e:
+            print()
             print(series_id, e)
+            print()

@@ -169,13 +169,16 @@ def analyze_distribution(catalog, distribution_identifier):
     #     distribution_identifier, distribution_path))
 
     time_index = "indice_tiempo"
-    df = pd.read_csv(distribution_path, index_col=time_index,
-                     parse_dates=True)
+    df = pd.read_csv(
+        distribution_path, index_col=time_index,
+        parse_dates=[time_index],
+        date_parser=lambda x: arrow.get(x, "YYYY-MM-DD").datetime
+    )
 
     validate_distribution(df, catalog, dataset_meta, distrib_meta,
                           distribution_identifier)
 
-    return distribution_path
+    return distribution_path, df
 
 
 def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
@@ -332,7 +335,7 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
             # saltearlo
             if not os.path.exists(dist_path) or replace:
                 status = "Replaced" if os.path.exists(dist_path) else "Created"
-                origin_dist_path = analyze_distribution(
+                origin_dist_path, df = analyze_distribution(
                     catalog, distribution_identifier)
 
                 if isinstance(distribution, list):
@@ -526,7 +529,8 @@ def generate_summary_indicators(report_files, report_datasets,
     return indicators
 
 
-def main(catalog_json_path, etl_params_path, ied_data_dir, datasets_dir,
+def main(catalog_json_path, etl_params_path, ied_data_dir,
+         datasets_dir,
          replace=False, debug_mode=False, debug_distribution_ids=None,
          do_scraping=True, do_distributions=True):
 

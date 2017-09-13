@@ -108,8 +108,7 @@ data/output/server/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
 
 # TODO: revisar como se usan adecuadamenten los directorios
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" skip
-	# $(SERIES_TIEMPO_PYTHON) scripts/validate_distributions.py data/output/server/catalog/sspm/data.json data/input/catalog/sspm/dataset/ "$@" replace
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" replace
 
 data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
