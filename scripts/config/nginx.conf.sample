@@ -16,7 +16,7 @@ http {
 
         root data/output/server/;
         location / {
-        	autoindex on;
+        	# autoindex on;
         }
     }
 }
