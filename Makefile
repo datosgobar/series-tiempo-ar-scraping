@@ -117,7 +117,7 @@ send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
 data/output/series/: data/output/server/catalog/sspm/data.json data/params/series_params.json
-	rm data/output/series/*.*
+	rm -rf data/output/series/*.*
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/server "$@"
 
 data/output/dump/:
