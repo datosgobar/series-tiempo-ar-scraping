@@ -36,6 +36,20 @@ OBSERVATIONS_COLS = ["indice_tiempo", "valor"]
 SERIES_INDEX_COLS = ["catalog_id", "dataset_id", "distribucion_id", "serie_id"]
 
 
+def _is_series_updated(row):
+    index_freq = row["indice_tiempo_frecuencia"]
+    period_days = parse_repeating_time_interval_to_days(index_freq)
+    periods_tolerance = {
+        "R/P1Y": 2,
+        "R/P6M": 2,
+        "R/P3M": 2,
+        "R/P1M": 3,
+        "R/P1D": 14
+    }
+    days_tolerance = periods_tolerance.get(index_freq, 2) * period_days
+    return row["serie_dias_no_cubiertos"] < days_tolerance
+
+
 def _get_serie_valor_anterior_anio(series_dataframe):
     series = pd.Series(list(series_dataframe.valor), list(
         series_dataframe.indice_tiempo)).sort_index()
@@ -80,10 +94,7 @@ def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
         axis=1)
     # si pasaron 2 períodos no cubiertos por datos, serie está desactualizada
     df_series["serie_actualizada"] = df_series.apply(
-        lambda x: x["serie_dias_no_cubiertos"] < 2 *
-        parse_repeating_time_interval_to_days(
-            x["indice_tiempo_frecuencia"]),
-        axis=1)
+        _is_series_updated, axis=1)
 
     # valores representativos nominales
     df_series["serie_valor_ultimo"] = series_group.apply(
