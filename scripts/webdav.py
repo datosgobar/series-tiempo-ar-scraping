@@ -57,13 +57,13 @@ def upload(webdav, local_dir, remote_dir, params_path=None,
     file_paths = glob.glob(os.path.join(local_dir, "*.*"))
     for index, file_path in enumerate(file_paths):
         file_name = os.path.basename(file_path)
-
-        if logger:
-            logger.info("Cargando {}".format(file_path))
+        remote_path = os.path.join(remote_dir, file_name)
 
         if not params or file_name in params:
+            if logger:
+                logger.info("Cargando {} en {}".format(file_path, remote_path))
             webdav.upload(
-                remote_path=os.path.join(remote_dir, file_name),
+                remote_path=remote_path,
                 local_path_or_fileobj=file_path
             )
 
