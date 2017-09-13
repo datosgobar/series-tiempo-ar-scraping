@@ -31,8 +31,11 @@ def read_xlsx_catalog(catalog_xlsx_path):
     """Lee catálogo en excel."""
 
     default_values = {
+        "catalog_modified": NOW,
         "dataset_issued": NOW,
-        "distribution_issued": NOW
+        "distribution_issued": NOW,
+        "dataset_modified": NOW,
+        "distribution_modified": NOW
     }
     catalogo = readers.read_catalog(
         catalog_xlsx_path, default_values=default_values)
