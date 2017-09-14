@@ -163,7 +163,7 @@ def save_dump(df_dump, df_series, df_values,
     base_path = os.path.join(base_dir, "{}".format(base_name))
     dump_path = "{}.{}".format(base_path, fmt.lower())
     dump_path_zip = "{}-{}.zip".format(base_path, fmt.lower())
-    summary_path = "{}-resumen.{}".format(base_path, fmt.lower())
+    summary_path = "{}-metadatos.{}".format(base_path, fmt.lower())
     values_path = "{}-observaciones.{}".format(base_path, fmt.lower())
 
     # elige el método para guardar el dump según el formato requerido
