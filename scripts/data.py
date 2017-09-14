@@ -87,12 +87,22 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                 with open(distribution_path, "r") as f:
                     r = DictReader(f, encoding="utf-8-sig")
 
+                    # sólo almacena desde el primer valor no nulo de la serie
+                    # requiere que la distribución esté ordenada en el tiempo
+                    started = {}
                     for row in r:
                         for field_title, value in row.iteritems():
                             time_index = field_title == index_col
                             exists_field = field_title in fields
 
                             if time_index or not exists_field:
+                                continue
+
+                            # no arranca hasta el primer valor no nulo
+                            value = pd.to_numeric(value)
+                            if started.get(field_title, pd.notnull(value)):
+                                started[field_title] = True
+                            else:
                                 continue
 
                             row_dump = OrderedDict()
@@ -102,8 +112,7 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                             row_dump["distribucion_id"] = distribution[
                                 "identifier"]
                             row_dump["serie_id"] = fields[field_title]["id"]
-                            row_dump["indice_tiempo"] = row[
-                                index_col]
+                            row_dump["indice_tiempo"] = row[index_col]
                             row_dump["indice_tiempo_frecuencia"] = fields[
                                 index_col]["specialTypeDetail"]
                             row_dump["valor"] = value
@@ -127,13 +136,14 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
     # genera un DataFrame conteniendo el dump
     df = pd.DataFrame(rows_dump)
 
-    # convierte los valores en tipos numéricos
-    df['valor'] = pd.to_numeric(df['valor'])
-
     # convierte los valores del índice de tiempo en tipo fecha
     df['indice_tiempo'] = df['indice_tiempo'].astype('datetime64[ns]')
 
-    return df
+    df_sorted = df.sort_values([
+        "catalog_id", "dataset_id", "distribucion_id", "serie_id",
+        "indice_tiempo"], ascending=True)
+
+    return df_sorted
 
 
 def get_catalog(catalog_id, catalogs_dir=CATALOGS_DIR):
