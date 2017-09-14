@@ -23,10 +23,15 @@ def get_distribution_download_urls(df, catalog_id):
     df_no_scraping = df[pd.notnull(df.distribution_downloadURL)]
 
     for index, row in df_no_scraping.iterrows():
-        distribution_fileName = "{}.{}".format(
-            title_to_name(row["distribution_title"]),
-            unicode(row["distribution_format"]).split("/")[-1].lower()
-        )
+
+        if ("distribution_fileName" in row and row["distribution_fileName"]
+                and len(row["distribution_fileName"]) > 0):
+            distribution_fileName = row["distribution_fileName"]
+        else:
+            distribution_fileName = "{}.{}".format(
+                title_to_name(row["distribution_title"]),
+                unicode(row["distribution_format"]).split("/")[-1].lower()
+            )
         urls.append("{} {} {} {} {}".format(
             catalog_id, row["dataset_identifier"],
             row["distribution_identifier"],
@@ -38,9 +43,10 @@ def get_distribution_download_urls(df, catalog_id):
 
 def get_scraping_sources_urls(df, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
+    # print(df.columns)
     return [
         "{} {}".format(catalog_id, source_url)
-        for source_url in df.distribution_iedFileURL.unique()
+        for source_url in df.distribution_scrapingFileURL.unique()
         if pd.notnull(source_url)
     ]
 
@@ -63,9 +69,14 @@ def main(catalogs_dir, sources_type, sources_urls_path):
             catalog_xlsx_path,
             find_ws_name(catalog_xlsx_path, DISTRIBUTION_SHEET_NAME)
         )
+        # print(catalog_xlsx_path, df.columns)
 
         if sources_type == "scraping":
-            urls.extend(get_scraping_sources_urls(df, catalog_id))
+            if "distribution_scrapingFileURL" in df.columns:
+                urls.extend(get_scraping_sources_urls(df, catalog_id))
+            else:
+                print("Nada que scrapear en el catalogo: {}".format(
+                    catalog_id))
         elif sources_type == "distribution":
             urls.extend(get_distribution_download_urls(df, catalog_id))
         else:

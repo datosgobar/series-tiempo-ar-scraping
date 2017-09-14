@@ -16,9 +16,9 @@ from helpers import find_ws_name
 from paths import REPORTES_DIR
 
 PARAMS_FIELDS = [
-    "distribution_iedFileURL", "distribution_iedFileSheet",
+    "distribution_scrapingFileURL", "distribution_scrapingFileSheet",
     "distribution_identifier", "distribution_title", "field_title", "field_id",
-    "field_identifierCell", "field_dataStartCell"
+    "field_scrapingIdentifierCell", "field_scrapingDataStartCell"
 ]
 
 
@@ -31,13 +31,13 @@ def get_params_from_model(catalog_xlsx_path,
                           distribution_sheet_name="distribution",
                           field_sheet_name="field"):
     distribution_cols = [
-        "distribution_iedFileURL", "distribution_iedFileSheet",
+        "distribution_scrapingFileURL", "distribution_scrapingFileSheet",
         "distribution_identifier", "distribution_title", "dataset_identifier",
         "dataset_title"
     ]
     field_cols = [
-        "field_title", "field_id", "field_identifierCell",
-        "field_dataStartCell", "dataset_identifier", "dataset_title",
+        "field_title", "field_id", "field_scrapingIdentifierCell",
+        "field_scrapingDataStartCell", "dataset_identifier", "dataset_title",
         "distribution_identifier", "distribution_title"
     ]
 

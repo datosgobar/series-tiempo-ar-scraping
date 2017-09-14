@@ -79,21 +79,21 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
     params = {}
 
     # hoja de la Distribucion
-    worksheets = list(df_distrib.distribution_iedFileSheet.unique())
+    worksheets = list(df_distrib.distribution_scrapingFileSheet.unique())
     msg = "Distribucion {} en mas de una hoja {}".format(
         distribution_identifier, worksheets)
     assert len(worksheets) == 1, msg
     params["worksheet"] = worksheets[0]
 
     # coordenadas de los headers de las series
-    params["headers_coord"] = list(df_fields.field_identifierCell)
+    params["headers_coord"] = list(df_fields.field_scrapingIdentifierCell)
 
     # coordenadas de los headers de las series
     params["headers_value"] = list(df_fields.field_id)
 
     # fila donde empiezan los datos
     params["data_starts"] = map(helpers.row_from_cell_coord,
-                                df_fields.field_dataStartCell)
+                                df_fields.field_scrapingDataStartCell)
 
     # frecuencia de las series
     field = catalog.get_field(distribution_identifier=distribution_identifier,
@@ -104,7 +104,7 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
     # coordenadas del header del indice de tiempo
     params["time_header_coord"] = df_distrib[
         df_distrib.field_title == "indice_tiempo"][
-        "field_identifierCell"].iloc[0]
+        "field_scrapingIdentifierCell"].iloc[0]
 
     # nombres de las series
     params["series_names"] = list(df_fields.field_title)
@@ -379,7 +379,7 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
     # filtro los parametros para un excel en particular
     ied_xl_params = etl_params[etl_params.apply(
         lambda x: os.path.basename(
-            x["distribution_iedFileURL"]) == ied_xlsx_filename, axis=1)]
+            x["distribution_scrapingFileURL"]) == ied_xlsx_filename, axis=1)]
     dataset_ids = ied_xl_params.distribution_identifier.apply(
         lambda x: x.split(".")[0]).unique()
 
@@ -395,12 +395,12 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
         report_datasets.append({
             "dataset_identifier": dataset_identifier,
             "dataset_status": result["dataset_status"],
-            "distribution_iedFileURL": ied_xlsx_filename
+            "distribution_scrapingFileURL": ied_xlsx_filename
         })
 
         distribution_result = {
             "dataset_identifier": dataset_identifier,
-            "distribution_iedFileURL": ied_xlsx_filename
+            "distribution_scrapingFileURL": ied_xlsx_filename
         }
 
         for distribution_id, distribution_notes in result["distributions_ok"]:
@@ -447,12 +447,12 @@ def analyze_catalog(catalog, datasets_dir,
         report_datasets.append({
             "dataset_identifier": dataset_identifier,
             "dataset_status": result["dataset_status"],
-            "distribution_iedFileURL": None
+            "distribution_scrapingFileURL": None
         })
 
         distribution_result = {
             "dataset_identifier": dataset_identifier,
-            "distribution_iedFileURL": None
+            "distribution_scrapingFileURL": None
         }
 
         for distribution_id, distribution_notes in result["distributions_ok"]:
@@ -540,7 +540,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
                              dtype={"distribution_identifier": "str"})
 
     # compone los paths a los excels de ied
-    ied_xlsx_filenames = etl_params.distribution_iedFileURL.apply(
+    ied_xlsx_filenames = etl_params.distribution_scrapingFileURL.apply(
         lambda x: os.path.basename(x)
     ).unique()
     ied_xlsx_paths = [os.path.join(ied_data_dir, filename)
@@ -617,7 +617,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
 
     # guarda el reporte de datasets en EXCEL
     cols_rep_dataset = [
-        "distribution_iedFileURL", "dataset_identifier", "dataset_status"
+        "distribution_scrapingFileURL", "dataset_identifier", "dataset_status"
     ]
     complete_report_datasets[cols_rep_dataset].to_excel(
         os.path.join(REPORTES_DIR, "reporte-datasets-scraping.xlsx"),
@@ -625,7 +625,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
 
     # guarda el reporte de distribuciones en EXCEL
     cols_rep_distribution = [
-        "distribution_iedFileURL", "dataset_identifier",
+        "distribution_scrapingFileURL", "dataset_identifier",
         "distribution_identifier", "distribution_status", "distribution_notes"
     ]
     complete_report_distributions[cols_rep_distribution].to_excel(
