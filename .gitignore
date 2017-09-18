@@ -123,3 +123,4 @@ data/reports
 !/data/params/*sample*
 
 catalogo
+custom_steps.sh

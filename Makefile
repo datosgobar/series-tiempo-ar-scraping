@@ -136,6 +136,10 @@ upload_catalog: data/output/server/catalog/sspm/data.json
 upload_datasets: data/output/server/catalog/sspm/dataset/
 	$(SERIES_TIEMPO_PYTHON) scripts/upload_datasets.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
 
+# custom steps
+custom_steps:
+	bash/scripts/custom_steps.sh
+
 # clean
 clean:
 	rm -rf data/input/
