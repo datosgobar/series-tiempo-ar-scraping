@@ -138,7 +138,7 @@ upload_datasets: data/output/server/catalog/sspm/dataset/
 
 # custom steps
 custom_steps:
-	bash/scripts/custom_steps.sh
+	bash scripts/custom_steps.sh
 
 # clean
 clean:
