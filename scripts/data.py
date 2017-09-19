@@ -32,6 +32,17 @@ NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 
 
+def get_time_index_field(distribution):
+    index_col = None
+    if "field" in distribution:
+        for field in distribution["field"]:
+            if ("specialType" in field and
+                    field["specialType"].strip().lower() == "time_index"):
+                index_col = field["title"]
+                break
+    return index_col
+
+
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                   catalogs_dir=CATALOGS_DIR):
 
@@ -40,20 +51,24 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
     # itera todas las distribuciones disponibles en busca de series de tiempo
     for catalog_id in get_catalog_ids(catalogs_dir):
         catalog = get_catalog(catalog_id)
-        for dataset in catalog["dataset"]:
+
+        print("{} datasets para agregar del catalogo {}".format(
+            len(catalog["dataset"]), catalog_id))
+        for index, dataset in enumerate(catalog["dataset"]):
+            # print("Agregando dataset {}: {} de {}".format(
+            #     dataset["identifier"], index, len(catalog["dataset"])))
+
             for distribution in dataset["distribution"]:
 
                 # tiene que tener series documentadas
                 if "field" not in distribution:
+                    print("Distribucion {} no tiene `field`".format(
+                        distribution["identifier"]
+                    ))
                     continue
 
                 # tiene que tener un campo marcado como "indice de tiempo"
-                index_col = None
-                for field in distribution["field"]:
-                    if ("specialType" in field and
-                            field["specialType"] == "time_index"):
-                        index_col = field["title"]
-                        break
+                index_col = get_time_index_field(distribution)
                 if not index_col:
                     print("Distribución {} no tiene indice de tiempo".format(
                         distribution["identifier"]
@@ -69,6 +84,8 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                         catalogs_dir
                     )
                 except:
+                    print("No existe archivo para distribucion {}".format(
+                        distribution["identifier"]))
                     continue
 
                 # la distribución está lista para ser agregada
@@ -85,7 +102,7 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
 
                 # parsea una distribución en CSV a filas del dump
                 with open(distribution_path, "r") as f:
-                    r = DictReader(f, encoding="utf-8-sig")
+                    r = DictReader(f, encoding="utf-8")
 
                     # sólo almacena desde el primer valor no nulo de la serie
                     # requiere que la distribución esté ordenada en el tiempo

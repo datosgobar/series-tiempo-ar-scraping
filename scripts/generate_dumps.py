@@ -115,6 +115,27 @@ def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
     return df_series.reset_index()
 
 
+def generate_fuentes_summary(df_series):
+    group_fuentes = df_series.groupby("dataset_fuente")
+
+    # calcula indicadores de las fuentes
+    df_fuentes_valores = group_fuentes.sum()[["serie_valores_cant"]].rename(
+        columns={"serie_valores_cant": "valores_cant"})
+    df_fuentes_series = group_fuentes.count()[["serie_titulo"]].rename(
+        columns={"serie_titulo": "series_cant"})
+    df_fuentes_primero = group_fuentes.min()[["serie_indice_inicio"]].rename(
+        columns={"serie_indice_inicio": "fecha_primer_valor"})
+    df_fuentes_ultimo = group_fuentes.max()[["serie_indice_final"]].rename(
+        columns={"serie_indice_final": "fecha_ultimo_valor"})
+    fuentes_indics = [df_fuentes_series, df_fuentes_valores,
+                      df_fuentes_primero, df_fuentes_ultimo]
+
+    df_fuentes = pd.concat(fuentes_indics, axis=1).sort_values(
+        "series_cant", ascending=False)
+
+    return df_fuentes
+
+
 def save_to_csv(df, path):
     df.to_csv(path, encoding="utf-8", sep=str(","), index=False)
 
@@ -156,7 +177,7 @@ DF_SAVE_METHODS = {
 
 
 # @timeit
-def save_dump(df_dump, df_series, df_values,
+def save_dump(df_dump, df_series, df_values, df_fuentes,
               fmt="CSV", base_name="series-tiempo", base_dir=DUMPS_DIR):
 
     # crea paths a los archivos que va a generar
@@ -164,7 +185,8 @@ def save_dump(df_dump, df_series, df_values,
     dump_path = "{}.{}".format(base_path, fmt.lower())
     dump_path_zip = "{}-{}.zip".format(base_path, fmt.lower())
     summary_path = "{}-metadatos.{}".format(base_path, fmt.lower())
-    values_path = "{}-observaciones.{}".format(base_path, fmt.lower())
+    values_path = "{}-valores.{}".format(base_path, fmt.lower())
+    sources_path = "{}-fuentes.{}".format(base_path, fmt.lower())
 
     # elige el método para guardar el dump según el formato requerido
     save_method = DF_SAVE_METHODS[fmt.lower()]
@@ -181,8 +203,13 @@ def save_dump(df_dump, df_series, df_values,
     save_method(df_series, summary_path)
     print("{}MB".format(os.path.getsize(summary_path) / 1000000))
 
-    # guarda dump mínimo de observaciones
-    print("Guardando dump de observaciones en {}...".format(fmt), end=" ")
+    # guarda resumen de fuentes
+    print("Guardando resumen de fuentes en {}...".format(fmt), end=" ")
+    save_method(df_fuentes, sources_path)
+    print("{}MB".format(os.path.getsize(sources_path) / 1000000))
+
+    # guarda dump mínimo de valores
+    print("Guardando dump de valores en {}...".format(fmt), end=" ")
     save_method(df_values, values_path)
     print("{}MB".format(os.path.getsize(values_path) / 1000000))
 
@@ -203,7 +230,7 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
     # genera dump completo de la base de series
     print("Generando dump completo en DataFrame...", end=" ")
     df_dump = generate_dump(catalogs_dir=catalogs_dir)
-    print("{} observaciones".format(len(df_dump)))
+    print("{} valores".format(len(df_dump)))
 
     # genera resumen descriptivo de series del dump
     print("Generando resumen de series en DataFrame...", end=" ")
@@ -211,16 +238,25 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
         df_dump, series_index_cols, observations_cols)
     print("{} series".format(len(df_series)))
 
-    # genera dump mínimo con las observaciones
-    print("Generando dump mínimo de observaciones en DataFrame...", end=" ")
+    # genera resumen descriptivo de series del dump
+    print("Generando resumen de fuentes en DataFrame...", end=" ")
+    df_fuentes = generate_fuentes_summary(df_series)
+    print("{} fuentes".format(len(df_fuentes)))
+
+    # genera dump mínimo con las valores
+    print("Generando dump mínimo de valores en DataFrame...", end=" ")
     df_values = df_dump[series_index_cols + observations_cols]
-    print("{} observaciones".format(len(df_values)))
+    print("{} valores".format(len(df_values)))
 
     # guarda los contenidos del dump en diversos formatos
-    save_dump(df_dump, df_series, df_values, fmt="CSV", base_dir=dumps_dir)
-    save_dump(df_dump, df_series, df_values, fmt="XLSX", base_dir=dumps_dir)
-    save_dump(df_dump, df_series, df_values, fmt="DTA", base_dir=dumps_dir)
-    save_dump(df_dump, df_series, df_values, fmt="DB", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, df_fuentes,
+              fmt="CSV", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, df_fuentes,
+              fmt="XLSX", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, df_fuentes,
+              fmt="DTA", base_dir=dumps_dir)
+    save_dump(df_dump, df_series, df_values, df_fuentes,
+              fmt="DB", base_dir=dumps_dir)
 
 
 if __name__ == '__main__':

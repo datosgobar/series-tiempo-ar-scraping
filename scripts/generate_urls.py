@@ -13,6 +13,7 @@ from pydatajson.helpers import title_to_name
 
 import pandas as pd
 from helpers import find_ws_name
+from data import get_time_index_field
 
 DISTRIBUTION_SHEET_NAME = "distribution"
 
@@ -24,6 +25,7 @@ def get_distribution_download_urls(df, catalog_id):
 
     for index, row in df_no_scraping.iterrows():
 
+        # tomo el nombre del archivo, si está, o lo genero
         if ("distribution_fileName" in row and row["distribution_fileName"]
                 and len(row["distribution_fileName"]) > 0):
             distribution_fileName = row["distribution_fileName"]
@@ -32,11 +34,14 @@ def get_distribution_download_urls(df, catalog_id):
                 title_to_name(row["distribution_title"]),
                 unicode(row["distribution_format"]).split("/")[-1].lower()
             )
-        urls.append("{} {} {} {} {}".format(
-            catalog_id, row["dataset_identifier"],
-            row["distribution_identifier"],
-            distribution_fileName, row["distribution_downloadURL"]
-        ))
+
+        # solo agrega urls que tengan series de tiempo
+        if catalog_id != "modernizacion":
+            urls.append("{} {} {} {} {}".format(
+                catalog_id, row["dataset_identifier"],
+                row["distribution_identifier"],
+                distribution_fileName, row["distribution_downloadURL"]
+            ))
 
     return urls
 

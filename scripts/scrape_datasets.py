@@ -259,7 +259,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
 
                 helpers.ensure_dir_exists(os.path.dirname(dist_path))
                 distribution_complete.to_csv(
-                    dist_path, encoding="utf-8-sig",
+                    dist_path, encoding="utf-8",
                     index_label="indice_tiempo")
             else:
                 status = "Skipped"
