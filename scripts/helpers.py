@@ -8,6 +8,7 @@ from __future__ import print_function
 from __future__ import with_statement
 
 import os
+import shutil
 from openpyxl import load_workbook
 import zipfile
 import datetime
@@ -86,6 +87,11 @@ def freq_iso_to_pandas(freq_iso8601, how="start"):
         raise Exception(
             "{} no se reconoce para 'how': debe ser 'start' o 'end'".format(
                 how))
+
+
+def remove_other_files(directory):
+    """Se asegura de que un directorio exista."""
+    shutil.rmtree(directory)
 
 
 def ensure_dir_exists(directory):
