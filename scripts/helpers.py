@@ -18,7 +18,7 @@ import logging.config
 
 
 def indicators_to_text(simple_dict):
-    text = "\n".join(
+    text = "\n" + "\n".join(
         "{}: {}".format(key.ljust(40), value)
         for key, value in sorted(simple_dict.items(), key=lambda x: x[0])
     )
