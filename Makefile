@@ -5,7 +5,7 @@ SHELL = bash
 all: extraction transformation load custom_steps
 et: extraction transformation
 extraction: download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
+transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/modernizacion/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
 # transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report
 load: upload_series upload_dumps
 setup: install_anaconda setup_environment create_dir install_cron
@@ -118,9 +118,12 @@ data/output/server/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
 	# $(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@" > data/generate-catalog-errors.txt
 
+data/output/server/catalog/modernizacion/data.json: data/input/catalog/modernizacion/catalog.xlsx
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
+
 # TODO: revisar como se usan adecuadamenten los directorios
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" skip
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm skip
 
 data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
