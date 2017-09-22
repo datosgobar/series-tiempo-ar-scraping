@@ -27,7 +27,7 @@ def get_distribution_download_urls(df, catalog_id):
 
         # tomo el nombre del archivo, si está, o lo genero
         if ("distribution_fileName" in row and row["distribution_fileName"]
-                and len(row["distribution_fileName"]) > 0):
+                and pd.notnull(row["distribution_fileName"])):
             distribution_fileName = row["distribution_fileName"]
         else:
             distribution_fileName = "{}.{}".format(
