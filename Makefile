@@ -1,6 +1,6 @@
 SHELL = bash
 
-.PHONY: all clean download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt data/output/dump/
+.PHONY: all clean download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt data/output/dump/ data/output/series/
 
 all: extraction transformation load custom_steps
 et: extraction transformation
@@ -131,7 +131,7 @@ data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
-data/output/series/: data/output/server/catalog/sspm/data.json data/params/series_params.json
+data/output/series/: data/params/series_params.json
 	rm -rf data/output/series/*.*
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/server "$@"
 

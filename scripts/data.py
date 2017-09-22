@@ -276,19 +276,16 @@ def get_series_df(field_ids, use_id=False, catalogs_dir=CATALOGS_DIR):
     return pd.concat(time_series, axis=1)
 
 
-def get_series_params(field_ids, catalogs_dir=CATALOGS_DIR):
+def get_series_params(field_ids, catalogs_dir=CATALOGS_DIR, catalogs=None):
 
-    # carga los catálogos que encuentre
-    catalogs = [
-        (os.path.basename(os.path.dirname(catalog_path)),
-         pydatajson.DataJson(catalog_path))
-        for catalog_path in get_catalogs_path(catalogs_dir)
-    ]
+    # carga los catálogos que encuentre, si no vienen cargados de antes
+    if not catalogs:
+        catalogs = load_catalogs()
 
     # busca los ids de las series en todos los catálogos
     series_params = {}
     for field_id in field_ids:
-        for catalog_id, catalog in catalogs:
+        for catalog_id, catalog in catalogs.iteritems():
             field_location = catalog.get_field_location(field_id)
             if field_location:
                 series_params[field_id] = (
@@ -358,8 +355,19 @@ def get_series(
         raise Exception("No se reconoce el formato")
 
 
-def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None,
-                    debug_mode=False):
+def load_catalogs(catalogs_dir=CATALOGS_DIR):
+    catalogs = {}
+    for catalog_id in get_catalog_ids(catalogs_dir):
+        catalogs[catalog_id] = pydatajson.DataJson(
+            get_catalog_path(catalog_id))
+    return catalogs
+
+
+def get_series_dict(field_ids, catalogs_dir, metadata_included=None,
+                    debug_mode=False, catalogs=None):
+
+    if not catalogs:
+        catalogs = load_catalogs()
 
     if not field_ids:
         field_ids = []
@@ -367,17 +375,19 @@ def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None,
             for distribution in dataset["distribution"]:
                 if "field" in distribution:
                     for field in distribution["field"]:
-                        if field["title"] != "indice_tiempo" and "id" in field:
+                        if (field.get("specialType") != "time_index" and
+                                "id" in field):
                             field_ids.append(field["id"])
 
-    series_params = get_series_params(field_ids)
+    series_params = get_series_params(field_ids, catalogs)
 
     time_series = {}
     for field_id, serie_params in series_params.items():
         try:
             time_series[field_id] = {
                 "metadata": generate_api_metadata(
-                    catalog, field_id, metadata_included=metadata_included
+                    field_id, metadata_included=metadata_included,
+                    catalogs=catalogs
                 ),
                 "data": get_series(
                     *serie_params, fmt="list",
@@ -394,11 +404,18 @@ def get_series_dict(catalog, field_ids, catalogs_dir, metadata_included=None,
     return time_series
 
 
-def generate_api_metadata(catalog, field_id, override_metadata=None,
-                          metadata_included=None):
+def generate_api_metadata(field_id, override_metadata=None,
+                          metadata_included=None, catalogs=None):
+
+    if not catalogs:
+        catalogs = load_catalogs()
 
     # busca el dataset y distribucion al que pertenece la serie
-    field_location = catalog.get_field_location(field_id)
+    # print(catalog.get_catalog_metadata(), field_id)
+    for catalog in catalogs.values():
+        field_location = catalog.get_field_location(field_id)
+        if field_location:
+            break
 
     if not field_location:
         msg = "Serie {} no existe en catalogo {}".format(

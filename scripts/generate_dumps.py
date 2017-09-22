@@ -220,7 +220,25 @@ def save_dump(df_dump, df_series, df_values, df_fuentes,
     compress_file(dump_path, dump_path_zip)
     print("{}MB".format(os.path.getsize(dump_path_zip) / 1000000))
 
-COLS_DUMP_COMPLETO = [
+
+# selección reducida de columnas para los dumps que son demasiado pesados
+COMPLETE_DUMP_COLS = [
+    "catalog_id",
+    "dataset_id",
+    "distribucion_id",
+    "serie_id",
+    "indice_tiempo",
+    "indice_tiempo_frecuencia",
+    "valor",
+    "serie_titulo",
+    "serie_unidades",
+    "serie_descripcion",
+    "distribucion_titulo",
+    # "distribucion_descripcion",
+    "dataset_responsable",
+    "dataset_fuente",
+    "dataset_titulo"
+    # "dataset_descripcion"
 ]
 
 
@@ -256,7 +274,8 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
               fmt="CSV", base_dir=dumps_dir)
     save_dump(df_dump, df_series, df_values, df_fuentes,
               fmt="XLSX", base_dir=dumps_dir)
-    save_dump(df_dump, df_series, df_values, df_fuentes,
+    # menos columnas para STATA porque el formato es muy pesado
+    save_dump(df_dump[COMPLETE_DUMP_COLS], df_series, df_values, df_fuentes,
               fmt="DTA", base_dir=dumps_dir)
     save_dump(df_dump, df_series, df_values, df_fuentes,
               fmt="DB", base_dir=dumps_dir)
