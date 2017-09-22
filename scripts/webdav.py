@@ -49,6 +49,12 @@ def upload(webdav, local_dir, remote_dir, params_path=None,
     else:
         params = None
 
+    # si el servidor no es de producción, agrega un sufijo
+    server_environment = os.environ.get("SERVER_ENVIRONMENT")
+    if server_environment and server_environment != "prod":
+        remote_dir += "_{}".format(server_environment)
+
+    # agrega el root al directorio remoto
     remote_dir = os.path.join(remote_root_dir, remote_dir)
 
     if not webdav.exists(remote_dir):

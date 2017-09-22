@@ -133,7 +133,7 @@ def generate_fuentes_summary(df_series):
     df_fuentes = pd.concat(fuentes_indics, axis=1).sort_values(
         "series_cant", ascending=False)
 
-    return df_fuentes
+    return df_fuentes.reset_index()
 
 
 def save_to_csv(df, path):
@@ -219,6 +219,9 @@ def save_dump(df_dump, df_series, df_values, df_fuentes,
     print("Comprimiendo dump completo en {}...".format(fmt), end=" ")
     compress_file(dump_path, dump_path_zip)
     print("{}MB".format(os.path.getsize(dump_path_zip) / 1000000))
+
+COLS_DUMP_COMPLETO = [
+]
 
 
 def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,

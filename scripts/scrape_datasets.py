@@ -197,7 +197,7 @@ def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
 def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
                    debug_mode=False, replace=True,
                    config_server_path=CONFIG_SERVER_PATH,
-                   debug_distribution_ids=None):
+                   debug_distribution_ids=None, catalog_id=None):
 
     res = {
         "dataset_status": None,
@@ -238,10 +238,12 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
         try:
             distrib_meta = catalog.get_distribution(distribution_identifier)
             distribution_name = title_to_name(distrib_meta["title"])
-            dist_path = os.path.join(
+            dist_download_dir = os.path.join(
                 dataset_dir, "distribution", distribution_identifier,
-                "download", "{}.csv".format(distribution_name)
+                "download"
             )
+            dist_path = os.path.join(dist_download_dir,
+                                     "{}.csv".format(distribution_name))
             dist_url = get_distribution_url(dist_path, config_server_path)
             distrib_meta["downloadURL"] = dist_url
 
@@ -257,7 +259,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
                 else:
                     distribution_complete = distribution
 
-                helpers.ensure_dir_exists(os.path.dirname(dist_path))
+                helpers.remove_other_files(os.path.dirname(dist_path))
                 distribution_complete.to_csv(
                     dist_path, encoding="utf-8",
                     index_label="indice_tiempo")
@@ -283,6 +285,14 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
             if debug_mode:
                 raise
             res["dataset_status"] = "ERROR: scraping"
+
+            # si no hay versión vieja de la distribución, elimina del catálogo
+            try:
+                get_distribution_path(catalog_id, dataset_identifier,
+                                      distribution_identifier)
+            except:
+                catalog.remove_distribution(
+                    distribution_identifier, dataset_identifier)
 
     return res
 
@@ -372,7 +382,8 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
 
 
 def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
-                replace=True, debug_mode=False, debug_distribution_ids=None):
+                replace=True, debug_mode=False, debug_distribution_ids=None,
+                catalog_id=None):
     xl = XlSeries(ied_xlsx_path)
     ied_xlsx_filename = os.path.basename(ied_xlsx_path)
 
@@ -389,7 +400,8 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
         result = scrape_dataset(
             xl, etl_params, catalog, dataset_identifier, datasets_dir,
             replace=replace, debug_mode=debug_mode,
-            debug_distribution_ids=debug_distribution_ids
+            debug_distribution_ids=debug_distribution_ids,
+            catalog_id=catalog_id
         )
 
         report_datasets.append({
@@ -415,6 +427,10 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
             distribution_result["distribution_status"] = "ERROR"
             distribution_result["distribution_notes"] = distribution_notes
             report_distributions.append(distribution_result)
+
+        # si se eliminaron las distribuciones del dataset, se borra el dataset
+        if len(catalog.get_dataset(dataset_identifier)["distribution"]) == 0:
+            catalog.remove_dataset(dataset_identifier)
 
     return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
 
@@ -532,7 +548,7 @@ def generate_summary_indicators(report_files, report_datasets,
 
 
 def main(catalog_json_path, etl_params_path, ied_data_dir,
-         datasets_dir,
+         datasets_dir, catalog_id,
          replace=False, debug_mode=False, debug_distribution_ids=None,
          do_scraping=True, do_distributions=True):
 
@@ -580,7 +596,8 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
                 report_datasets, report_distributions = scrape_file(
                     ied_xlsx_path, etl_params, catalog, datasets_dir,
                     replace=replace, debug_mode=debug_mode,
-                    debug_distribution_ids=debug_distribution_ids)
+                    debug_distribution_ids=debug_distribution_ids,
+                    catalog_id=catalog_id)
                 all_report_datasets.append(report_datasets)
                 all_report_distributions.append(report_distributions)
 
@@ -653,7 +670,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
 
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 6 and sys.argv[5]:
-        replace = True if sys.argv[5] == "replace" else False
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
+    if len(sys.argv) >= 7 and sys.argv[6]:
+        replace = True if sys.argv[6] == "replace" else False
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
          replace=replace, debug_mode=False, debug_distribution_ids=[])

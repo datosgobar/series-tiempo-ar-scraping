@@ -92,6 +92,7 @@ def freq_iso_to_pandas(freq_iso8601, how="start"):
 def remove_other_files(directory):
     """Se asegura de que un directorio exista."""
     shutil.rmtree(directory)
+    ensure_dir_exists(directory)
 
 
 def ensure_dir_exists(directory):
