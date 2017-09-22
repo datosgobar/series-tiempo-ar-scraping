@@ -289,7 +289,7 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
         "Dump - distribuciones": len(np.unique(
             df_series[['catalog_id', 'dataset_id', 'distribucion_id']])),
         "Dump - series": len(df_series),
-        "Dump - valores": len(df_valores),
+        "Dump - valores": len(df_values),
         "Dump - responsables": len(df_series.dataset_responsable.unique()),
         "Dump - fuentes": len(df_fuentes)
     }
