@@ -549,6 +549,10 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
          replace=False, debug_mode=False, debug_distribution_ids=None,
          do_scraping=True, do_distributions=True):
 
+    # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
+    if os.environ["SERVER_ENVIRONMENT"] == "prod":
+        replace = True
+
     catalog = DataJson(catalog_json_path)
 
     etl_params = pd.read_csv(etl_params_path,
