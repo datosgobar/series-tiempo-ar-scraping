@@ -5,7 +5,7 @@ SHELL = bash
 all: extraction transformation load custom_steps
 et: extraction transformation
 extraction: download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/modernizacion/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/series/ data/output/dump/
+transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/modernizacion/data.json data/output/server/catalog/sspm/dataset/ data/output/dump/ data/output/series/ send_transformation_report
 # transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report
 load: upload_series upload_dumps
 setup: install_anaconda setup_environment create_dir install_cron
@@ -128,15 +128,15 @@ data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.j
 data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
 
-send_transformation_report:
-	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
+data/output/dump/:
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@"
 
 data/output/series/: data/params/series_params.json
 	rm -rf data/output/series/*.*
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/server "$@"
 
-data/output/dump/:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@"
+send_transformation_report:
+	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
 # load
 upload_series:

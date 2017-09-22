@@ -21,6 +21,7 @@ from pydatajson.helpers import parse_repeating_time_interval_to_days
 import logging
 
 from helpers import get_logger, freq_iso_to_pandas, compress_file, timeit
+from helpers import indicators_to_text
 from data import get_series_data, generate_dump
 from paths import CATALOG_PATH, DUMPS_PARAMS_PATH
 from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
@@ -279,6 +280,21 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
               fmt="DTA", base_dir=dumps_dir)
     save_dump(df_dump, df_series, df_values, df_fuentes,
               fmt="DB", base_dir=dumps_dir)
+
+    # calcula indicadores sumarios del dump
+    indicators = {
+        "Dump - catalogos": len(df_series.catalog_id),
+        "Dump - datasets": len(np.unique(
+            df_series[['catalog_id', 'dataset_id']])),
+        "Dump - distribuciones": len(np.unique(
+            df_series[['catalog_id', 'dataset_id', 'distribucion_id']])),
+        "Dump - series": len(df_series),
+        "Dump - valores": len(df_valores),
+        "Dump - responsables": len(df_series.dataset_responsable.unique()),
+        "Dump - fuentes": len(df_fuentes)
+    }
+    with open(os.path.join(REPORTES_DIR, "mail_message.txt"), "a") as f:
+        f.write(indicators_to_text(indicators))
 
 
 if __name__ == '__main__':

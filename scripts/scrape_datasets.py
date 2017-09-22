@@ -501,10 +501,7 @@ def generate_summary_message(indicators):
         server_environment,
         arrow.now().format("DD/MM/YYYY HH:mm")
     )
-    message = "\n".join(
-        "{}: {}".format(key.ljust(40), value)
-        for key, value in sorted(indicators.items(), key=lambda x: x[0])
-    )
+    message = helpers.indicators_to_text(indicators)
     return subject, message
 
 

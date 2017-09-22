@@ -17,6 +17,14 @@ import logging
 import logging.config
 
 
+def indicators_to_text(simple_dict):
+    text = "\n".join(
+        "{}: {}".format(key.ljust(40), value)
+        for key, value in sorted(indicators.items(), key=lambda x: x[0])
+    )
+    return text
+
+
 def timeit(method):
 
     def timed(*args, **kw):
