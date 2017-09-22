@@ -23,7 +23,7 @@ import logging
 from helpers import get_logger, freq_iso_to_pandas, compress_file, timeit
 from helpers import indicators_to_text
 from data import get_series_data, generate_dump
-from paths import CATALOG_PATH, DUMPS_PARAMS_PATH
+from paths import CATALOG_PATH, DUMPS_PARAMS_PATH, REPORTES_DIR
 from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
 
 logging.basicConfig()
