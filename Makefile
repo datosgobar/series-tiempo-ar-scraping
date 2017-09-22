@@ -26,10 +26,17 @@ install_nginx:
 	sudo ufw allow 'Nginx HTTP'
 	# sudo service nginx restart
 
+test_nginx_conf:
+	# TODO: hacer que no levante nginx si falla el test
+	sudo /etc/init.d/nginx configtest -c scripts/config/nginx.conf
+
 start_nginx:
 	sudo nginx -p . -c scripts/config/nginx.conf
+	# /etc/init.d/nginx configtest
 
 stop_nginx:
+	# Usar en casos extremos
+	# killall nginx
 	sudo nginx -s stop
 
 # clone_repo:
