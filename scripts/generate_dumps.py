@@ -283,7 +283,7 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
 
     # calcula indicadores sumarios del dump
     indicators = {
-        "Dump - catalogos": len(df_series.catalog_id),
+        "Dump - catalogos": len(df_series.catalog_id.unique()),
         "Dump - datasets": len(np.unique(
             df_series[['catalog_id', 'dataset_id']])),
         "Dump - distribuciones": len(np.unique(
