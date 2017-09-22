@@ -480,7 +480,9 @@ def generate_summary_message(indicators):
     Return:
         tuple: (str, str) (asunto, mensaje)
     """
-    subject = "[desa] Series de Tiempo ETL: {}".format(
+    server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
+    subject = "[{}] Series de Tiempo ETL: {}".format(
+        server_environment,
         arrow.now().format("DD/MM/YYYY HH:mm")
     )
     message = "\n".join(

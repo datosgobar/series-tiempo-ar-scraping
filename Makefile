@@ -44,9 +44,13 @@ stop_nginx:
 # 	cd series-tiempo
 
 # ambiente testeado para un Ubuntu 16.04
+# especificar el tipo de ambiente con SERVER_ENVIRONMENT:
+# `make setup_environment SERVER_ENVIRONMENT=dev`
+# `make setup_environment SERVER_ENVIRONMENT=prod`
 setup_environment:
 	conda create -n series-tiempo --no-default-packages
 	echo 'export SERIES_TIEMPO_PYTHON=~/miniconda2/envs/series-tiempo/bin/python' >> ~/.bashrc
+	echo 'export SERVER_ENVIRONMENT=$(SERVER_ENVIRONMENT)' >> ~/.bashrc
 	source ~/.bashrc
 	conda install -n series-tiempo pycurl
 	sudo apt-get update && sudo apt-get install gcc
@@ -85,6 +89,7 @@ install_cron: cron_jobs
 	@echo "PATH=$(PATH)" >> .cronfile
 	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
 	@echo "SERIES_TIEMPO_PYTHON=$(SERIES_TIEMPO_PYTHON)" >> .cronfile
+	@echo "SERVER_ENVIRONMENT=$(SERVER_ENVIRONMENT)" >> .cronfile
 	cat cron_jobs >> .cronfile
 	crontab .cronfile
 	rm .cronfile
