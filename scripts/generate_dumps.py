@@ -21,7 +21,7 @@ from pydatajson.helpers import parse_repeating_time_interval_to_days
 import logging
 
 from helpers import get_logger, freq_iso_to_pandas, compress_file, timeit
-from helpers import indicators_to_text
+from helpers import indicators_to_text, FREQ_ISO_TO_HUMAN, safe_sheet_name
 from data import get_series_data, generate_dump
 from paths import CATALOG_PATH, DUMPS_PARAMS_PATH, REPORTES_DIR
 from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
@@ -32,6 +32,9 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # campos extra que definen una observación.
 OBSERVATIONS_COLS = ["indice_tiempo", "valor"]
+
+# metadata necesaria para usar los valores
+CRITICAL_METADATA_COLS = ["indice_tiempo_frecuencia"]
 
 # ids que definen una serie.
 SERIES_INDEX_COLS = ["catalog_id", "dataset_id", "distribucion_id", "serie_id"]
@@ -141,10 +144,22 @@ def save_to_csv(df, path):
     df.to_csv(path, encoding="utf-8", sep=str(","), index=False)
 
 
-def save_to_xlsx(df, path, sheet_name="data"):
+def save_to_xlsx(df, path, sheet_name="data", split_field=None,
+                 split_values_map=None):
+    split_values_map = split_values_map or {}
     writer = pd.ExcelWriter(path, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name, merge_cells=False,
-                encoding="utf-8", index=False)
+
+    if split_field:
+        split_values = df[split_field].unique()
+        for split_value in split_values:
+            sheet_name = safe_sheet_name(
+                split_values_map.get(split_value, split_value))
+            df[df[split_field] == split_value].to_excel(
+                writer, sheet_name,
+                merge_cells=False, encoding="utf-8", index=False)
+    else:
+        df.to_excel(writer, sheet_name, merge_cells=False,
+                    encoding="utf-8", index=False)
     writer.save()
 
 
@@ -198,7 +213,12 @@ def save_dump(df_dump, df_series, df_values, df_fuentes,
     # guarda dump completo
     logger.info("Guardando dump completo en {}...".format(fmt))
     sys.stdout.flush()
-    save_method(df_dump, dump_path)
+    if fmt.lower() == "xlsx":
+        save_method(
+            df_dump, dump_path, split_field="indice_tiempo_frecuencia",
+            split_values_map=FREQ_ISO_TO_HUMAN)
+    else:
+        save_method(df_dump, dump_path)
     logger.info("{}MB".format(os.path.getsize(dump_path) / 1000000))
 
     # guarda resumen de series
@@ -216,10 +236,13 @@ def save_dump(df_dump, df_series, df_values, df_fuentes,
     # guarda dump mínimo de valores
     logger.info("Guardando dump de valores en {}...".format(fmt))
     sys.stdout.flush()
-    save_method(df_values, values_path)
+    if fmt.lower() == "xlsx":
+        save_method(
+            df_values, values_path, split_field="indice_tiempo_frecuencia",
+            split_values_map=FREQ_ISO_TO_HUMAN)
+    else:
+        save_method(df_values, values_path)
     logger.info("{}MB".format(os.path.getsize(values_path) / 1000000))
-
-    # guarda créditos
 
     # guarda dump completo comprimido
     logger.info("Comprimiendo dump completo en {}...".format(fmt))
@@ -250,7 +273,8 @@ COMPLETE_DUMP_COLS = [
 
 def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
          series_index_cols=SERIES_INDEX_COLS,
-         observations_cols=OBSERVATIONS_COLS):
+         observations_cols=OBSERVATIONS_COLS,
+         critical_metadata_cols=CRITICAL_METADATA_COLS):
     """Genera dumps completos de la base en distintos formatos"""
     logger = get_logger(__name__)
 
@@ -272,7 +296,8 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
 
     # genera dump mínimo con las valores
     logger.info("Generando dump mínimo de valores en DataFrame...")
-    df_values = df_dump[series_index_cols + observations_cols]
+    df_values = df_dump[series_index_cols +
+                        observations_cols + critical_metadata_cols]
     logger.info("{} valores".format(len(df_values)))
 
     # guarda los contenidos del dump en diversos formatos

@@ -16,6 +16,21 @@ import time
 import logging
 import logging.config
 
+FREQ_ISO_TO_HUMAN = {
+    "R/P1Y": "anual",
+    "R/P6M": "semestral",
+    "R/P3M": "trimestral",
+    "R/P1M": "mensual",
+    "R/P1D": "diaria"
+}
+
+
+def safe_sheet_name(string):
+    invalid_chars = "[]:*?/\\"
+    for invalid_char in invalid_chars:
+        string = string.replace(invalid_char, "_")
+    return string
+
 
 def indicators_to_text(simple_dict):
     text = "\n" + "\n".join(
