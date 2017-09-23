@@ -37,7 +37,7 @@ OBSERVATIONS_COLS = ["indice_tiempo", "valor"]
 CRITICAL_METADATA_COLS = ["indice_tiempo_frecuencia"]
 
 # ids que definen una serie.
-SERIES_INDEX_COLS = ["catalog_id", "dataset_id", "distribucion_id", "serie_id"]
+SERIES_INDEX_COLS = ["catalog_id", "dataset_id", "distribution_id", "serie_id"]
 
 
 def _is_series_updated(row):
@@ -254,7 +254,7 @@ def save_dump(df_dump, df_series, df_values, df_fuentes,
 COMPLETE_DUMP_COLS = [
     "catalog_id",
     "dataset_id",
-    "distribucion_id",
+    "distribution_id",
     "serie_id",
     "indice_tiempo",
     "indice_tiempo_frecuencia",
@@ -262,8 +262,8 @@ COMPLETE_DUMP_COLS = [
     "serie_titulo",
     "serie_unidades",
     "serie_descripcion",
-    "distribucion_titulo",
-    # "distribucion_descripcion",
+    "distribution_titulo",
+    # "distribution_descripcion",
     "dataset_responsable",
     "dataset_fuente",
     "dataset_titulo"
@@ -320,7 +320,7 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
         "Dump - datasets": len(
             df_series[['catalog_id', 'dataset_id']].drop_duplicates()),
         "Dump - distribuciones": len(df_series[[
-            'catalog_id', 'dataset_id', 'distribucion_id']].drop_duplicates()),
+            'catalog_id', 'dataset_id', 'distribution_id']].drop_duplicates()),
         "Dump - series": len(df_series),
         "Dump - valores": len(df_values),
         "Dump - responsables": len(df_series.dataset_responsable.unique()),
