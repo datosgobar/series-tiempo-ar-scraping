@@ -180,6 +180,7 @@ DF_SAVE_METHODS = {
 # @timeit
 def save_dump(df_dump, df_series, df_values, df_fuentes,
               fmt="CSV", base_name="series-tiempo", base_dir=DUMPS_DIR):
+    logger = get_logger(__name__)
 
     # crea paths a los archivos que va a generar
     base_path = os.path.join(base_dir, "{}".format(base_name))
@@ -195,31 +196,35 @@ def save_dump(df_dump, df_series, df_values, df_fuentes,
     print()
 
     # guarda dump completo
-    print("Guardando dump completo en {}...".format(fmt), end=" ")
+    logger.info("Guardando dump completo en {}...".format(fmt))
+    sys.stdout.flush()
     save_method(df_dump, dump_path)
-    print("{}MB".format(os.path.getsize(dump_path) / 1000000))
+    logger.info("{}MB".format(os.path.getsize(dump_path) / 1000000))
 
     # guarda resumen de series
-    print("Guardando resumen de series en {}...".format(fmt), end=" ")
+    logger.info("Guardando resumen de series en {}...".format(fmt))
+    sys.stdout.flush()
     save_method(df_series, summary_path)
-    print("{}MB".format(os.path.getsize(summary_path) / 1000000))
+    logger.info("{}MB".format(os.path.getsize(summary_path) / 1000000))
 
     # guarda resumen de fuentes
-    print("Guardando resumen de fuentes en {}...".format(fmt), end=" ")
+    logger.info("Guardando resumen de fuentes en {}...".format(fmt))
+    sys.stdout.flush()
     save_method(df_fuentes, sources_path)
-    print("{}MB".format(os.path.getsize(sources_path) / 1000000))
+    logger.info("{}MB".format(os.path.getsize(sources_path) / 1000000))
 
     # guarda dump mínimo de valores
-    print("Guardando dump de valores en {}...".format(fmt), end=" ")
+    logger.info("Guardando dump de valores en {}...".format(fmt))
+    sys.stdout.flush()
     save_method(df_values, values_path)
-    print("{}MB".format(os.path.getsize(values_path) / 1000000))
+    logger.info("{}MB".format(os.path.getsize(values_path) / 1000000))
 
     # guarda créditos
 
     # guarda dump completo comprimido
-    print("Comprimiendo dump completo en {}...".format(fmt), end=" ")
+    logger.info("Comprimiendo dump completo en {}...".format(fmt))
     compress_file(dump_path, dump_path_zip)
-    print("{}MB".format(os.path.getsize(dump_path_zip) / 1000000))
+    logger.info("{}MB".format(os.path.getsize(dump_path_zip) / 1000000))
 
 
 # selección reducida de columnas para los dumps que son demasiado pesados
@@ -250,25 +255,25 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
     logger = get_logger(__name__)
 
     # genera dump completo de la base de series
-    print("Generando dump completo en DataFrame...", end=" ")
-    df_dump = generate_dump(catalogs_dir=catalogs_dir)
-    print("{} valores".format(len(df_dump)))
+    logger.info("Generando dump completo en DataFrame...")
+    df_dump = generate_dump(catalogs_dir=catalogs_dir, merged=True)
+    logger.info("{} valores".format(len(df_dump)))
 
     # genera resumen descriptivo de series del dump
-    print("Generando resumen de series en DataFrame...", end=" ")
+    logger.info("Generando resumen de series en DataFrame...")
     df_series = generate_series_summary(
         df_dump, series_index_cols, observations_cols)
-    print("{} series".format(len(df_series)))
+    logger.info("{} series".format(len(df_series)))
 
     # genera resumen descriptivo de series del dump
-    print("Generando resumen de fuentes en DataFrame...", end=" ")
+    logger.info("Generando resumen de fuentes en DataFrame...")
     df_fuentes = generate_fuentes_summary(df_series)
-    print("{} fuentes".format(len(df_fuentes)))
+    logger.info("{} fuentes".format(len(df_fuentes)))
 
     # genera dump mínimo con las valores
-    print("Generando dump mínimo de valores en DataFrame...", end=" ")
+    logger.info("Generando dump mínimo de valores en DataFrame...")
     df_values = df_dump[series_index_cols + observations_cols]
-    print("{} valores".format(len(df_values)))
+    logger.info("{} valores".format(len(df_values)))
 
     # guarda los contenidos del dump en diversos formatos
     save_dump(df_dump, df_series, df_values, df_fuentes,
@@ -278,8 +283,11 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
     # menos columnas para STATA porque el formato es muy pesado
     save_dump(df_dump[COMPLETE_DUMP_COLS], df_series, df_values, df_fuentes,
               fmt="DTA", base_dir=dumps_dir)
+    # desacivo logging para SQLITE porque es muy verborrágico
+    logger.disabled = True
     save_dump(df_dump, df_series, df_values, df_fuentes,
               fmt="DB", base_dir=dumps_dir)
+    logger.disabled = False
 
     # calcula indicadores sumarios del dump
     indicators = {
@@ -293,8 +301,10 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
         "Dump - responsables": len(df_series.dataset_responsable.unique()),
         "Dump - fuentes": len(df_fuentes)
     }
+    message = indicators_to_text(indicators)
     with open(os.path.join(REPORTES_DIR, "mail_message.txt"), "a") as f:
-        f.write(indicators_to_text(indicators))
+        f.write(message)
+    print(message)
 
 
 if __name__ == '__main__':

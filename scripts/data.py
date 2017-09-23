@@ -70,9 +70,10 @@ def distribution_has_time_series(distribution):
 
 
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
-                  catalogs_dir=CATALOGS_DIR):
+                  catalogs_dir=CATALOGS_DIR, merged=False):
 
-    rows_dump = []
+    rows_dump_values = []
+    rows_dump_distrib_metadata = []
 
     # itera todas las distribuciones disponibles en busca de series de tiempo
     for catalog_id in get_catalog_ids(catalogs_dir):
@@ -128,6 +129,22 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                     for field in distribution["field"]
                 }
 
+                # genera filas del dump de metadatos
+                row_dump = OrderedDict()
+
+                row_dump["catalog_id"] = catalog_id
+                row_dump["dataset_id"] = dataset["identifier"]
+                row_dump["distribucion_id"] = distribution["identifier"]
+                row_dump["distribucion_titulo"] = distribution["title"]
+                row_dump["distribucion_descripcion"] = distribution[
+                    "description"]
+                row_dump["dataset_responsable"] = dataset["publisher"]["name"]
+                row_dump["dataset_fuente"] = dataset["source"]
+                row_dump["dataset_titulo"] = dataset["title"]
+                row_dump["dataset_descripcion"] = dataset["description"]
+
+                rows_dump_distrib_metadata.append(row_dump)
+
                 # parsea una distribución en CSV a filas del dump
                 with open(distribution_path, "r") as f:
                     r = DictReader(f, encoding="utf-8")
@@ -166,30 +183,30 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                                 field_title].get("units")
                             row_dump["serie_descripcion"] = fields[
                                 field_title]["description"]
-                            row_dump["distribucion_titulo"] = distribution[
-                                "title"]
-                            row_dump["distribucion_descripcion"] = distribution[
-                                "description"]
-                            row_dump["dataset_responsable"] = dataset[
-                                "publisher"]["name"]
-                            row_dump["dataset_fuente"] = dataset["source"]
-                            row_dump["dataset_titulo"] = dataset["title"]
-                            row_dump["dataset_descripcion"] = dataset[
-                                "description"]
 
-                            rows_dump.append(row_dump)
+                            rows_dump_values.append(row_dump)
 
     # genera un DataFrame conteniendo el dump
-    df = pd.DataFrame(rows_dump)
+    df_values = pd.DataFrame(rows_dump_values)
+    df_distrib_metadata = pd.DataFrame(rows_dump_distrib_metadata)
 
     # convierte los valores del índice de tiempo en tipo fecha
-    df['indice_tiempo'] = df['indice_tiempo'].astype('datetime64[ns]')
+    df_values['indice_tiempo'] = df_values[
+        'indice_tiempo'].astype('datetime64[ns]')
 
-    df_sorted = df.sort_values([
+    # ordena por entidades del perfil de metadatos
+    df_values_sorted = df_values.sort_values([
         "catalog_id", "dataset_id", "distribucion_id", "serie_id",
         "indice_tiempo"], ascending=True)
+    df_distrib_metadata_sorted = df_distrib_metadata.sort_values([
+        "catalog_id", "dataset_id", "distribucion_id"], ascending=True)
 
-    return df_sorted
+    if merged:
+        return df_values_sorted.merge(
+            df_distrib_metadata_sorted, how="left",
+            on=["catalog_id", "dataset_id", "distribucion_id"])
+    else:
+        return df_values_sorted, df_distrib_metadata_sorted
 
 
 def get_catalog(catalog_id, catalogs_dir=CATALOGS_DIR):
