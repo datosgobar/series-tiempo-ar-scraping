@@ -43,6 +43,32 @@ def get_time_index_field(distribution):
     return index_col
 
 
+def has_time_series(dataset_or_distribution):
+
+    # es una distribución
+    if "distribution" in dataset_or_distribution:
+        dataset = dataset_or_distribution
+
+        for distribution in dataset["distribution"]:
+            if distribution_has_time_series(distribution):
+                return True
+        return False
+
+    else:
+        distribution = dataset_or_distribution
+        return distribution_has_time_series(distribution)
+
+
+def distribution_has_time_series(distribution):
+    # analiza condiciones de una distribución para contener series de tiempo
+    if "field" not in distribution:
+        return False
+    if not get_time_index_field(distribution):
+        return False
+
+    return True
+
+
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                   catalogs_dir=CATALOGS_DIR):
 
@@ -52,12 +78,14 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
     for catalog_id in get_catalog_ids(catalogs_dir):
         catalog = get_catalog(catalog_id)
 
+        time_series_datasets = []
+        for dataset in catalog["dataset"]:
+            if has_time_series(dataset):
+                time_series_datasets.append(dataset)
         print("{} datasets para agregar del catalogo {}".format(
-            len(catalog["dataset"]), catalog_id))
-        for index, dataset in enumerate(catalog["dataset"]):
-            # print("Agregando dataset {}: {} de {}".format(
-            #     dataset["identifier"], index, len(catalog["dataset"])))
+            len(time_series_datasets), catalog_id))
 
+        for dataset in time_series_datasets:
             for distribution in dataset["distribution"]:
 
                 # tiene que tener series documentadas
