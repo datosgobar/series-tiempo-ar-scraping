@@ -20,6 +20,7 @@ install_anaconda:
 	source ~/.bashrc
 
 # para esto es necesario frenar cualquier otro servicio web en el puerto 80
+# también hay que instalar el monitoreo con amplify
 install_nginx:
 	# sudo service apache2 stop
 	sudo apt-get update && sudo apt-get install nginx && sudo apt-get install nginx-extras
@@ -28,16 +29,21 @@ install_nginx:
 
 test_nginx_conf:
 	# TODO: hacer que no levante nginx si falla el test
-	sudo /etc/init.d/nginx configtest -c scripts/config/nginx.conf
+	# sudo /etc/init.d/nginx configtest -c scripts/config/nginx.conf
+	sudo /etc/init.d/nginx configtest
 
 start_nginx:
-	sudo nginx -p . -c scripts/config/nginx.conf
+	# sudo nginx -p . -c scripts/config/nginx.conf
 	# /etc/init.d/nginx configtest
+	sudo systemctl start nginx
 
 stop_nginx:
 	# Usar en casos extremos
 	# killall nginx
-	sudo nginx -s stop
+	# sudo nginx -s stop
+	sudo systemctl stop nginx
+
+restart_nginx: stop_nginx start_nginx
 
 # clone_repo:
 # 	git clone https://github.com/datosgobar/series-tiempo.git
