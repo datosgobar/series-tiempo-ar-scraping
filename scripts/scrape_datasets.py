@@ -548,9 +548,10 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
          datasets_dir, catalog_id,
          replace=False, debug_mode=False, debug_distribution_ids=None,
          do_scraping=True, do_distributions=True):
-
+    server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
-    if os.environ["SERVER_ENVIRONMENT"] == "prod":
+
+    if server_environment == "prod":
         replace = True
 
     catalog = DataJson(catalog_json_path)

@@ -154,6 +154,7 @@ def save_to_xlsx(df, path, sheet_name="data", split_field=None,
         for split_value in split_values:
             sheet_name = safe_sheet_name(
                 split_values_map.get(split_value, split_value))
+
             df[df[split_field] == split_value].to_excel(
                 writer, sheet_name,
                 merge_cells=False, encoding="utf-8", index=False)
