@@ -35,6 +35,7 @@ test_nginx_conf:
 start_nginx:
 	# sudo nginx -p . -c scripts/config/nginx.conf
 	# /etc/init.d/nginx configtest
+	sudo cp scripts/config/nginx.conf /etc/nginx/nginx.conf
 	sudo systemctl start nginx
 
 stop_nginx:
