@@ -276,7 +276,8 @@ COMPLETE_DUMP_COLS = [
 def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
          series_index_cols=SERIES_INDEX_COLS,
          observations_cols=OBSERVATIONS_COLS,
-         critical_metadata_cols=CRITICAL_METADATA_COLS):
+         critical_metadata_cols=CRITICAL_METADATA_COLS,
+         formats=None):
     """Genera dumps completos de la base en distintos formatos"""
     logger = get_logger(__name__)
 
@@ -303,18 +304,23 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
     logger.info("{} valores".format(len(df_values)))
 
     # guarda los contenidos del dump en diversos formatos
-    save_dump(df_dump, df_series, df_values, df_fuentes,
-              fmt="CSV", base_dir=dumps_dir)
-    save_dump(df_dump, df_series, df_values, df_fuentes,
-              fmt="XLSX", base_dir=dumps_dir)
+    if not formats or "csv" in formats:
+        save_dump(df_dump, df_series, df_values, df_fuentes,
+                  fmt="CSV", base_dir=dumps_dir)
+    if not formats or "xlsx" in formats:
+        save_dump(df_dump, df_series, df_values, df_fuentes,
+                  fmt="XLSX", base_dir=dumps_dir)
     # menos columnas para STATA porque el formato es muy pesado
-    save_dump(df_dump[COMPLETE_DUMP_COLS], df_series, df_values, df_fuentes,
-              fmt="DTA", base_dir=dumps_dir)
+    if not formats or "dta" in formats:
+        save_dump(df_dump[COMPLETE_DUMP_COLS],
+                  df_series, df_values, df_fuentes,
+                  fmt="DTA", base_dir=dumps_dir)
     # desacivo logging para SQLITE porque es muy verborrágico
-    logger.disabled = True
-    save_dump(df_dump, df_series, df_values, df_fuentes,
-              fmt="DB", base_dir=dumps_dir)
-    logger.disabled = False
+    if not formats or "db" in formats:
+        logger.disabled = True
+        save_dump(df_dump, df_series, df_values, df_fuentes,
+                  fmt="DB", base_dir=dumps_dir)
+        logger.disabled = False
 
     # calcula indicadores sumarios del dump
     indicators = {
@@ -335,4 +341,8 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    if len(sys.argv) > 3:
+        formats = sys.argv[3].split(",")
+    else:
+        formats = None
+    main(sys.argv[1], sys.argv[2], formats=formats)
