@@ -19,6 +19,7 @@ import numpy as np
 from sqlalchemy import create_engine
 from pydatajson.helpers import parse_repeating_time_interval_to_days
 import logging
+from unidecode import unidecode
 
 from helpers import get_logger, freq_iso_to_pandas, compress_file, timeit
 from helpers import indicators_to_text, FREQ_ISO_TO_HUMAN, safe_sheet_name
