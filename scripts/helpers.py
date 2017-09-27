@@ -70,7 +70,7 @@ def print_zipfile_info(path):
 def compress_file(from_path, to_path):
     zf = zipfile.ZipFile(to_path, 'w', zipfile.ZIP_DEFLATED)
     try:
-        zf.write(from_path)
+        zf.write(from_path, os.path.basename(from_path))
     finally:
         zf.close()
     # print_zipfile_info(to_path)
