@@ -128,6 +128,9 @@ data/output/server/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
 data/output/server/catalog/modernizacion/data.json: data/input/catalog/modernizacion/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
 
+data/output/server/catalog/sspmi/data.json: data/input/catalog/sspmi/catalog.xlsx
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
+
 # TODO: revisar como se usan adecuadamenten los directorios
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm replace
