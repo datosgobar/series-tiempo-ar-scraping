@@ -170,7 +170,7 @@ def save_to_dta(df, path, str_limit=244):
 
         # limita el largo de los campos de texto
         if df_stata[col].dtype.name == "object":
-            df_stata[col] = df_stata[col].astype(str).str[:str_limit]
+            df_stata[col] = df_stata[col].astype(unicode).str[:str_limit]
 
         # elimina los valores infinitos de los tipos decimales
         elif "float" in df_stata[col].dtype.name:
