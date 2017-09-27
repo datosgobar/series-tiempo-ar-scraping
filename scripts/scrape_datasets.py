@@ -173,6 +173,7 @@ def analyze_distribution(catalog, distribution_identifier):
         distribution_path, index_col=time_index,
         parse_dates=[time_index],
         date_parser=lambda x: arrow.get(x, "YYYY-MM-DD").datetime
+        # encoding="utf-8"
     )
 
     validate_distribution(df, catalog, dataset_meta, distrib_meta,
