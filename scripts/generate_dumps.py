@@ -182,8 +182,15 @@ def save_to_dta(df, path, str_limit=244):
 
 
 def save_to_db(df, path):
+    df_sqlite = df.copy()
     engine = create_engine('sqlite:///{}'.format(path), echo=True)
-    df.to_sql("series_tiempo", engine, index=False, if_exists="replace")
+
+    # cambio el formato de tiempo a string, si hay un índice de tiempo
+    if "indice_tiempo" in df_sqlite.columns:
+        df_sqlite['indice_tiempo'] = df_sqlite[
+            'indice_tiempo'].dt.strftime("%Y-%m-%d")
+
+    df_sqlite.to_sql("series_tiempo", engine, index=False, if_exists="replace")
 
 
 DF_SAVE_METHODS = {
