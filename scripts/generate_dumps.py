@@ -117,6 +117,22 @@ def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
     df_series["serie_var_pct_anterior_anio"] = df_series[
         "serie_valor_ultimo"] / df_series["serie_valor_anterior_anio"] - 1
 
+    # controlo tipos
+    df_series["serie_valores_cant"] = df_series[
+        "serie_valores_cant"].astype(int)
+    df_series["serie_dias_no_cubiertos"] = df_series[
+        "serie_dias_no_cubiertos"].astype(int)
+    df_series["serie_valor_ultimo"] = df_series[
+        "serie_valor_ultimo"].astype(float)
+    df_series["serie_valor_anterior"] = df_series[
+        "serie_valor_anterior"].astype(float)
+    df_series["serie_valor_anterior_anio"] = df_series[
+        "serie_valor_anterior_anio"].astype(float)
+    df_series["serie_var_pct_anterior"] = df_series[
+        "serie_var_pct_anterior"].astype(float)
+    df_series["serie_var_pct_anterior_anio"] = df_series[
+        "serie_var_pct_anterior_anio"].astype(float)
+
     return df_series.reset_index()
 
 
