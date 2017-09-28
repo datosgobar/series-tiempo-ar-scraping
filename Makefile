@@ -139,7 +139,7 @@ data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
 
 data/output/dump/:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@"
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@" $(FORMATS)
 
 data/output/series/: data/params/series_params.json
 	rm -rf data/output/series/*.*
