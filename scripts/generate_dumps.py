@@ -108,14 +108,14 @@ def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
         lambda x: pd.Series(list(x.valor), list(
             x.indice_tiempo)).sort_index()[-2]
     )
-    df_series["serie_valor_anterior_anio"] = series_group.apply(
-        _get_serie_valor_anterior_anio)
+    # df_series["serie_valor_anterior_anio"] = series_group.apply(
+    #     _get_serie_valor_anterior_anio)
 
     # valores representativos en variación porcentual
     df_series["serie_var_pct_anterior"] = df_series[
         "serie_valor_ultimo"] / df_series["serie_valor_anterior"] - 1
-    df_series["serie_var_pct_anterior_anio"] = df_series[
-        "serie_valor_ultimo"] / df_series["serie_valor_anterior_anio"] - 1
+    # df_series["serie_var_pct_anterior_anio"] = df_series[
+    #     "serie_valor_ultimo"] / df_series["serie_valor_anterior_anio"] - 1
 
     # controlo tipos
     df_series["serie_valores_cant"] = df_series[
@@ -126,12 +126,12 @@ def generate_series_summary(df, series_index_cols=SERIES_INDEX_COLS,
         "serie_valor_ultimo"].astype(float)
     df_series["serie_valor_anterior"] = df_series[
         "serie_valor_anterior"].astype(float)
-    df_series["serie_valor_anterior_anio"] = df_series[
-        "serie_valor_anterior_anio"].astype(float)
+    # df_series["serie_valor_anterior_anio"] = df_series[
+    #     "serie_valor_anterior_anio"].astype(float)
     df_series["serie_var_pct_anterior"] = df_series[
         "serie_var_pct_anterior"].astype(float)
-    df_series["serie_var_pct_anterior_anio"] = df_series[
-        "serie_var_pct_anterior_anio"].astype(float)
+    # df_series["serie_var_pct_anterior_anio"] = df_series[
+    #     "serie_var_pct_anterior_anio"].astype(float)
 
     return df_series.reset_index()
 
