@@ -246,7 +246,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
             dist_path = os.path.join(dist_download_dir,
                                      "{}.csv".format(distribution_name))
             dist_url = get_distribution_url(dist_path, config_server_path)
-            print("esta es la URL QUE VA AL CATALOGO", dist_url)
+            # print("esta es la URL QUE VA AL CATALOGO", dist_url)
             distrib_meta["downloadURL"] = dist_url
 
             # chequea si ante la existencia del archivo hay que reemplazarlo o
