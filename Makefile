@@ -135,7 +135,7 @@ data/output/server/catalog/sspmi/data.json: data/input/catalog/sspmi/catalog.xls
 
 # TODO: revisar como se usan adecuadamenten los directorios
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm skip
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm replace
 
 data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
