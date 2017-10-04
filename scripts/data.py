@@ -339,7 +339,7 @@ def get_series_params(field_ids, catalogs_dir=CATALOGS_DIR, catalogs=None):
                     field_location["distribution_identifier"],
                     field_location["field_title"]
                 )
-            break
+                break
         if not field_location:
             print(field_id, "no existe en ningun catalogo")
 
