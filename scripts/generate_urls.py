@@ -70,23 +70,28 @@ def main(catalogs_dir, sources_type, sources_urls_path):
         print("Extrayendo URLs de fuentes de {}: {}".format(
             catalog_id, catalog_xlsx_path))
 
-        df = pd.read_excel(
-            catalog_xlsx_path,
-            find_ws_name(catalog_xlsx_path, DISTRIBUTION_SHEET_NAME)
-        )
-        # print(catalog_xlsx_path, df.columns)
+        try:
+            df = pd.read_excel(
+                catalog_xlsx_path,
+                find_ws_name(catalog_xlsx_path, DISTRIBUTION_SHEET_NAME)
+            )
+            # print(catalog_xlsx_path, df.columns)
 
-        if sources_type == "scraping":
-            if "distribution_scrapingFileURL" in df.columns:
-                urls.extend(get_scraping_sources_urls(df, catalog_id))
+            if sources_type == "scraping":
+                if "distribution_scrapingFileURL" in df.columns:
+                    urls.extend(get_scraping_sources_urls(df, catalog_id))
+                else:
+                    print("Nada que scrapear en el catalogo: {}".format(
+                        catalog_id))
+            elif sources_type == "distribution":
+                urls.extend(get_distribution_download_urls(df, catalog_id))
             else:
-                print("Nada que scrapear en el catalogo: {}".format(
-                    catalog_id))
-        elif sources_type == "distribution":
-            urls.extend(get_distribution_download_urls(df, catalog_id))
-        else:
-            raise Exception("No se reconoce el tipo de fuente {}".format(
-                sources_type))
+                raise Exception("No se reconoce el tipo de fuente {}".format(
+                    sources_type))
+        except Exception as e:
+            print("No se pudo extraer URLs de fuentes del catalogo {}".format(
+                catalog_id))
+            print(e)
 
     print("{} URLs de {} en total".format(len(urls), sources_type))
 
