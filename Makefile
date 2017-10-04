@@ -3,9 +3,11 @@ SHELL = bash
 .PHONY: all clean download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt data/output/dump/ data/output/series/
 
 all: extraction transformation load custom_steps
+all_local: extraction transformation_local
 et: extraction transformation
 extraction: download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspmi/data.json data/output/server/catalog/modernizacion/data.json data/output/server/catalog/sspm/dataset/ data/output/dump/ data/output/series/ send_transformation_report
+transformation_local: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ data/output/dump/ data/output/series/ send_transformation_report
+transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/modernizacion/data.json data/output/server/catalog/sspm/dataset/ data/output/dump/ data/output/series/ send_transformation_report
 # transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report
 load: upload_series upload_dumps
 setup: install_anaconda setup_environment create_dir install_cron
@@ -133,7 +135,7 @@ data/output/server/catalog/sspmi/data.json: data/input/catalog/sspmi/catalog.xls
 
 # TODO: revisar como se usan adecuadamenten los directorios
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm replace
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm skip
 
 data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
