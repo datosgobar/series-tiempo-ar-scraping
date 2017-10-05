@@ -384,18 +384,21 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
     return res
 
 
-def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
+def scrape_file(scraping_xlsx_path, etl_params, catalog, datasets_dir,
                 replace=True, debug_mode=False, debug_distribution_ids=None,
                 catalog_id=None):
-    xl = XlSeries(ied_xlsx_path)
-    ied_xlsx_filename = os.path.basename(ied_xlsx_path)
+    xl = XlSeries(scraping_xlsx_path)
+    scraping_filename = os.path.basename(scraping_xlsx_path)
 
     # filtro los parametros para un excel en particular
-    ied_xl_params = etl_params[etl_params.apply(
-        lambda x: os.path.basename(
-            x["distribution_scrapingFileURL"]) == ied_xlsx_filename, axis=1)]
-    dataset_ids = ied_xl_params.distribution_identifier.apply(
-        lambda x: x.split(".")[0]).unique()
+    dataset_ids = set()
+    for distribution in catalog.get_distributions():
+        if (
+            ("scrapingFileURL" in distribution) and
+                (os.path.basename(distribution[
+                    "scrapingFileURL"]) == scraping_filename)
+        ):
+            dataset_ids.add(distribution["dataset_identifier"])
 
     report_datasets = []
     report_distributions = []
@@ -410,12 +413,12 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
         report_datasets.append({
             "dataset_identifier": dataset_identifier,
             "dataset_status": result["dataset_status"],
-            "distribution_scrapingFileURL": ied_xlsx_filename
+            "distribution_scrapingFileURL": scraping_filename
         })
 
         distribution_result = {
             "dataset_identifier": dataset_identifier,
-            "distribution_scrapingFileURL": ied_xlsx_filename
+            "distribution_scrapingFileURL": scraping_filename
         }
 
         for distribution_id, distribution_notes in result["distributions_ok"]:
@@ -432,7 +435,12 @@ def scrape_file(ied_xlsx_path, etl_params, catalog, datasets_dir,
             report_distributions.append(distribution_result)
 
         # si se eliminaron las distribuciones del dataset, se borra el dataset
-        if len(catalog.get_dataset(dataset_identifier)["distribution"]) == 0:
+        distributions = catalog.get_dataset(
+            dataset_identifier).get("distribution", [])
+        if len(distributions) == 0:
+            print("Se elimina el dataset {}, no tiene distribuciones".format(
+                dataset_identifier
+            ))
             catalog.remove_dataset(dataset_identifier)
 
     return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
@@ -620,8 +628,11 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
                     "file_status": "ERROR",
                     "file_notes": repr(e).encode("utf8")
                 })
+
+                trace_string = traceback.format_exc()
                 print(msg.format(ied_xlsx_path, "ERROR",
                                  repr(e).encode("utf8")))
+                print(trace_string)
                 if debug_mode:
                     raise
 
