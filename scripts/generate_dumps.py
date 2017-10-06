@@ -288,7 +288,28 @@ COMPLETE_DUMP_COLS = [
     "serie_unidades",
     "serie_descripcion",
     "distribution_titulo",
+    "distribution_descripcion",
+    # "distribution_downloadURL",
+    "dataset_responsable",
+    "dataset_fuente",
+    "dataset_titulo",
+    "dataset_descripcion"
+]
+
+STATA_DUMP_COLS = [
+    "catalog_id",
+    "dataset_id",
+    "distribution_id",
+    "serie_id",
+    "indice_tiempo",
+    "indice_tiempo_frecuencia",
+    "valor",
+    "serie_titulo",
+    "serie_unidades",
+    "serie_descripcion",
+    "distribution_titulo",
     # "distribution_descripcion",
+    # "distribution_downloadURL",
     "dataset_responsable",
     "dataset_fuente",
     "dataset_titulo"
@@ -328,20 +349,23 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
 
     # guarda los contenidos del dump en diversos formatos
     if not formats or "csv" in formats:
-        save_dump(df_dump, df_series, df_values, df_fuentes,
+        save_dump(df_dump[COMPLETE_DUMP_COLS],
+                  df_series, df_values, df_fuentes,
                   fmt="CSV", base_dir=dumps_dir)
     if not formats or "xlsx" in formats:
-        save_dump(df_dump, df_series, df_values, df_fuentes,
+        save_dump(df_dump[COMPLETE_DUMP_COLS],
+                  df_series, df_values, df_fuentes,
                   fmt="XLSX", base_dir=dumps_dir)
     # menos columnas para STATA porque el formato es muy pesado
     if not formats or "dta" in formats:
-        save_dump(df_dump[COMPLETE_DUMP_COLS],
+        save_dump(df_dump[STATA_DUMP_COLS],
                   df_series, df_values, df_fuentes,
                   fmt="DTA", base_dir=dumps_dir)
     # desacivo logging para SQLITE porque es muy verborrágico
     if not formats or "db" in formats:
         logger.disabled = True
-        save_dump(df_dump, df_series, df_values, df_fuentes,
+        save_dump(df_dump[COMPLETE_DUMP_COLS],
+                  df_series, df_values, df_fuentes,
                   fmt="DB", base_dir=dumps_dir)
         logger.disabled = False
 

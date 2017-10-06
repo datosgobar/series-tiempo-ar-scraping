@@ -172,7 +172,7 @@ def validate_InvalidNumericField(df, distrib_meta):
 
 
 EXCEPTIONS = {
-    "TimeIndexFutureTimeValueError": ["57.1"],
+    "TimeIndexFutureTimeValueError": ["57.1", "165.1", "58.1"],
     "FieldFewValuesError": [],
     "InvalidFieldTitleError": [],
     "InvalidFieldIdError": [],

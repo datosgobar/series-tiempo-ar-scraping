@@ -138,6 +138,8 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                 row_dump["distribution_titulo"] = distribution["title"]
                 row_dump["distribution_descripcion"] = distribution[
                     "description"]
+                row_dump["distribution_downloadURL"] = distribution[
+                    "downloadURL"]
                 row_dump["dataset_responsable"] = dataset["publisher"]["name"]
                 row_dump["dataset_fuente"] = dataset["source"]
                 row_dump["dataset_titulo"] = dataset["title"]
