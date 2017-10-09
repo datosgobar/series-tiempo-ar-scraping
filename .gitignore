@@ -125,4 +125,5 @@ data/reports
 catalogo
 custom_steps.sh
 pruebas
-scripts
+upload_config_files-dev.sh
+upload_config_files-prod.sh
