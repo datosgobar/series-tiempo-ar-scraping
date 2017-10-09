@@ -17,20 +17,23 @@ import traceback
 from openpyxl import load_workbook
 import logging
 from copy import deepcopy
+from urlparse import urljoin
+from pprint import pprint
+
 from pydatajson import DataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
 from pydatajson.helpers import title_to_name
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
-from urlparse import urljoin
-from pprint import pprint
+from series_tiempo_ar.validations import validate_distribution_scraping
+from series_tiempo_ar.validations import validate_distribution
 
 import helpers
+from helpers import get_logger
 import custom_exceptions as ce
 from paths import LOGS_DIR, REPORTES_DIR, CONFIG_SERVER_PATH
 from paths import get_distribution_path, CATALOGS_DIR_INPUT
-from validation import validate_distribution, validate_distribution_scraping
 from generate_catalog import write_json_catalog
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -449,12 +452,13 @@ def scrape_file(scraping_xlsx_path, etl_params, catalog, datasets_dir,
 def analyze_catalog(catalog, datasets_dir,
                     replace=True, debug_mode=False,
                     debug_distribution_ids=None):
-    # pprint(catalog.get_distributions())
+    logger = get_logger(__name__)
+
     distributions_with_url = filter(
         lambda x: "downloadURL" in x and bool(x["downloadURL"]),
         catalog.get_distributions()
     )
-    print("{} distribuciones con `downloadURL`".format(
+    logger.info("{} distribuciones con `downloadURL`".format(
         len(distributions_with_url))
     )
     dataset_ids = set((
@@ -599,7 +603,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
             if debug_mode:
                 raise
 
-    # SEGUNDO   : organiza el scraping por Excel descargado
+    # SEGUNDO: organiza el scraping por Excel descargado
     if do_scraping:
         msg = "Archivo {}: {} ({})"
         for ied_xlsx_path in ied_xlsx_paths:

@@ -1,11 +1,11 @@
 SHELL = bash
 
-.PHONY: all clean download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt data/output/dump/ data/output/series/
+.PHONY: all clean download_catalogs data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt data/output/dump/ data/output/series/
 
 all: extraction transformation load custom_steps
 all_local: extraction transformation_local
 et: extraction transformation
-extraction: download_catalog data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
+extraction: extract_catalogs data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
 transformation_local: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ data/output/dump/ data/output/series/ send_transformation_report
 transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/modernizacion/data.json data/output/server/catalog/sspm/dataset/ data/output/dump/ data/output/series/ send_transformation_report
 # transformation: data/output/server/catalog/sspm/data.json data/output/server/catalog/sspm/dataset/ send_transformation_report
@@ -105,34 +105,23 @@ install_cron: cron_jobs
 	touch cron_jobs
 
 # extraction
-download_catalog: data/params/catalog_url.txt
-	# descarga cada catalogo en una carpeta propia
-	while read catalog_id url; do \
-		mkdir -p "data/input/catalog/$$catalog_id/" ; \
-		wget -N -O "data/input/catalog/$$catalog_id/catalog.xlsx" "$$url" --no-check-certificate ; \
-	done < "$<"
+# download_catalogs:
+# 	bash scripts/download_catalogs.sh "data/params/catalog_url.txt" "data/input/catalog"
+
+extract_catalogs:
+	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "data/params/indice.yml" "data/output/server/catalog"
 
 data/params/scraping_urls.txt:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py data/input/catalog/ scraping "$@"
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "scraping" "$@"
 
 data/params/distribution_urls.txt:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py data/input/catalog/ distribution "$@"
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "distribution" "$@"
 
 download_sources:
 	bash scripts/download_scraping_sources.sh "data/params/scraping_urls.txt"
 	bash scripts/download_distributions.sh "data/params/distribution_urls.txt"
 
 # transformation
-data/output/server/catalog/sspm/data.json: data/input/catalog/sspm/catalog.xlsx
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
-	# $(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@" > data/generate-catalog-errors.txt
-
-data/output/server/catalog/modernizacion/data.json: data/input/catalog/modernizacion/catalog.xlsx
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
-
-data/output/server/catalog/sspmi/data.json: data/input/catalog/sspmi/catalog.xlsx
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_catalog.py "$<" "$@"
-
 # TODO: revisar como se usan adecuadamenten los directorios
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm replace

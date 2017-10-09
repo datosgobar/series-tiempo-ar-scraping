@@ -9,7 +9,7 @@ while read catalog_id dataset_id distribution_id distribution_fileName url; do
 
 	# chequea que la URL está disponible y saludable
 	status_code=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $url)
-	if [ $status_code == "200" ] || [ $status_code == "000" ]; then
+	if [ $status_code == "200" ] || [ $status_code == "000" ] || [ $status_code == "302" ]; then
 		echo "$catalog_id $url" ;
 		wget -N -O "$distribution_dir$distribution_fileName" "$url" --no-check-certificate ;
 	else

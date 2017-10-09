@@ -18,3 +18,4 @@ xlsxwriter
 sqlalchemy
 easywebdav
 pysftp
+series_tiempo_ar
