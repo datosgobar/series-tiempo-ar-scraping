@@ -570,13 +570,9 @@ def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
 
     catalog = DataJson(catalog_json_path)
 
-    etl_params = pd.read_csv(etl_params_path,
-                             dtype={"distribution_identifier": "str"})
-
     # compone los paths a los excels de ied
-    ied_xlsx_filenames = etl_params.distribution_scrapingFileURL.apply(
-        lambda x: os.path.basename(x)
-    ).unique()
+    scrapingURLs = set(dj.get_distributions(meta_field="scrapingFileURL"))
+    ied_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
     ied_xlsx_paths = [os.path.join(ied_data_dir, filename)
                       for filename in ied_xlsx_filenames]
 
