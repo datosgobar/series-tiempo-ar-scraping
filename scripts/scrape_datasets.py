@@ -72,31 +72,31 @@ XLSERIES_PARAMS = {
 }
 
 
-def gen_distribution_params(etl_params, catalog, distribution_identifier):
-    df_distrib = etl_params[
-        etl_params.distribution_identifier == distribution_identifier
-    ]
-    df_fields = df_distrib[etl_params.field_title != "indice_tiempo"]
+def gen_distribution_params(catalog, distribution_identifier):
+    distribution = catalog.get_distribution(distribution_identifier)
 
-    num_series = len(df_fields)
+    fields = distribution["field"]
     params = {}
 
     # hoja de la Distribucion
-    worksheets = list(df_distrib.distribution_scrapingFileSheet.unique())
-    msg = "Distribucion {} en mas de una hoja {}".format(
-        distribution_identifier, worksheets)
-    assert len(worksheets) == 1, msg
-    params["worksheet"] = worksheets[0]
+    params["worksheet"] = distribution["scrapingFileSheet"]
 
     # coordenadas de los headers de las series
-    params["headers_coord"] = list(df_fields.field_scrapingIdentifierCell)
+    params["headers_coord"] = [
+        field["scrapingIdentifierCell"]
+        for field in fields
+        if not field.get("specialType")
+    ]
 
     # coordenadas de los headers de las series
-    params["headers_value"] = list(df_fields.field_id)
+    params["headers_value"] = [field["id"] for field in fields
+                               if not field.get("specialType")]
 
     # fila donde empiezan los datos
-    params["data_starts"] = map(helpers.row_from_cell_coord,
-                                df_fields.field_scrapingDataStartCell)
+    params["data_starts"] = map(
+        helpers.row_from_cell_coord,
+        [field["scrapingDataStartCell"] for field in fields
+         if not field.get("specialType")])
 
     # frecuencia de las series
     field = catalog.get_field(distribution_identifier=distribution_identifier,
@@ -105,12 +105,11 @@ def gen_distribution_params(etl_params, catalog, distribution_identifier):
         field["specialTypeDetail"])
 
     # coordenadas del header del indice de tiempo
-    params["time_header_coord"] = df_distrib[
-        df_distrib.field_title == "indice_tiempo"][
-        "field_scrapingIdentifierCell"].iloc[0]
+    params["time_header_coord"] = field["scrapingIdentifierCell"]
 
     # nombres de las series
-    params["series_names"] = list(df_fields.field_title)
+    params["series_names"] = [field["title"] for field in fields
+                              if not field.get("specialType")]
 
     return params
 
@@ -136,10 +135,10 @@ def scrape_dataframe(xl, worksheet, headers_coord, headers_value, data_starts,
     return dfs
 
 
-def scrape_distribution(xl, etl_params, catalog, distribution_identifier):
+def scrape_distribution(xl, catalog, distribution_identifier):
 
     distribution_params = gen_distribution_params(
-        etl_params, catalog, distribution_identifier)
+        catalog, distribution_identifier)
     distrib_meta = catalog.get_distribution(distribution_identifier)
     dataset_meta = catalog.get_dataset(distribution_identifier.split(".")[0])
 
@@ -198,7 +197,7 @@ def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
     )
 
 
-def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
+def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
                    debug_mode=False, replace=True,
                    config_server_path=CONFIG_SERVER_PATH,
                    debug_distribution_ids=None, catalog_id=None):
@@ -220,14 +219,8 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
         return res
 
     # filtro los parametros para un dataset en particular
-    distribution_ids_all = [
-        distribution["identifier"]
-        for distribution in dataset_meta["distribution"]
-    ]
-    dataset_params = etl_params[etl_params.apply(
-        lambda x: x["distribution_identifier"] in distribution_ids_all,
-        axis=1)]
-    distribution_ids = dataset_params.distribution_identifier.unique()
+    distribution_ids = [distribution["identifier"] for distribution in
+                        dataset_meta["distribution"]]
 
     # si está en debug mode, se puede especificar sólo algunos ids
     if debug_mode and debug_distribution_ids:
@@ -257,7 +250,7 @@ def scrape_dataset(xl, etl_params, catalog, dataset_identifier, datasets_dir,
             if not os.path.exists(dist_path) or replace:
                 status = "Replaced" if os.path.exists(dist_path) else "Created"
                 distribution = scrape_distribution(
-                    xl, etl_params, catalog, distribution_identifier)
+                    xl, catalog, distribution_identifier)
 
                 if isinstance(distribution, list):
                     distribution_complete = pd.concat(distribution)
@@ -387,7 +380,7 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
     return res
 
 
-def scrape_file(scraping_xlsx_path, etl_params, catalog, datasets_dir,
+def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
                 replace=True, debug_mode=False, debug_distribution_ids=None,
                 catalog_id=None):
     xl = XlSeries(scraping_xlsx_path)
@@ -407,7 +400,7 @@ def scrape_file(scraping_xlsx_path, etl_params, catalog, datasets_dir,
     report_distributions = []
     for dataset_identifier in dataset_ids:
         result = scrape_dataset(
-            xl, etl_params, catalog, dataset_identifier, datasets_dir,
+            xl, catalog, dataset_identifier, datasets_dir,
             replace=replace, debug_mode=debug_mode,
             debug_distribution_ids=debug_distribution_ids,
             catalog_id=catalog_id
@@ -561,7 +554,7 @@ def generate_summary_indicators(report_files, report_datasets,
 
 def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
          replace=False, debug_mode=False, debug_distribution_ids=None,
-         do_scraping=True, do_distributions=True):
+         do_scraping=True, do_distributions=False):
     server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
 
@@ -606,7 +599,7 @@ def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
 
             try:
                 report_datasets, report_distributions = scrape_file(
-                    ied_xlsx_path, etl_params, catalog, datasets_dir,
+                    ied_xlsx_path, catalog, datasets_dir,
                     replace=replace, debug_mode=debug_mode,
                     debug_distribution_ids=debug_distribution_ids,
                     catalog_id=catalog_id)
