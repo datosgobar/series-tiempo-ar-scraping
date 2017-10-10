@@ -168,21 +168,21 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
                 catalog_id, catalog_filtered,
                 catalog_path_template.format("data.json"))
 
-            logger.info('- Escritura de catálogo en XLSX')
-            writers.write_xlsx_catalog(
-                catalog_filtered, catalog_path_template.format("catalog.xlsx"))
+            # logger.info('- Escritura de catálogo en XLSX')
+            # writers.write_xlsx_catalog(
+            # catalog_filtered, catalog_path_template.format("catalog.xlsx"))
         else:
             raise Exception("El catálogo {} no se pudo generar".format(
                 catalog_id))
 
         # genera reportes del catálogo
-        logger.info('- Generación de reportes')
-        catalog_filtered.generate_catalog_readme(
-            catalog_filtered,
-            export_path=catalog_path_template.format('README.md'))
-        catalog_filtered.generate_datasets_summary(
-            catalog_filtered,
-            export_path=catalog_path_template.format('datasets.csv'))
+        # logger.info('- Generación de reportes')
+        # catalog_filtered.generate_catalog_readme(
+        #     catalog_filtered,
+        #     export_path=catalog_path_template.format('README.md'))
+        # catalog_filtered.generate_datasets_summary(
+        #     catalog_filtered,
+        #     export_path=catalog_path_template.format('datasets.csv'))
 
     except Exception as e:
         logger.error(
