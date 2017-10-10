@@ -571,7 +571,7 @@ def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
     catalog = DataJson(catalog_json_path)
 
     # compone los paths a los excels de ied
-    scrapingURLs = set(dj.get_distributions(meta_field="scrapingFileURL"))
+    scrapingURLs = set(catalog.get_distributions(meta_field="scrapingFileURL"))
     ied_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
     ied_xlsx_paths = [os.path.join(ied_data_dir, filename)
                       for filename in ied_xlsx_filenames]
