@@ -559,8 +559,7 @@ def generate_summary_indicators(report_files, report_datasets,
     return indicators
 
 
-def main(catalog_json_path, etl_params_path, ied_data_dir,
-         datasets_dir, catalog_id,
+def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
          replace=False, debug_mode=False, debug_distribution_ids=None,
          do_scraping=True, do_distributions=True):
     server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
@@ -690,7 +689,7 @@ def main(catalog_json_path, etl_params_path, ied_data_dir,
 
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 7 and sys.argv[6]:
-        replace = True if sys.argv[6] == "replace" else False
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
+    if len(sys.argv) >= 6 and sys.argv[5]:
+        replace = True if sys.argv[5] == "replace" else False
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
          replace=replace, debug_mode=False, debug_distribution_ids=[])

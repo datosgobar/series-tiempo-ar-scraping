@@ -123,11 +123,11 @@ download_sources:
 
 # transformation
 # TODO: revisar como se usan adecuadamenten los directorios
-data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/params/scraping_params.csv data/input/catalog/sspm/sources/
+data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/input/catalog/sspm/sources/
 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm replace
 
-data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
+# data/params/scraping_params.csv: data/input/catalog/sspm/catalog.xlsx
+# 	$(SERIES_TIEMPO_PYTHON) scripts/generate_scraping_params.py "$<" "$@"
 
 data/output/dump/:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@" $(FORMATS)
