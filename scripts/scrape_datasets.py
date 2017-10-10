@@ -554,7 +554,7 @@ def generate_summary_indicators(report_files, report_datasets,
 
 def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
          replace=False, debug_mode=False, debug_distribution_ids=None,
-         do_scraping=True, do_distributions=False):
+         do_scraping=True, do_distributions=True):
     server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
 
