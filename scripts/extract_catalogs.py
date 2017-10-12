@@ -197,14 +197,14 @@ def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
 
     # cargo los parámetros de los catálogos a extraer
     with open(catalogs_index_path) as config_file:
-        catalogs_params = yaml.load(config_file)
+        catalogs_index = yaml.load(config_file)
 
     # procesa los catálogos
-    for catalog_id in catalogs_params:
+    for catalog_id in catalogs_index:
         process_catalog(
             catalog_id,
-            catalogs_params[catalog_id]["formato"],
-            catalogs_params[catalog_id]["url"],
+            catalogs_index[catalog_id]["formato"],
+            catalogs_index[catalog_id]["url"],
             catalogs_dir
         )
 

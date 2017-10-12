@@ -552,9 +552,9 @@ def generate_summary_indicators(report_files, report_datasets,
     return indicators
 
 
-def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
-         replace=False, debug_mode=False, debug_distribution_ids=None,
-         do_scraping=True, do_distributions=True):
+def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
+         catalog_id, replace=True, debug_mode=False,
+         debug_distribution_ids=None, do_scraping=True, do_distributions=True):
     server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
 
@@ -566,7 +566,7 @@ def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
     # compone los paths a los excels de ied
     scrapingURLs = set(catalog.get_distributions(meta_field="scrapingFileURL"))
     ied_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
-    ied_xlsx_paths = [os.path.join(ied_data_dir, filename)
+    ied_xlsx_paths = [os.path.join(catalog_sources_dir, filename)
                       for filename in ied_xlsx_filenames]
 
     # inicializa las listas que contienen los reportes
@@ -578,7 +578,7 @@ def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
     if do_distributions:
         try:
             report_datasets, report_distributions = analyze_catalog(
-                catalog, datasets_dir,
+                catalog, catalog_datasets_dir,
                 replace=replace, debug_mode=debug_mode,
                 debug_distribution_ids=debug_distribution_ids)
             all_report_datasets.append(report_datasets)
@@ -599,7 +599,7 @@ def main(catalog_json_path, ied_data_dir, datasets_dir, catalog_id,
 
             try:
                 report_datasets, report_distributions = scrape_file(
-                    ied_xlsx_path, catalog, datasets_dir,
+                    ied_xlsx_path, catalog, catalog_datasets_dir,
                     replace=replace, debug_mode=debug_mode,
                     debug_distribution_ids=debug_distribution_ids,
                     catalog_id=catalog_id)
