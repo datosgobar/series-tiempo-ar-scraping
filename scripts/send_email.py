@@ -38,24 +38,9 @@ SMTP_SERVER = "smtp.gmail.com"
 PORT = 587
 
 
-def send_email(subject, message, to=None, files=None, email_user=None,
-               email_pass=None):
-
-    with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-
+def send_email(subject, message, to, email_user, email_pass, files=None):
     # parametros
-    if os.path.isfile(subject):
-        with open(subject, "r") as f:
-            subject = f.read()
-    if os.path.isfile(message):
-        with open(message, "r") as f:
-            message = f.read()
-    email_user = email_user or cfg['gmail']['user']
-    email_pass = email_pass or cfg['gmail']['pass']
-    to = to or cfg['etl']['destinatarios']
     to_list = to.split(",")
-    files = files.split(",") if files else cfg['etl']['adjuntos'].split(",")
 
     msg = MIMEMultipart()
     msg['Subject'] = subject
@@ -65,12 +50,13 @@ def send_email(subject, message, to=None, files=None, email_user=None,
 
     msg.attach(MIMEText(message))
 
-    for f in files:
-        with open(f, "rb") as fil:
-            part = MIMEApplication(fil.read(), Name=basename(f))
-            part[
-                'Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
-            msg.attach(part)
+    if files:
+        for f in files.split(","):
+            with open(f, "rb") as fil:
+                part = MIMEApplication(fil.read(), Name=basename(f))
+                part[
+                    'Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
+                msg.attach(part)
 
     # s = smtplib.SMTP_SSL(SMTP_SERVER, PORT)
     s = smtplib.SMTP(SMTP_SERVER, PORT)
@@ -83,10 +69,45 @@ def send_email(subject, message, to=None, files=None, email_user=None,
     print("Se envió exitosamente un reporte a " + to)
 
 
+def send_emails(subject, message, to=None, email_user=None,
+                email_pass=None, files=None):
+
+    with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
+        cfg = yaml.load(ymlfile)
+
+    # parametros del mensaje
+    if os.path.isfile(subject):
+        with open(subject, "r") as f:
+            subject = f.read()
+    if os.path.isfile(message):
+        with open(message, "r") as f:
+            message = f.read()
+
+    # parametros de la cuenta que envía el mail
+    email_user = email_user or cfg['gmail']['user']
+    email_pass = email_pass or cfg['gmail']['pass']
+
+    # destinatarios
+    to = to or cfg['etl'].get('destinatarios')
+    # si no se definieron destinatarios globales, se definieron por separado
+    if not to:
+        for to_group in cfg['etl']:
+            to = cfg['etl'][to_group]["destinatarios"]
+            files_group = files or cfg['etl'][to_group]['adjuntos']
+
+            print("Enviando reporte al grupo {}...".format(to_group))
+            send_email(subject, message, to, email_user=email_user,
+                       email_pass=email_pass, files=files_group)
+    else:
+        files = files or cfg['etl']['adjuntos']
+        send_email(subject, message, to, email_user=email_user,
+                   email_pass=email_pass, files=files)
+
+
 if __name__ == '__main__':
 
     if len(sys.argv) >= 3:
-        send_email(*sys.argv[1:])
+        send_emails(*sys.argv[1:])
 
     else:
         print("Se deben especificar los siguientes argumentos:",
