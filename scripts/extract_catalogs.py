@@ -72,38 +72,77 @@ def write_json_catalog(catalog_id, catalog, catalog_json_path):
     writers.write_json_catalog(catalog, catalog_backup_json_path)
 
 
-def validate_and_filter(catalog):
+def validate_and_filter(catalog_id, catalog):
     """Valida y filtra un catálogo en data.json."""
-    dj = DataJson(schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
+    dj = DataJson(catalog,
+                  schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
 
     # valida todo el catálogo para saber si está ok
-    global_validation = dj.is_valid_catalog(catalog)
+    is_valid_catalog = dj.is_valid_catalog()
     logging.info(
-        "Metadata a nivel de catálogo es válida? {}".format(global_validation))
+        "Metadata a nivel de catálogo es válida? {}".format(is_valid_catalog))
 
-    # genera reportes de validación
-    validation_result = dj.validate_catalog(catalog)
-    writers.write_json(
-        validation_result,
-        os.path.join(REPORTES_DIR, "reporte-catalogo-completo.json")
+    # genera directorio de reportes para el catálogo
+    reportes_catalog_dir = os.path.join(REPORTES_DIR, catalog_id)
+    ensure_dir_exists(reportes_catalog_dir)
+
+    # genera reporte de validación completo
+    dj.validate_catalog(
+        only_errors=True, fmt="list",
+        export_path=os.path.join(reportes_catalog_dir,
+                                 "reporte-catalogo-errores.xlsx")
     )
-    datasets_errors = filter(lambda x: x["status"] == "ERROR",
-                             validation_result["error"]["dataset"])
 
-    writers.write_json(
-        datasets_errors,
-        os.path.join(REPORTES_DIR, "reporte-datasets-error.json")
-    )
-    # genera catálogo filtrado por los datasets que no tienen error
-
+    # genera reporte de datasets para federación
     dj.generate_datasets_report(
         catalog, harvest='valid',
-        export_path=os.path.join(REPORTES_DIR, "reporte-datasets.xlsx")
+        export_path=os.path.join(reportes_catalog_dir, "reporte-datasets.xlsx")
     )
+
+    # genera mensaje de reporte
+    subject, message = generate_validation_message(
+        catalog_id, is_valid_catalog)
+
+    with open(os.path.join(reportes_catalog_dir,
+                           "extraction_mail_subject.txt"), "wb") as f:
+        f.write(subject.encode("utf-8"))
+    with open(os.path.join(reportes_catalog_dir,
+                           "extraction_mail_message.txt"), "wb") as f:
+        f.write(message.encode("utf-8"))
+
+    # genera catálogo filtrado por los datasets que no tienen error
     catalog_filtered = dj.generate_harvestable_catalogs(
         catalog, harvest='valid')[0]
 
     return catalog_filtered
+
+
+def generate_validation_message(catalog_id, is_valid_catalog):
+    """Genera asunto y mensaje del mail de reporte a partir de indicadores.
+
+    Args:
+        catalog_id (str): Identificador del catálogo
+        is_valid_catalog (bool): Indica si el catálogo está libre de errores.
+
+    Return:
+        tuple: (str, str) (asunto, mensaje)
+    """
+    server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
+
+    # asunto del mail
+    subject = "[{}] Validacion de catalogo '{}': {}".format(
+        server_environment,
+        catalog_id,
+        arrow.now().format("DD/MM/YYYY HH:mm")
+    )
+
+    # mensaje del mail
+    if is_valid_catalog:
+        message = "El catálogo '{}' no tiene errores.".format(catalog_id)
+    else:
+        message = "El catálogo '{}' tiene errores.".format(catalog_id)
+
+    return subject, message
 
 
 def process_catalog(catalog_id, catalog_format, catalog_url,
@@ -157,7 +196,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         # filtra, valida y escribe el catálogo en JSON y XLSX
         if catalog and len(catalog) > 0:
             logger.info("- Valida y filtra el catálogo")
-            catalog_filtered = validate_and_filter(catalog)
+            catalog_filtered = validate_and_filter(catalog_id, catalog)
 
             logger.info("- Setea el draft status de todas las distribuciones")
             for distribution in catalog.get_distributions():

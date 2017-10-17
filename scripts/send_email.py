@@ -99,14 +99,46 @@ def send_emails(subject, message, to=None, email_user=None,
             send_email(subject, message, to, email_user=email_user,
                        email_pass=email_pass, files=files_group)
     else:
-        files = files or cfg['etl']['adjuntos']
+        files = files or cfg['etl'].get('adjuntos')
+        send_email(subject, message, to, email_user=email_user,
+                   email_pass=email_pass, files=files)
+
+
+def send_group_emails(group_name):
+
+    with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
+        cfg = yaml.load(ymlfile)
+
+    # parametros de la cuenta que envía el mail
+    email_user = cfg['gmail']['user']
+    email_pass = cfg['gmail']['pass']
+    params = cfg[group_name]
+
+    for catalog_id in params:
+
+        # asunto y mensaje
+        if os.path.isfile(params[catalog_id]["asunto"]):
+            with open(params[catalog_id]["asunto"], "r") as f:
+                subject = f.read()
+
+        if os.path.isfile(params[catalog_id]["mensaje"]):
+            with open(params[catalog_id]["mensaje"], "r") as f:
+                message = f.read()
+
+        # destinatarios y adjuntos
+        to = params[catalog_id]["destinatarios"]
+        files = params[catalog_id]['adjuntos']
+
+        print("Enviando reporte al grupo {}...".format(catalog_id))
         send_email(subject, message, to, email_user=email_user,
                    email_pass=email_pass, files=files)
 
 
 if __name__ == '__main__':
 
-    if len(sys.argv) >= 3:
+    if len(sys.argv) == 2:
+        send_group_emails(sys.argv[1])
+    elif len(sys.argv) >= 3:
         send_emails(*sys.argv[1:])
 
     else:
