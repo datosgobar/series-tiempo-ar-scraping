@@ -177,7 +177,7 @@ EXCEPTIONS = {
     "InvalidFieldTitleError": [],
     "InvalidFieldIdError": [],
     "FieldTitleTooLongError": [],
-    "FieldTooManyMissingsError": [],
+    "FieldTooManyMissingsError": ["179.1"],
     "using_temporal": [],
     "FieldIdRepetitionError": [],
     "FieldTitleRepetitionError": [],
