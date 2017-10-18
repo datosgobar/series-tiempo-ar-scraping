@@ -13,7 +13,7 @@ setup: install_anaconda setup_environment create_dir install_cron install_nginx 
 all: extraction transformation load custom_steps
 et: extraction transformation
 extraction: extract_catalogs send_extraction_report data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/server/catalog/sspm/dataset/ data/output/dump/ data/output/series/ send_transformation_report
+transformation: data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/dump/ data/output/series/ send_transformation_report
 load: upload_series upload_dumps
 
 # SETUP
