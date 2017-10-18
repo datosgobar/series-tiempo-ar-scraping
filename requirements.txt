@@ -1,3 +1,4 @@
+series_tiempo_ar>=0.0.3
 pydatajson>=0.3.0
 xlseries>=0.1.21
 pandas
@@ -18,4 +19,3 @@ xlsxwriter
 sqlalchemy
 easywebdav
 pysftp
-series_tiempo_ar
