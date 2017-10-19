@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import with_statement
 import os
 import sys
+import StringIO
 import yaml
 import requests
 import pandas as pd
@@ -30,7 +31,7 @@ NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 
 
-def read_xlsx_catalog(catalog_xlsx_path):
+def read_xlsx_catalog(catalog_xlsx_path, logger=None):
     """Lee catálogo en excel."""
 
     default_values = {
@@ -40,7 +41,9 @@ def read_xlsx_catalog(catalog_xlsx_path):
         "dataset_modified": NOW,
         "distribution_modified": NOW
     }
-    catalogo = DataJson(catalog_xlsx_path, default_values=default_values)
+
+    catalogo = readers.read_xlsx_catalog(catalog_xlsx_path, logger)
+    catalogo = DataJson(catalogo, default_values=default_values)
 
     clean_catalog(catalogo)
 
@@ -72,7 +75,7 @@ def write_json_catalog(catalog_id, catalog, catalog_json_path):
     writers.write_json_catalog(catalog, catalog_backup_json_path)
 
 
-def validate_and_filter(catalog_id, catalog):
+def validate_and_filter(catalog_id, catalog, warnings_log):
     """Valida y filtra un catálogo en data.json."""
     dj = DataJson(catalog,
                   schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
@@ -101,7 +104,7 @@ def validate_and_filter(catalog_id, catalog):
 
     # genera mensaje de reporte
     subject, message = generate_validation_message(
-        catalog_id, is_valid_catalog)
+        catalog_id, is_valid_catalog, warnings_log)
 
     with open(os.path.join(reportes_catalog_dir,
                            "extraction_mail_subject.txt"), "wb") as f:
@@ -117,7 +120,7 @@ def validate_and_filter(catalog_id, catalog):
     return catalog_filtered
 
 
-def generate_validation_message(catalog_id, is_valid_catalog):
+def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
     """Genera asunto y mensaje del mail de reporte a partir de indicadores.
 
     Args:
@@ -137,10 +140,12 @@ def generate_validation_message(catalog_id, is_valid_catalog):
     )
 
     # mensaje del mail
-    if is_valid_catalog:
+    warnings_str = warnings_log.getvalue()
+    if is_valid_catalog and len(warnings_str) == 0:
         message = "El catálogo '{}' no tiene errores.".format(catalog_id)
     else:
         message = "El catálogo '{}' tiene errores.".format(catalog_id)
+        message += "\n{}".format(warnings_str)
 
     return subject, message
 
@@ -160,6 +165,12 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
     """
     logger = get_logger(__name__)
 
+    # loggea warnings en un objeto para el mensaje de reporte
+    warnings_log = StringIO.StringIO()
+    fh = logging.StreamHandler(warnings_log)
+    fh.setLevel(logging.WARNING)
+    logger.addHandler(fh)
+
     # crea directorio y template de path al catálogo y reportes
     catalog_dir = os.path.join(catalogs_dir, catalog_id)
     ensure_dir_exists(catalog_dir)
@@ -178,7 +189,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
                 f.write(res.content)
 
             logger.info('- Transformación de XLSX a JSON')
-            catalog = read_xlsx_catalog(catalog_xlsx_path)
+            catalog = read_xlsx_catalog(catalog_xlsx_path, logger)
 
         elif catalog_format.lower() == 'json':
             logger.info('- Lectura directa de JSON')
@@ -196,7 +207,8 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         # filtra, valida y escribe el catálogo en JSON y XLSX
         if catalog and len(catalog) > 0:
             logger.info("- Valida y filtra el catálogo")
-            catalog_filtered = validate_and_filter(catalog_id, catalog)
+            catalog_filtered = validate_and_filter(catalog_id, catalog,
+                                                   warnings_log)
 
             logger.info("- Setea el draft status de todas las distribuciones")
             for distribution in catalog.get_distributions():
