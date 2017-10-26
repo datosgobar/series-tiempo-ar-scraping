@@ -355,7 +355,7 @@ def get_series_by_id(
     series_params = get_series_params([field_id], catalogs_dir=CATALOGS_DIR)
 
     return get_series(
-        *series_params[0], fmt=fmt, time_index=time_index,
+        *series_params[field_id], fmt=fmt, time_index=time_index,
         catalogs_dir=catalogs_dir, pct_change=pct_change,
         series_name=series_name
     )
