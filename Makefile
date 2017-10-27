@@ -13,7 +13,7 @@ setup: install_anaconda setup_environment create_dir install_cron install_nginx 
 all: extraction transformation load custom_steps
 et: extraction transformation
 extraction: extract_catalogs send_extraction_report data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/dump/ data/output/series/ send_transformation_report
+transformation: data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/dump/ data/output/series/ send_dump_report
 load: upload_series upload_dumps
 
 # SETUP
@@ -128,6 +128,8 @@ download_sources:
 data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/input/catalog/sspm/sources/
 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm replace
 
+send_transformation_report:
+	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 data/output/dump/:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@" $(FORMATS)
 
@@ -135,7 +137,7 @@ data/output/series/: data/params/series_params.json
 	rm -rf data/output/series/*.*
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/server "$@"
 
-send_transformation_report:
+send_dump_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
 # LOAD
