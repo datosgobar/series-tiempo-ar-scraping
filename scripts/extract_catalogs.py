@@ -105,6 +105,20 @@ def validate_and_filter(catalog_id, catalog, warnings_log):
     # genera mensaje de reporte
     subject, message = generate_validation_message(
         catalog_id, is_valid_catalog, warnings_log)
+    _write_extraction_mail_texts(catalog_id, subject, message)
+
+    # genera catálogo filtrado por los datasets que no tienen error
+    catalog_filtered = dj.generate_harvestable_catalogs(
+        catalog, harvest='valid')[0]
+
+    return catalog_filtered
+
+
+def _write_extraction_mail_texts(catalog_id, subject, message):
+
+    # genera directorio de reportes para el catálogo
+    reportes_catalog_dir = os.path.join(REPORTES_DIR, catalog_id)
+    ensure_dir_exists(reportes_catalog_dir)
 
     with open(os.path.join(reportes_catalog_dir,
                            "extraction_mail_subject.txt"), "wb") as f:
@@ -112,12 +126,6 @@ def validate_and_filter(catalog_id, catalog, warnings_log):
     with open(os.path.join(reportes_catalog_dir,
                            "extraction_mail_message.txt"), "wb") as f:
         f.write(message.encode("utf-8"))
-
-    # genera catálogo filtrado por los datasets que no tienen error
-    catalog_filtered = dj.generate_harvestable_catalogs(
-        catalog, harvest='valid')[0]
-
-    return catalog_filtered
 
 
 def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
@@ -140,7 +148,10 @@ def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
     )
 
     # mensaje del mail
-    warnings_str = warnings_log.getvalue()
+    if isinstance(warnings_log, Exception):
+        warnings_str = repr(warnings_log).encode("utf8")
+    else:
+        warnings_str = warnings_log.getvalue()
     if is_valid_catalog and len(warnings_str) == 0:
         message = "El catálogo '{}' no tiene errores.".format(catalog_id)
     else:
@@ -239,6 +250,8 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         logger.error(
             'Error al procesar el catálogo de {}'.format(catalog_id),
             exc_info=True)
+        subject, message = generate_validation_message(catalog_id, False, e)
+        _write_extraction_mail_texts(catalog_id, subject, message)
 
 
 def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):

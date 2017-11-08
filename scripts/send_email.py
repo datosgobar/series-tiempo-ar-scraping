@@ -52,11 +52,14 @@ def send_email(subject, message, to, email_user, email_pass, files=None):
 
     if files:
         for f in files.split(","):
-            with open(f, "rb") as fil:
-                part = MIMEApplication(fil.read(), Name=basename(f))
-                part[
-                    'Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
-                msg.attach(part)
+            if os.path.isfile(f):
+                with open(f, "rb") as fil:
+                    part = MIMEApplication(fil.read(), Name=basename(f))
+                    part[
+                        'Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
+                    msg.attach(part)
+            else:
+                print("El archivo {} no existe".format(f))
 
     # s = smtplib.SMTP_SSL(SMTP_SERVER, PORT)
     s = smtplib.SMTP(SMTP_SERVER, PORT)
