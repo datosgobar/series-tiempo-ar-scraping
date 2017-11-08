@@ -132,13 +132,13 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                 # genera filas del dump de metadatos
                 row_dump = OrderedDict()
 
-                row_dump["catalog_id"] = catalog_id
+                row_dump["catalogo_id"] = catalog_id
                 row_dump["dataset_id"] = dataset["identifier"]
-                row_dump["distribution_id"] = distribution["identifier"]
-                row_dump["distribution_titulo"] = distribution["title"]
-                row_dump["distribution_descripcion"] = distribution[
+                row_dump["distribucion_id"] = distribution["identifier"]
+                row_dump["distribucion_titulo"] = distribution["title"]
+                row_dump["distribucion_descripcion"] = distribution[
                     "description"]
-                row_dump["distribution_downloadURL"] = distribution[
+                row_dump["distribucion_url_descarga"] = distribution[
                     "downloadURL"]
                 row_dump["dataset_responsable"] = dataset["publisher"]["name"]
                 row_dump["dataset_fuente"] = dataset["source"]
@@ -171,9 +171,9 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
 
                             row_dump = OrderedDict()
 
-                            row_dump["catalog_id"] = catalog_id
+                            row_dump["catalogo_id"] = catalog_id
                             row_dump["dataset_id"] = dataset["identifier"]
-                            row_dump["distribution_id"] = distribution[
+                            row_dump["distribucion_id"] = distribution[
                                 "identifier"]
                             row_dump["serie_id"] = fields[field_title]["id"]
                             row_dump["indice_tiempo"] = row[index_col]
@@ -198,15 +198,15 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
 
     # ordena por entidades del perfil de metadatos
     df_values_sorted = df_values.sort_values([
-        "catalog_id", "dataset_id", "distribution_id", "serie_id",
+        "catalogo_id", "dataset_id", "distribucion_id", "serie_id",
         "indice_tiempo"], ascending=True)
     df_distrib_metadata_sorted = df_distrib_metadata.sort_values([
-        "catalog_id", "dataset_id", "distribution_id"], ascending=True)
+        "catalogo_id", "dataset_id", "distribucion_id"], ascending=True)
 
     if merged:
         return df_values_sorted.merge(
             df_distrib_metadata_sorted, how="left",
-            on=["catalog_id", "dataset_id", "distribution_id"])
+            on=["catalogo_id", "dataset_id", "distribucion_id"])
     else:
         return df_values_sorted, df_distrib_metadata_sorted
 

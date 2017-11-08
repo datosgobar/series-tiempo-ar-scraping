@@ -130,6 +130,7 @@ data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.j
 
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
+
 data/output/dump/:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@" $(FORMATS)
 

@@ -38,7 +38,8 @@ OBSERVATIONS_COLS = ["indice_tiempo", "valor"]
 CRITICAL_METADATA_COLS = ["indice_tiempo_frecuencia"]
 
 # ids que definen una serie.
-SERIES_INDEX_COLS = ["catalog_id", "dataset_id", "distribution_id", "serie_id"]
+SERIES_INDEX_COLS = ["catalogo_id",
+                     "dataset_id", "distribucion_id", "serie_id"]
 
 
 def _is_series_updated(row):
@@ -277,9 +278,9 @@ def save_dump(df_dump, df_series, df_values, df_fuentes,
 
 # selección reducida de columnas para los dumps que son demasiado pesados
 COMPLETE_DUMP_COLS = [
-    "catalog_id",
+    "catalogo_id",
     "dataset_id",
-    "distribution_id",
+    "distribucion_id",
     "serie_id",
     "indice_tiempo",
     "indice_tiempo_frecuencia",
@@ -287,9 +288,9 @@ COMPLETE_DUMP_COLS = [
     "serie_titulo",
     "serie_unidades",
     "serie_descripcion",
-    "distribution_titulo",
-    "distribution_descripcion",
-    # "distribution_downloadURL",
+    "distribucion_titulo",
+    "distribucion_descripcion",
+    # "distribucion_downloadURL",
     "dataset_responsable",
     "dataset_fuente",
     "dataset_titulo",
@@ -297,9 +298,9 @@ COMPLETE_DUMP_COLS = [
 ]
 
 STATA_DUMP_COLS = [
-    "catalog_id",
+    "catalogo_id",
     "dataset_id",
-    "distribution_id",
+    "distribucion_id",
     "serie_id",
     "indice_tiempo",
     "indice_tiempo_frecuencia",
@@ -307,9 +308,9 @@ STATA_DUMP_COLS = [
     "serie_titulo",
     "serie_unidades",
     "serie_descripcion",
-    "distribution_titulo",
-    # "distribution_descripcion",
-    # "distribution_downloadURL",
+    "distribucion_titulo",
+    # "distribucion_descripcion",
+    # "distribucion_downloadURL",
     "dataset_responsable",
     "dataset_fuente",
     "dataset_titulo"
