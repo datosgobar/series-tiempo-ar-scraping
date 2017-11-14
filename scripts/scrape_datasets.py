@@ -20,14 +20,12 @@ from copy import deepcopy
 from urlparse import urljoin
 from pprint import pprint
 
-from pydatajson import DataJson
-import pydatajson.readers as readers
-import pydatajson.writers as writers
 from pydatajson.helpers import title_to_name
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from series_tiempo_ar.validations import validate_distribution_scraping
 from series_tiempo_ar.validations import validate_distribution
+from series_tiempo_ar import TimeSeriesDataJson
 
 import helpers
 from helpers import get_logger
@@ -561,13 +559,13 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     if server_environment == "prod":
         replace = True
 
-    catalog = DataJson(catalog_json_path)
+    catalog = TimeSeriesDataJson(catalog_json_path)
 
     # compone los paths a los excels de ied
     scrapingURLs = set(catalog.get_distributions(meta_field="scrapingFileURL"))
-    ied_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
-    ied_xlsx_paths = [os.path.join(catalog_sources_dir, filename)
-                      for filename in ied_xlsx_filenames]
+    scraping_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
+    scraping_xlsx_paths = [os.path.join(catalog_sources_dir, filename)
+                           for filename in scraping_xlsx_filenames]
 
     # inicializa las listas que contienen los reportes
     report_files = []
@@ -594,12 +592,12 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     # SEGUNDO: organiza el scraping por Excel descargado
     if do_scraping:
         msg = "Archivo {}: {} ({})"
-        for ied_xlsx_path in ied_xlsx_paths:
-            print(ied_xlsx_path)
+        for scraping_xlsx_path in scraping_xlsx_paths:
+            print(scraping_xlsx_path)
 
             try:
                 report_datasets, report_distributions = scrape_file(
-                    ied_xlsx_path, catalog, catalog_datasets_dir,
+                    scraping_xlsx_path, catalog, catalog_datasets_dir,
                     replace=replace, debug_mode=debug_mode,
                     debug_distribution_ids=debug_distribution_ids,
                     catalog_id=catalog_id)
@@ -607,7 +605,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                 all_report_distributions.append(report_distributions)
 
                 report_files.append({
-                    "file_name": ied_xlsx_path,
+                    "file_name": scraping_xlsx_path,
                     "file_status": "OK",
                     "file_notes": ""
                 })
@@ -616,13 +614,13 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                 if isinstance(e, KeyboardInterrupt):
                     raise
                 report_files.append({
-                    "file_name": ied_xlsx_path,
+                    "file_name": scraping_xlsx_path,
                     "file_status": "ERROR",
                     "file_notes": repr(e).encode("utf8")
                 })
 
                 trace_string = traceback.format_exc()
-                print(msg.format(ied_xlsx_path, "ERROR",
+                print(msg.format(scraping_xlsx_path, "ERROR",
                                  repr(e).encode("utf8")))
                 print(trace_string)
                 if debug_mode:

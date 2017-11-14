@@ -23,13 +23,16 @@ from unidecode import unidecode
 
 from helpers import get_logger, freq_iso_to_pandas, compress_file, timeit
 from helpers import indicators_to_text, FREQ_ISO_TO_HUMAN, safe_sheet_name
+from helpers import ensure_dir_exists
 from data import get_series_data, generate_dump
 from paths import CATALOG_PATH, DUMPS_PARAMS_PATH, REPORTES_DIR
-from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path
+from paths import CATALOGS_DIR, DUMPS_DIR, get_catalog_path, BACKUP_DUMP_DIR
 
 logging.basicConfig()
 logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
 sys.path.insert(0, os.path.abspath(".."))
+
+TODAY = arrow.now().format('YYYY-MM-DD')
 
 # campos extra que definen una observación.
 OBSERVATIONS_COLS = ["indice_tiempo", "valor"]
@@ -218,6 +221,27 @@ DF_SAVE_METHODS = {
 }
 
 
+def _get_dated_summary_path(base_name="series-tiempo",
+                            base_dir=BACKUP_DUMP_DIR, fmt="csv"):
+    ensure_dir_exists(base_dir)
+    base_path = os.path.join(base_dir, "{}".format(base_name))
+    summary_path = "{}-metadatos-{}.{}".format(base_path, TODAY, fmt.lower())
+    return summary_path
+
+
+def save_dated_summary(df_series, base_name="series-tiempo",
+                       base_dir=BACKUP_DUMP_DIR):
+    logger = get_logger(__name__)
+    dated_summary_path = _get_dated_summary_path(
+        base_name=base_name, base_dir=base_dir)
+
+    # guarda resumen de series con fecha
+    logger.info("Guardando resumen de series en {}...".format(fmt))
+    sys.stdout.flush()
+    save_method(df_series, dated_summary_path)
+    logger.info("{}MB".format(os.path.getsize(dated_summary_path) / 1000000))
+
+
 # @timeit
 def save_dump(df_dump, df_series, df_values, df_fuentes,
               fmt="CSV", base_name="series-tiempo", base_dir=DUMPS_DIR):
@@ -369,6 +393,9 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
                   df_series, df_values, df_fuentes,
                   fmt="DB", base_dir=dumps_dir)
         logger.disabled = False
+
+    # guarda resumen con fecha de las series de la base
+    save_dated_summary(df_series)
 
     # calcula indicadores sumarios del dump
     indicators = {
