@@ -233,10 +233,11 @@ def _get_dated_summary_path(base_name="series-tiempo",
 
 
 def save_dated_summary(df_series, base_name="series-tiempo",
-                       base_dir=BACKUP_DUMP_DIR):
+                       base_dir=BACKUP_DUMP_DIR, fmt="csv"):
     logger = get_logger(__name__)
     dated_summary_path = _get_dated_summary_path(
         base_name=base_name, base_dir=base_dir)
+    save_method = DF_SAVE_METHODS[fmt.lower()]
 
     # guarda resumen de series con fecha
     logger.info("Guardando resumen de series en {}...".format(fmt))
