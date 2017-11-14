@@ -12,12 +12,14 @@ import os
 import sys
 import arrow
 import pydatajson
+import traceback
 import json
 import datetime
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 from pydatajson.helpers import parse_repeating_time_interval_to_days
+from pydatajson.helpers import title_to_name
 import logging
 from unidecode import unidecode
 
@@ -201,7 +203,8 @@ def save_to_dta(df, path, str_limit=244):
     df_stata.to_stata(path, write_index=False)
 
 
-def save_to_db(df, path):
+def save_to_db(df, path, if_exists="replace", index=False,
+               tbl_name="series_tiempo"):
     df_sqlite = df.copy()
     engine = create_engine('sqlite:///{}'.format(path), echo=True)
 
@@ -210,7 +213,7 @@ def save_to_db(df, path):
         df_sqlite['indice_tiempo'] = df_sqlite[
             'indice_tiempo'].dt.strftime("%Y-%m-%d")
 
-    df_sqlite.to_sql("series_tiempo", engine, index=False, if_exists="replace")
+    df_sqlite.to_sql(tbl_name, engine, index=index, if_exists=if_exists)
 
 
 DF_SAVE_METHODS = {
@@ -413,6 +416,25 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
     with open(os.path.join(REPORTES_DIR, "mail_message.txt"), "a") as f:
         f.write(message)
     print(message)
+
+    # guarda los indicadores en una base sqlite
+    try:
+        today = arrow.now().isoformat('YYYY-MM-DD')
+        indicators_path = os.path.join(REPORTES_DIR, "indicators.db")
+        indicators_rows = []
+        for indic_name, indic_value in indicators.iteritems():
+            indicators_rows.append({
+                "indicador_nombre": title_to_name(indic_name),
+                "indicador_valor": indic_value,
+                "indice_tiempo": today
+            })
+        df_indicators = pd.DataFrame()
+        save_to_db(df_indicators, indicators_path, if_exists="append",
+                   index=False, tbl_name="dump")
+
+    except Exception as e:
+        print("No se pudo guardar los indicadores en la base")
+        print(traceback.format_exc())
 
 
 if __name__ == '__main__':
