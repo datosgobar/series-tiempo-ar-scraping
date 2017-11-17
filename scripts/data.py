@@ -69,6 +69,14 @@ def distribution_has_time_series(distribution):
     return True
 
 
+def _get_theme_labels(catalog, dataset_theme):
+    return ",".join([
+        catalog.get_theme(theme_id).get("label", theme_id)
+        for theme_id in dataset_theme
+        if dataset_theme and catalog.get_theme(theme_id)
+    ])
+
+
 def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                   catalogs_dir=CATALOGS_DIR, merged=False):
 
@@ -144,6 +152,8 @@ def generate_dump(dataset_ids=None, distribution_ids=None, series_ids=None,
                 row_dump["dataset_fuente"] = dataset["source"]
                 row_dump["dataset_titulo"] = dataset["title"]
                 row_dump["dataset_descripcion"] = dataset["description"]
+                row_dump["dataset_tema"] = _get_theme_labels(
+                    catalog, dataset.get("theme"))
 
                 rows_dump_distrib_metadata.append(row_dump)
 
