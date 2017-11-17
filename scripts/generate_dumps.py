@@ -420,7 +420,7 @@ def main(catalogs_dir=CATALOGS_DIR, dumps_dir=DUMPS_DIR,
 
     # guarda los indicadores en una base sqlite
     try:
-        today = arrow.now().isoformat('YYYY-MM-DD')
+        today = arrow.now().format('YYYY-MM-DD')
         indicators_path = os.path.join(REPORTES_DIR, "indicators.db")
         indicators_rows = []
         for indic_name, indic_value in indicators.iteritems():
