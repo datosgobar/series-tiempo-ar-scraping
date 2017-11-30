@@ -316,13 +316,11 @@ COMPLETE_DUMP_COLS = [
     "serie_titulo",
     "serie_unidades",
     "serie_descripcion",
-    "distribucion_titulo",
     "distribucion_descripcion",
-    # "distribucion_downloadURL",
+    "dataset_tema",
     "dataset_responsable",
     "dataset_fuente",
-    "dataset_titulo",
-    "dataset_descripcion"
+    "dataset_titulo"
 ]
 
 STATA_DUMP_COLS = [
@@ -334,15 +332,8 @@ STATA_DUMP_COLS = [
     "indice_tiempo_frecuencia",
     "valor",
     "serie_titulo",
-    "serie_unidades",
     "serie_descripcion",
-    "distribucion_titulo",
-    # "distribucion_descripcion",
-    # "distribucion_downloadURL",
-    "dataset_responsable",
-    "dataset_fuente",
-    "dataset_titulo"
-    # "dataset_descripcion"
+    "distribucion_titulo"
 ]
 
 
