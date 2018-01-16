@@ -10,7 +10,7 @@ while read catalog_id url; do
 	status_code=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $url)
 	if [ $status_code == "200" ] || [ $status_code == "000" ] || [ $status_code == "302" ]; then
 		echo "$catalog_id $url" ;
-		wget -N --directory-prefix="data/input/catalog/$catalog_id/sources" "$url" --no-check-certificate ;
+		wget -N --tries=3 --directory-prefix="data/input/catalog/$catalog_id/sources" "$url" --no-check-certificate ;
 	else
 		echo "URL $url NO EXISTE" ;
 	fi ;

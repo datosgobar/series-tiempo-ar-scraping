@@ -8,10 +8,11 @@ while read catalog_id dataset_id distribution_id distribution_fileName url; do
 	mkdir -p $distribution_dir ;
 
 	# chequea que la URL está disponible y saludable
+	echo "$catalog_id $dataset_id $distribution_id $distribution_dir$distribution_fileName $url" ;
 	status_code=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $url)
 	if [ $status_code == "200" ] || [ $status_code == "000" ] || [ $status_code == "302" ]; then
-		echo "$catalog_id $url" ;
-		wget -N -O "$distribution_dir$distribution_fileName" "$url" --no-check-certificate ;
+		echo "$status_code descargando distribucion..."
+		wget -N "$url" --no-check-certificate --tries=3 -O "$distribution_dir$distribution_fileName";
 	else
 		echo "URL $url NO EXISTE" ;
 	fi ;
