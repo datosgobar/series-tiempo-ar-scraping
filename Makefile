@@ -59,6 +59,7 @@ restart_nginx: stop_nginx start_nginx
 # `make setup_environment SERVER_ENVIRONMENT=dev`
 # `make setup_environment SERVER_ENVIRONMENT=prod`
 setup_environment:
+	source ~/.bashrc
 	conda create -n series-tiempo --no-default-packages
 	echo 'export SERIES_TIEMPO_PYTHON=~/miniconda2/envs/series-tiempo/bin/python' >> ~/.bashrc
 	echo 'export SERVER_ENVIRONMENT=$(SERVER_ENVIRONMENT)' >> ~/.bashrc
