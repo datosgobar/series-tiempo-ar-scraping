@@ -233,12 +233,14 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
         try:
             distrib_meta = catalog.get_distribution(distribution_identifier)
             distribution_name = title_to_name(distrib_meta["title"])
+            distribution_file_name = distrib_meta.get(
+                "fileName", "{}.csv".format(distribution_name))
             dist_download_dir = os.path.join(
                 dataset_dir, "distribution", distribution_identifier,
                 "download"
             )
             dist_path = os.path.join(dist_download_dir,
-                                     "{}.csv".format(distribution_name))
+                                     "{}".format(distribution_file_name))
             dist_url = get_distribution_url(dist_path, config_server_path)
             # print("esta es la URL QUE VA AL CATALOGO", dist_url)
             distrib_meta["downloadURL"] = dist_url
@@ -329,10 +331,14 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
         msg = "Distribución {}: {} ({})"
         try:
             distrib_meta = catalog.get_distribution(distribution_identifier)
+
+            # usa fileName si la distribución lo especifica, sino crea uno
             distribution_name = title_to_name(distrib_meta["title"])
+            distribution_file_name = distrib_meta.get(
+                "fileName", "{}.csv".format(distribution_name))
             dist_path = os.path.join(
                 dataset_dir, "distribution", distribution_identifier,
-                "download", "{}.csv".format(distribution_name)
+                "download", "{}".format(distribution_file_name)
             )
             dist_url = get_distribution_url(dist_path, config_server_path)
             # print("esta es la URL QUE VA AL CATALOGO", dist_url)
@@ -560,6 +566,9 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
         replace = True
 
     catalog = TimeSeriesDataJson(catalog_json_path)
+    print("datasets:", len(catalog.get_datasets()))
+    print("distributions:", len(catalog.get_distributions()))
+    print("fields:", len(catalog.get_fields()))
 
     # compone los paths a los excels de ied
     scrapingURLs = set(catalog.get_distributions(meta_field="scrapingFileURL"))
@@ -601,6 +610,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                     replace=replace, debug_mode=debug_mode,
                     debug_distribution_ids=debug_distribution_ids,
                     catalog_id=catalog_id)
+                print(report_datasets.columns)
                 all_report_datasets.append(report_datasets)
                 all_report_distributions.append(report_distributions)
 
