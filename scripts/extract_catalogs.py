@@ -194,7 +194,20 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         if catalog_format.lower() == 'xlsx':
 
             # descarga del catálogo
-            res = requests.get(catalog_url, verify=False)
+            # TODO: hacer que lea opcionalmente el .wgetrc u otra cosa
+            proxies = {
+                'http': 'http://proxy.jefatura.gob.ar:3128',
+                'https': 'https://proxy.jefatura.gob.ar:3128'
+            }
+            try:
+                res = requests.get(catalog_url, verify=True)
+            except:
+                try:
+                    res = requests.get(catalog_url, verify=False)
+                except:
+                    res = requests.get(
+                        catalog_url, verify=False, proxies=proxies)
+
             catalog_xlsx_path = catalog_path_template.format("catalog.xlsx")
             with open(catalog_xlsx_path, 'w') as f:
                 f.write(res.content)
@@ -255,13 +268,14 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
 
 
 def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
-    logger = get_logger(__name__)
+    logger = get_logger(os.path.basename(__file__))
 
     logger.info('>>> COMIENZO DE LA EXTRACCION DE CATALOGOS <<<')
 
     # cargo los parámetros de los catálogos a extraer
     with open(catalogs_index_path) as config_file:
         catalogs_index = yaml.load(config_file)
+    logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
 
     # procesa los catálogos
     for catalog_id in catalogs_index:

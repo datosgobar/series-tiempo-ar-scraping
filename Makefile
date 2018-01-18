@@ -126,8 +126,8 @@ download_sources:
 
 # TRANSFORMATION
 # TODO: revisar como se usan adecuadamenten los directorios
-data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json data/input/catalog/sspm/sources/
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ "$@" sspm replace
+data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/sspm/sources/ "$@" sspm replace
 
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt

@@ -73,7 +73,13 @@ def main(catalogs_dir, sources_type, sources_urls_path):
         try:
             df = pd.read_excel(
                 catalog_xlsx_path,
-                find_ws_name(catalog_xlsx_path, DISTRIBUTION_SHEET_NAME)
+                find_ws_name(catalog_xlsx_path, DISTRIBUTION_SHEET_NAME),
+                dtype={
+                    "dataset_identifier": object,
+                    "dataset_title": object,
+                    "distribution_identifier": object,
+                    "distribution_title": object
+                }
             )
             # print(catalog_xlsx_path, df.columns)
 
