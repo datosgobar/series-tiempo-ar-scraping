@@ -4,10 +4,6 @@ xlseries>=0.1.21
 pandas
 openpyxl>=2.4,<2.5
 xlrd
-FRB
-fredapi
-fred
-Quandl
 requests
 pyyaml
 webdavclient

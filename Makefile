@@ -143,9 +143,11 @@ send_dump_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
 
 # LOAD
+# Esta sección va a ser deprecada cuando re-factoricemos la landing de Hacienda
 upload_series:
 	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/series/ series "scripts/config/config_webdav.yaml" "data/params/webdav_series.json"
 
+# Esta sección va a ser deprecada cuando publiquemos dumps dev y prod por catálogo individual (no la base completa)
 upload_dumps:
 	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/dump/ dumps "scripts/config/config_webdav.yaml" "data/params/webdav_dumps.json"
 
