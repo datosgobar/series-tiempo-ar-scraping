@@ -149,12 +149,6 @@ upload_series:
 upload_dumps:
 	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/dump/ dumps "scripts/config/config_webdav.yaml" "data/params/webdav_dumps.json"
 
-# upload_catalog: data/output/server/catalog/sspm/data.json
-# 	$(SERIES_TIEMPO_PYTHON) scripts/upload_catalog.py "$<" "scripts/config/config_ind.yaml"
-
-# upload_datasets: data/output/server/catalog/sspm/dataset/
-# 	$(SERIES_TIEMPO_PYTHON) scripts/upload_datasets.py "$<" "scripts/config/config_ind.yaml" "scripts/config/config_webdav.yaml"
-
 # CUSTOM STEPS
 # corre comandos de bash personalizados al finalizar toda la corrida del ETL
 custom_steps:
