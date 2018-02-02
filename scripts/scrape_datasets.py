@@ -150,7 +150,8 @@ def scrape_distribution(xl, catalog, distribution_identifier):
     headers_coord = distribution_params["headers_coord"]
     headers_value = distribution_params["headers_value"]
 
-    validate_distribution_scraping(xl, worksheet, headers_coord, headers_value)
+    validate_distribution_scraping(xl, worksheet, headers_coord, headers_value,
+                                   distrib_meta)
     validate_distribution(df, catalog, dataset_meta, distrib_meta,
                           distribution_identifier)
 
