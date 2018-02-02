@@ -1,2 +1,2 @@
-# series-tiempo-ar-etl
-ETL de la base de series de tiempo.
+# series-tiempo-ar-scraping
+Componente de scraping para series de tiempo.

@@ -119,8 +119,8 @@ data/reports
 # Exceptions
 !scripts/config/mime.types
 !scripts/config/nginx.conf
-!scripts/config/*sample*
-!/data/params/*sample*
+!scripts/config/*example*
+!/data/params/*example*
 
 catalogo
 custom_steps.sh

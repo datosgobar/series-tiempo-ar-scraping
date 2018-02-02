@@ -1,6 +1,10 @@
 SHELL = bash
 
-.PHONY: all clean download_catalogs data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt data/output/dump/ data/output/series/
+# TODO: Esta variable no deberia existir. En cambio, se deberia poder
+# trabajar sobre cualquier numero de catalogos listados en indice.yaml
+CATALOG_ID = sspm_test1
+
+.PHONY: all clean download_catalogs data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt
 
 # git clone https://github.com/datosgobar/series-tiempo-ar-etl.git && cd series-tiempo
 # ambiente testeado para un Ubuntu 16.04
@@ -10,11 +14,9 @@ SHELL = bash
 setup: install_anaconda setup_environment create_dir install_cron install_nginx start_nginx
 
 # recetas para correr el ETL
-all: extraction transformation load custom_steps
-et: extraction transformation
+all: extraction transformation
 extraction: extract_catalogs send_extraction_report data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/server/catalog/sspm/dataset/ send_transformation_report data/output/dump/ data/output/series/ send_dump_report
-load: upload_series upload_dumps
+transformation: data/output/server/catalog/$(CATALOG_ID)/dataset/ send_transformation_report
 
 # SETUP
 install_anaconda:
@@ -86,8 +88,6 @@ create_dir:
 	mkdir -p data/input/catalog
 	mkdir -p data/output
 	mkdir -p data/output/server/catalog
-	mkdir -p data/output/series
-	mkdir -p data/output/dump
 	mkdir -p data/params
 	mkdir -p data/reports
 	mkdir -p data/backup
@@ -109,7 +109,7 @@ install_cron: cron_jobs
 
 # EXTRACTION
 extract_catalogs:
-	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "data/params/indice.yml" "data/output/server/catalog"
+	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "data/params/indice.yaml" "data/output/server/catalog"
 
 send_extraction_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py validacion
@@ -126,35 +126,11 @@ download_sources:
 
 # TRANSFORMATION
 # TODO: revisar como se usan adecuadamenten los directorios
-data/output/server/catalog/sspm/dataset/: data/output/server/catalog/sspm/data.json
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/sspm/sources/ "$@" sspm replace
+data/output/server/catalog/$(CATALOG_ID)/dataset/: data/output/server/catalog/$(CATALOG_ID)/data.json
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/$(CATALOG_ID)/sources/ "$@" $(CATALOG_ID) replace
 
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
-
-data/output/dump/:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_dumps.py data/output/server "$@" $(FORMATS)
-
-data/output/series/: data/params/series_params.json
-	rm -rf data/output/series/*.*
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_series.py $^ data/output/server "$@"
-
-send_dump_report:
-	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
-
-# LOAD
-# Esta sección va a ser deprecada cuando re-factoricemos la landing de Hacienda
-upload_series:
-	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/series/ series "scripts/config/config_webdav.yaml" "data/params/webdav_series.json"
-
-# Esta sección va a ser deprecada cuando publiquemos dumps dev y prod por catálogo individual (no la base completa)
-upload_dumps:
-	$(SERIES_TIEMPO_PYTHON) scripts/webdav.py data/output/dump/ dumps "scripts/config/config_webdav.yaml" "data/params/webdav_dumps.json"
-
-# CUSTOM STEPS
-# corre comandos de bash personalizados al finalizar toda la corrida del ETL
-custom_steps:
-	bash scripts/custom_steps.sh
 
 # CLEAN
 clean:
@@ -165,8 +141,8 @@ clean:
 	make create_dir
 
 # TEST
-profiling_test: data/output/server/catalog/sspm/data.json data/scraping_params_test.csv
-	$(SERIES_TIEMPO_PYTHON) scripts/profiling.py $^ data/input/catalog/sspm/sources/ data/datasets_test/
+profiling_test: data/output/server/catalog/$(CATALOG_ID)/data.json data/scraping_params_test.csv
+	$(SERIES_TIEMPO_PYTHON) scripts/profiling.py $^ data/input/catalog/$(CATALOG_ID)/sources/ data/datasets_test/
 
 test_crontab:
 	echo $(SERIES_TIEMPO_PYTHON)

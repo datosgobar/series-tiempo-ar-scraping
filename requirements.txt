@@ -6,12 +6,10 @@ openpyxl>=2.4,<2.5
 xlrd
 requests
 pyyaml
-webdavclient
 pycurl
 sqlalchemy
 psycopg2
 bs4
 xlsxwriter
 sqlalchemy
-easywebdav
 pysftp

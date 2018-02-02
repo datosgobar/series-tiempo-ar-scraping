@@ -26,7 +26,7 @@ BACKUP_CATALOG_DIR = os.path.join(DATOS_DIR, "backup", "catalog")
 BACKUP_DUMP_DIR = os.path.join(DATOS_DIR, "backup", "dump")
 DUMPS_PARAMS_PATH = os.path.join(
     DATOS_DIR, "params", "dumps_params.json")
-CATALOGS_INDEX_PATH = os.path.join(DATOS_DIR, "params", "indice.yml")
+CATALOGS_INDEX_PATH = os.path.join(DATOS_DIR, "params", "indice.yaml")
 SOURCES_DIR = os.path.join(DATOS_DIR, "catalog", "sspm", "source")
 SERIES_DIR = os.path.join(DATOS_DIR, "output", "series")
 DATASETS_DIR = os.path.join(

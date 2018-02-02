@@ -32,7 +32,7 @@ from helpers import get_logger
 import custom_exceptions as ce
 from paths import LOGS_DIR, REPORTES_DIR, CONFIG_SERVER_PATH
 from paths import get_distribution_path, CATALOGS_DIR_INPUT
-from generate_catalog import write_json_catalog
+from pydatajson.writers import write_json_catalog
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -164,7 +164,7 @@ def analyze_distribution(catalog, distribution_identifier):
     dataset_meta = catalog.get_dataset(distribution_identifier.split(".")[0])
 
     distribution_path = get_distribution_path(
-        "sspm", dataset_meta["identifier"], distribution_identifier,
+        catalog["identifier"], dataset_meta["identifier"], distribution_identifier,
         CATALOGS_DIR_INPUT)
     # print("leyendo distribucion {} en {}".format(
     #     distribution_identifier, distribution_path))
