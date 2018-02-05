@@ -88,6 +88,8 @@ create_dir:
 	mkdir -p data/input/catalog
 	mkdir -p data/output
 	mkdir -p data/output/server/catalog
+	mkdir -p data/test_output
+	mkdir -p data/test_output/server/catalog
 	mkdir -p data/params
 	mkdir -p data/reports
 	mkdir -p data/backup
@@ -136,13 +138,14 @@ send_transformation_report:
 clean:
 	rm -rf data/input/
 	rm -rf data/output/
+	rm -rf data/test_output/
 	rm -f data/params/scraping_urls.txt
 	rm -f data/params/distribution_urls.txt
 	make create_dir
 
 # TEST
-profiling_test: data/output/server/catalog/$(CATALOG_ID)/data.json data/scraping_params_test.csv
-	$(SERIES_TIEMPO_PYTHON) scripts/profiling.py $^ data/input/catalog/$(CATALOG_ID)/sources/ data/datasets_test/
+profiling_test: data/output/server/catalog/$(CATALOG_ID)/data.json
+	$(SERIES_TIEMPO_PYTHON) -m scripts.tests.profiling $^ data/input/catalog/$(CATALOG_ID)/sources/ data/test_output/server/catalog/$(CATALOG_ID)/dataset/ $(CATALOG_ID)
 
 test_crontab:
 	echo $(SERIES_TIEMPO_PYTHON)

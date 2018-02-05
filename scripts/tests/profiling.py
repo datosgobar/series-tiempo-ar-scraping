@@ -16,7 +16,7 @@ from pycallgraph import GlobbingFilter
 from pycallgraph.output import GraphvizOutput
 
 # módulo de ejemplo que se quiere analizar
-import scrape_datasets
+from .. import scrape_datasets
 
 
 def profile(profiling_result_path):
@@ -39,7 +39,7 @@ def profile(profiling_result_path):
     return fn_decorator
 
 
-@profile("catalogo/codigo/profiling_test.png")
+@profile("data/test_output/profiling_test.png")
 def main():
     scrape_datasets.main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
                          replace=True)

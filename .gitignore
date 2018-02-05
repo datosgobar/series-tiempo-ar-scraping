@@ -109,6 +109,7 @@ datasets_ind.zip
 series.zip
 datasets.zip
 data/output
+data/test_output
 data/test
 data/backup
 data/input
