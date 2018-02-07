@@ -147,14 +147,14 @@ def row_from_cell_coord(coord):
 
 
 def get_logger(name=__name__):
-    logger = logging.getLogger(name)
+    logger = logging.Logger(name)
     logger.setLevel(logging.DEBUG)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
 
     logging_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
     ch.setFormatter(logging_formatter)
     logger.addHandler(ch)
 

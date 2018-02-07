@@ -200,6 +200,7 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
                    debug_mode=False, replace=True,
                    config_server_path=CONFIG_SERVER_PATH,
                    debug_distribution_ids=None, catalog_id=None):
+    logger = get_logger(os.path.basename(__file__))
 
     res = {
         "dataset_status": None,
@@ -266,7 +267,7 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
                 status = "Skipped"
 
             res["distributions_ok"].append((distribution_identifier, status))
-            print(msg.format(distribution_identifier, "OK", status))
+            logger.info(msg.format(distribution_identifier, "OK", status))
 
         except Exception as e:
             if isinstance(e, KeyboardInterrupt):
@@ -300,6 +301,7 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
                     debug_mode=False, replace=True,
                     config_server_path=CONFIG_SERVER_PATH,
                     debug_distribution_ids=None):
+    logger = get_logger(os.path.basename(__file__))
 
     res = {
         "dataset_status": None,
@@ -363,7 +365,7 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
                 status = "Skipped"
 
             res["distributions_ok"].append((distribution_identifier, status))
-            print(msg.format(distribution_identifier, "OK", status))
+            logger.info(msg.format(distribution_identifier, "OK", status))
 
         except Exception as e:
             if isinstance(e, KeyboardInterrupt):
@@ -388,6 +390,7 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
 def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
                 replace=True, debug_mode=False, debug_distribution_ids=None,
                 catalog_id=None):
+    logger = get_logger(os.path.basename(__file__))
     xl = XlSeries(scraping_xlsx_path)
     scraping_filename = os.path.basename(scraping_xlsx_path)
 
@@ -439,7 +442,7 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
         distributions = catalog.get_dataset(
             dataset_identifier).get("distribution", [])
         if len(distributions) == 0:
-            print("Se elimina el dataset {}, no tiene distribuciones".format(
+            logger.info("Se elimina el dataset {}, no tiene distribuciones".format(
                 dataset_identifier
             ))
             catalog.remove_dataset(dataset_identifier)
@@ -450,7 +453,7 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
 def analyze_catalog(catalog, datasets_dir,
                     replace=True, debug_mode=False,
                     debug_distribution_ids=None):
-    logger = get_logger(__name__)
+    logger = get_logger(os.path.basename(__file__))
 
     distributions_with_url = filter(
         lambda x: "downloadURL" in x and bool(x["downloadURL"]),
@@ -569,10 +572,12 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     # TODO: Manejar casos en los que un catalogo no se extrajo correctamente
     # El archivo data.json puede no existir o estar mal formado
     catalog = TimeSeriesDataJson(catalog_json_path)
+
+    logger = get_logger(os.path.basename(__file__))
     
-    print("datasets:", len(catalog.get_datasets()))
-    print("distributions:", len(catalog.get_distributions()))
-    print("fields:", len(catalog.get_fields()))
+    logger.info("Datasets: {}".format(len(catalog.get_datasets())))
+    logger.info("Distributions: {}".format(len(catalog.get_distributions())))
+    logger.info("Fields: {}".format(len(catalog.get_fields())))
 
     # compone los paths a los excels de ied
     scrapingURLs = set(catalog.get_distributions(meta_field="scrapingFileURL"))
@@ -606,7 +611,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     if do_scraping:
         msg = "Archivo {}: {} ({})"
         for scraping_xlsx_path in scraping_xlsx_paths:
-            print(scraping_xlsx_path)
+            logger.info("Scraping de: {}".format(scraping_xlsx_path))
 
             try:
                 report_datasets, report_distributions = scrape_file(
@@ -614,7 +619,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                     replace=replace, debug_mode=debug_mode,
                     debug_distribution_ids=debug_distribution_ids,
                     catalog_id=catalog_id)
-                print(report_datasets.columns)
+
                 all_report_datasets.append(report_datasets)
                 all_report_distributions.append(report_distributions)
 
@@ -684,10 +689,12 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     with open(os.path.join(REPORTES_DIR, "mail_message.txt"), "wb") as f:
         f.write(message)
 
-    print("Escribiendo nueva version de {}".format(catalog_json_path))
+    logger.info("Escribiendo nueva version de {}".format(catalog_json_path))
     write_json_catalog(catalog, catalog_json_path)
-    print(message)
 
+    logger.info("Indicadores:")
+    for line in message.splitlines():
+        logger.info(line)
 
 if __name__ == '__main__':
     if len(sys.argv) >= 6 and sys.argv[5]:

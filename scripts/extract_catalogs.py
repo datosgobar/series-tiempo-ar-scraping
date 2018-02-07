@@ -174,7 +174,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         catalog_url (str): Url pública desde donde descargar el catálogo.
         catalogs_dir (str): Directorio local donde se descargan los catálogos.
     """
-    logger = get_logger(__name__)
+    logger = get_logger(os.path.basename(__file__))
 
     # loggea warnings en un objeto para el mensaje de reporte
     warnings_log = StringIO.StringIO()
@@ -265,6 +265,8 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
             exc_info=True)
         subject, message = generate_validation_message(catalog_id, False, e)
         _write_extraction_mail_texts(catalog_id, subject, message)
+    finally:
+        logger.removeHandler(fh)
 
 
 def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
