@@ -1,9 +1,5 @@
 SHELL = bash
 
-# TODO: Esta variable no deberia existir. En cambio, se deberia poder
-# trabajar sobre cualquier numero de catalogos listados en indice.yaml
-CATALOG_ID = sspm_test1
-
 .PHONY: all clean download_catalogs data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt
 
 # git clone https://github.com/datosgobar/series-tiempo-ar-etl.git && cd series-tiempo
@@ -149,8 +145,8 @@ clean:
 	make create_dir
 
 # TEST
-profiling_test: data/output/server/catalog/$(CATALOG_ID)/data.json
-	$(SERIES_TIEMPO_PYTHON) -m scripts.tests.profiling $^ data/input/catalog/$(CATALOG_ID)/sources/ data/test_output/server/catalog/$(CATALOG_ID)/dataset/ $(CATALOG_ID)
-
-test_crontab:
-	echo $(SERIES_TIEMPO_PYTHON)
+profiling_test: data/output/server/catalog/$(PROFILING_CATALOG_ID)/data.json
+	$(SERIES_TIEMPO_PYTHON) -m scripts.tests.profiling $^ \
+		data/input/catalog/$(PROFILING_CATALOG_ID)/sources/ \
+		data/test_output/server/catalog/$(PROFILING_CATALOG_ID)/dataset/ \
+		$(PROFILING_CATALOG_ID)
