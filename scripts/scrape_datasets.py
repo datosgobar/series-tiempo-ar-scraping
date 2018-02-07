@@ -31,7 +31,7 @@ import helpers
 from helpers import get_logger
 import custom_exceptions as ce
 from paths import LOGS_DIR, REPORTES_DIR, CONFIG_SERVER_PATH
-from paths import get_distribution_path, CATALOGS_DIR_INPUT
+from paths import get_distribution_path, CATALOGS_DIR_INPUT, CATALOGS_INDEX_PATH
 from pydatajson.writers import write_json_catalog
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -566,7 +566,10 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     if server_environment == "prod":
         replace = True
 
+    # TODO: Manejar casos en los que un catalogo no se extrajo correctamente
+    # El archivo data.json puede no existir o estar mal formado
     catalog = TimeSeriesDataJson(catalog_json_path)
+    
     print("datasets:", len(catalog.get_datasets()))
     print("distributions:", len(catalog.get_distributions()))
     print("fields:", len(catalog.get_fields()))
@@ -593,7 +596,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
             all_report_distributions.append(report_distributions)
 
         except Exception as e:
-            raise
+            # TODO: Loggear esta excepcion cuando sucede
             if isinstance(e, KeyboardInterrupt):
                 raise
             if debug_mode:
@@ -689,5 +692,20 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
 if __name__ == '__main__':
     if len(sys.argv) >= 6 and sys.argv[5]:
         replace = True if sys.argv[5] == "replace" else False
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-         replace=replace, debug_mode=False, debug_distribution_ids=[])
+
+    with open(CATALOGS_INDEX_PATH) as config_file:
+        catalogs_index = yaml.load(config_file)
+
+    logger = get_logger(os.path.basename(__file__))
+    logger.info('>>> COMIENZO DEL SCRAPING DE CATÁLOGOS <<<')
+    logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
+
+    for catalog_id in catalogs_index:
+        logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
+        main(sys.argv[1].format(catalog_id),
+            sys.argv[2].format(catalog_id),
+            sys.argv[3].format(catalog_id),
+            sys.argv[4].format(catalog_id),
+            replace=replace, debug_mode=False, debug_distribution_ids=[])
+    
+    logger.info('>>> FIN DEL SCRAPING DE CATÁLOGOS <<<')

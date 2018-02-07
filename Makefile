@@ -16,7 +16,7 @@ setup: install_anaconda setup_environment create_dir install_cron install_nginx 
 # recetas para correr el ETL
 all: extraction transformation
 extraction: extract_catalogs send_extraction_report data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
-transformation: data/output/server/catalog/$(CATALOG_ID)/dataset/ send_transformation_report
+transformation: scrape_datasets send_transformation_report
 
 # SETUP
 install_anaconda:
@@ -128,8 +128,13 @@ download_sources:
 
 # TRANSFORMATION
 # TODO: revisar como se usan adecuadamenten los directorios
-data/output/server/catalog/$(CATALOG_ID)/dataset/: data/output/server/catalog/$(CATALOG_ID)/data.json
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py $^ data/input/catalog/$(CATALOG_ID)/sources/ "$@" $(CATALOG_ID) replace
+scrape_datasets:
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py \
+		data/output/server/catalog/{}/data.json \
+		data/input/catalog/{}/sources/ \
+		data/output/server/catalog/{}/dataset/ \
+		{} \
+		replace
 
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
