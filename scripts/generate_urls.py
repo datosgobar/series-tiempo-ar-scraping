@@ -4,7 +4,6 @@
 """Genera un archivo de texto con las urls de archivos a descargar"""
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import with_statement
 import os
 import sys
@@ -12,11 +11,12 @@ import glob
 from pydatajson.helpers import title_to_name
 
 import pandas as pd
-from helpers import find_ws_name
+from helpers import find_ws_name, get_logger
 from data import get_time_index_field
 
 DISTRIBUTION_SHEET_NAME = "distribution"
 
+logger = get_logger(os.path.basename(__file__))
 
 def get_distribution_download_urls(df, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
@@ -48,7 +48,6 @@ def get_distribution_download_urls(df, catalog_id):
 
 def get_scraping_sources_urls(df, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
-    # print(df.columns)
     return [
         "{} {}".format(catalog_id, source_url)
         for source_url in df.distribution_scrapingFileURL.unique()
@@ -67,7 +66,7 @@ def main(catalogs_dir, sources_type, sources_urls_path):
     ]
     for catalog_xlsx_path in catalog_xslx_paths:
         catalog_id = os.path.basename(os.path.dirname(catalog_xlsx_path))
-        print("Extrayendo URLs de fuentes de {}: {}".format(
+        logger.info("Extrayendo URLs de fuentes de {}: {}".format(
             catalog_id, catalog_xlsx_path))
 
         try:
@@ -81,13 +80,12 @@ def main(catalogs_dir, sources_type, sources_urls_path):
                     "distribution_title": object
                 }
             )
-            # print(catalog_xlsx_path, df.columns)
 
             if sources_type == "scraping":
                 if "distribution_scrapingFileURL" in df.columns:
                     urls.extend(get_scraping_sources_urls(df, catalog_id))
                 else:
-                    print("Nada que scrapear en el catalogo: {}".format(
+                    logger.info("Nada que scrapear en el catalogo: {}".format(
                         catalog_id))
             elif sources_type == "distribution":
                 urls.extend(get_distribution_download_urls(df, catalog_id))
@@ -95,11 +93,11 @@ def main(catalogs_dir, sources_type, sources_urls_path):
                 raise Exception("No se reconoce el tipo de fuente {}".format(
                     sources_type))
         except Exception as e:
-            print("No se pudo extraer URLs de fuentes del catalogo {}".format(
+            logger.error("No se pudo extraer URLs de fuentes del catalogo {}".format(
                 catalog_id))
-            print(e)
+            logger.error(e)
 
-    print("{} URLs de {} en total".format(len(urls), sources_type))
+    logger.info("{} URLs de {} en total".format(len(urls), sources_type))
 
     with open(sources_urls_path, "wb") as f:
         f.write("\n".join(urls))
