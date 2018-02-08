@@ -147,7 +147,7 @@ def row_from_cell_coord(coord):
 
 
 def get_logger(name=__name__):
-    logger = logging.Logger(name)
+    logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
     ch = logging.StreamHandler()

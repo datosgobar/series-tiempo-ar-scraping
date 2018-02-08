@@ -30,7 +30,7 @@ from series_tiempo_ar import TimeSeriesDataJson
 import helpers
 from helpers import get_logger
 import custom_exceptions as ce
-from paths import LOGS_DIR, REPORTES_DIR, CONFIG_SERVER_PATH
+from paths import REPORTES_DIR, CONFIG_SERVER_PATH
 from paths import get_distribution_path, CATALOGS_DIR_INPUT, CATALOGS_INDEX_PATH
 from pydatajson.writers import write_json_catalog
 
@@ -41,11 +41,7 @@ PRESERVE_WB_OBJ = False
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 
-
-logging.basicConfig(
-    filename=os.path.join(LOGS_DIR, 'scrape_datasets.log'),
-    filemode='w', level=logging.DEBUG, format='%(asctime)s %(message)s'
-)
+logger = get_logger(os.path.basename(__file__))
 
 XLSERIES_PARAMS = {
     'alignment': u'vertical',
@@ -200,8 +196,6 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
                    debug_mode=False, replace=True,
                    config_server_path=CONFIG_SERVER_PATH,
                    debug_distribution_ids=None, catalog_id=None):
-    logger = get_logger(os.path.basename(__file__))
-
     res = {
         "dataset_status": None,
         "distributions_ok": [],
@@ -301,8 +295,6 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
                     debug_mode=False, replace=True,
                     config_server_path=CONFIG_SERVER_PATH,
                     debug_distribution_ids=None):
-    logger = get_logger(os.path.basename(__file__))
-
     res = {
         "dataset_status": None,
         "distributions_ok": [],
@@ -390,7 +382,6 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
 def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
                 replace=True, debug_mode=False, debug_distribution_ids=None,
                 catalog_id=None):
-    logger = get_logger(os.path.basename(__file__))
     xl = XlSeries(scraping_xlsx_path)
     scraping_filename = os.path.basename(scraping_xlsx_path)
 
@@ -453,8 +444,6 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
 def analyze_catalog(catalog, datasets_dir,
                     replace=True, debug_mode=False,
                     debug_distribution_ids=None):
-    logger = get_logger(os.path.basename(__file__))
-
     distributions_with_url = filter(
         lambda x: "downloadURL" in x and bool(x["downloadURL"]),
         catalog.get_distributions()
@@ -569,11 +558,14 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     if server_environment == "prod":
         replace = True
 
-    # TODO: Manejar casos en los que un catalogo no se extrajo correctamente
-    # El archivo data.json puede no existir o estar mal formado
-    catalog = TimeSeriesDataJson(catalog_json_path)
-
-    logger = get_logger(os.path.basename(__file__))
+    try:
+        catalog = TimeSeriesDataJson(catalog_json_path)
+    except:
+        logger.error("Error al intentar cargar el catálogo {}:".format(catalog_id))
+        for line in traceback.format_exc().splitlines():
+                logger.error(line)
+        logger.error("Salteando al catálogo siguiente...")
+        return
     
     logger.info("Datasets: {}".format(len(catalog.get_datasets())))
     logger.info("Distributions: {}".format(len(catalog.get_distributions())))
@@ -601,7 +593,10 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
             all_report_distributions.append(report_distributions)
 
         except Exception as e:
-            # TODO: Loggear esta excepcion cuando sucede
+            logger.error('Error al procesar las distribuciones con series de tiempo:')
+            for line in traceback.format_exc().splitlines():
+                logger.error(line)
+
             if isinstance(e, KeyboardInterrupt):
                 raise
             if debug_mode:
@@ -703,7 +698,6 @@ if __name__ == '__main__':
     with open(CATALOGS_INDEX_PATH) as config_file:
         catalogs_index = yaml.load(config_file)
 
-    logger = get_logger(os.path.basename(__file__))
     logger.info('>>> COMIENZO DEL SCRAPING DE CATÁLOGOS <<<')
     logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
 

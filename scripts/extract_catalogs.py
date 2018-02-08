@@ -26,10 +26,10 @@ from paths import CATALOGS_INDEX_PATH
 
 sys.path.insert(0, os.path.abspath(".."))
 
-
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 
+logger = get_logger(os.path.basename(__file__))
 
 def read_xlsx_catalog(catalog_xlsx_path, logger=None):
     """Lee catálogo en excel."""
@@ -82,7 +82,7 @@ def validate_and_filter(catalog_id, catalog, warnings_log):
 
     # valida todo el catálogo para saber si está ok
     is_valid_catalog = dj.is_valid_catalog()
-    logging.info(
+    logger.info(
         "Metadata a nivel de catálogo es válida? {}".format(is_valid_catalog))
 
     # genera directorio de reportes para el catálogo
@@ -174,7 +174,6 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         catalog_url (str): Url pública desde donde descargar el catálogo.
         catalogs_dir (str): Directorio local donde se descargan los catálogos.
     """
-    logger = get_logger(os.path.basename(__file__))
 
     # loggea warnings en un objeto para el mensaje de reporte
     warnings_log = StringIO.StringIO()
@@ -190,7 +189,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
     # procesa el catálogo dependiendo del formato
     logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
     try:
-        logger.info('- Descarga y lectura de catálogo')
+        logger.info('Descarga y lectura de catálogo')
         if catalog_format.lower() == 'xlsx':
 
             # descarga del catálogo
@@ -212,15 +211,15 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
             with open(catalog_xlsx_path, 'w') as f:
                 f.write(res.content)
 
-            logger.info('- Transformación de XLSX a JSON')
+            logger.info('Transformación de XLSX a JSON')
             catalog = read_xlsx_catalog(catalog_xlsx_path, logger)
 
         elif catalog_format.lower() == 'json':
-            logger.info('- Lectura directa de JSON')
+            logger.info('Lectura directa de JSON')
             catalog = DataJson(catalog_url)
 
         elif catalog_format.lower() == 'ckan':
-            logger.info('- Transformación de CKAN API a JSON')
+            logger.info('Transformación de CKAN API a JSON')
             catalog = read_ckan_catalog(catalog_url)
 
         else:
@@ -230,20 +229,20 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
 
         # filtra, valida y escribe el catálogo en JSON y XLSX
         if catalog and len(catalog) > 0:
-            logger.info("- Valida y filtra el catálogo")
+            logger.info("Valida y filtra el catálogo")
             catalog_filtered = validate_and_filter(catalog_id, catalog,
                                                    warnings_log)
 
-            logger.info("- Setea el draft status de todas las distribuciones")
+            logger.info("Setea el draft status de todas las distribuciones")
             for distribution in catalog.get_distributions():
                 distribution["draft"] = False
 
-            logger.info('- Escritura de catálogo en JSON')
+            logger.info('Escritura de catálogo en JSON')
             write_json_catalog(
                 catalog_id, catalog_filtered,
                 catalog_path_template.format("data.json"))
 
-            # logger.info('- Escritura de catálogo en XLSX')
+            # logger.info('Escritura de catálogo en XLSX')
             # writers.write_xlsx_catalog(
             # catalog_filtered, catalog_path_template.format("catalog.xlsx"))
         else:
@@ -251,7 +250,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
                 catalog_id))
 
         # genera reportes del catálogo
-        # logger.info('- Generación de reportes')
+        # logger.info('Generación de reportes')
         # catalog_filtered.generate_catalog_readme(
         #     catalog_filtered,
         #     export_path=catalog_path_template.format('README.md'))
@@ -270,8 +269,6 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
 
 
 def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
-    logger = get_logger(os.path.basename(__file__))
-
     logger.info('>>> COMIENZO DE LA EXTRACCION DE CATALOGOS <<<')
 
     # cargo los parámetros de los catálogos a extraer
