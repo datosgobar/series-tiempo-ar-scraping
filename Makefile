@@ -110,7 +110,7 @@ extract_catalogs:
 	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "data/params/indice.yaml" "data/output/server/catalog"
 
 send_extraction_report:
-	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py validacion
+	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
 
 data/params/scraping_urls.txt:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "scraping" "$@"
@@ -133,7 +133,7 @@ scrape_datasets:
 		replace
 
 send_transformation_report:
-	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py data/reports/mail_subject.txt data/reports/mail_message.txt
+	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
 
 # CLEAN
 clean:

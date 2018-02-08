@@ -1,6 +1,22 @@
-gmail:
-  user: series.tiempo.etl
-  pass: password
-etl:
-  destinatarios: a@b.com
-  adjuntos: path/to/file1,path/to/file2
+mailer:
+ user: foo
+ password: bar
+ smtp_server: smtp.example.com
+ port: 587
+ ssl: false
+extraccion:
+ example_catalog1:
+   destinatarios:
+    - john@example.com
+    - jane@example.com
+ example_catalog2:
+   destinatarios:
+    - john@example.com
+    - jane@example.com
+scraping:
+ example_catalog1:
+   destinatarios:
+    - jane@example.com
+ example_catalog2:
+   destinatarios:
+    - mike@example.com

@@ -30,8 +30,11 @@ from series_tiempo_ar import TimeSeriesDataJson
 import helpers
 from helpers import get_logger
 import custom_exceptions as ce
+
 from paths import REPORTES_DIR, CONFIG_SERVER_PATH
 from paths import get_distribution_path, CATALOGS_DIR_INPUT, CATALOGS_INDEX_PATH
+from paths import SCRAPING_MAIL_CONFIG
+
 from pydatajson.writers import write_json_catalog
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -492,7 +495,7 @@ def analyze_catalog(catalog, datasets_dir,
     return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
 
 
-def generate_summary_message(indicators):
+def generate_summary_message(catalog_id, indicators):
     """Genera asunto y mensaje del mail de reporte a partir de indicadores.
 
     Args:
@@ -502,8 +505,9 @@ def generate_summary_message(indicators):
         tuple: (str, str) (asunto, mensaje)
     """
     server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
-    subject = "[{}] Series de Tiempo ETL: {}".format(
+    subject = "[{}] Scraping de catalogo '{}': {}".format(
         server_environment,
+        catalog_id,
         arrow.now().format("DD/MM/YYYY HH:mm")
     )
     message = helpers.indicators_to_text(indicators)
@@ -651,7 +655,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     ]
     if len(complete_report_files) > 0:
         complete_report_files[cols_rep_files].to_excel(
-            os.path.join(REPORTES_DIR, "reporte-files-scraping.xlsx"),
+            os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["files_report"]),
             encoding="utf-8", index=False)
 
     # guarda el reporte de datasets en EXCEL
@@ -659,7 +663,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
         "distribution_scrapingFileURL", "dataset_identifier", "dataset_status"
     ]
     complete_report_datasets[cols_rep_dataset].to_excel(
-        os.path.join(REPORTES_DIR, "reporte-datasets-scraping.xlsx"),
+        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["datasets_report"]),
         encoding="utf-8", index=False)
 
     # guarda el reporte de distribuciones en EXCEL
@@ -668,7 +672,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
         "distribution_identifier", "distribution_status", "distribution_notes"
     ]
     complete_report_distributions[cols_rep_distribution].to_excel(
-        os.path.join(REPORTES_DIR, "reporte-distributions-scraping.xlsx"),
+        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["distributions_report"]),
         encoding="utf-8", index=False)
 
     # imprime resultados a la terminal
@@ -677,11 +681,11 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
         complete_report_datasets,
         complete_report_distributions
     )
-    subject, message = generate_summary_message(indicators)
+    subject, message = generate_summary_message(catalog_id, indicators)
 
-    with open(os.path.join(REPORTES_DIR, "mail_subject.txt"), "wb") as f:
+    with open(os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["subject"]), "wb") as f:
         f.write(subject)
-    with open(os.path.join(REPORTES_DIR, "mail_message.txt"), "wb") as f:
+    with open(os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["message"]), "wb") as f:
         f.write(message)
 
     logger.info("Escribiendo nueva version de {}".format(catalog_json_path))

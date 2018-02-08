@@ -24,6 +24,8 @@ from helpers import get_logger, ensure_dir_exists
 from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR
 from paths import CATALOGS_INDEX_PATH
 
+from paths import EXTRACTION_MAIL_CONFIG
+
 sys.path.insert(0, os.path.abspath(".."))
 
 NOW = arrow.now().isoformat()
@@ -93,13 +95,14 @@ def validate_and_filter(catalog_id, catalog, warnings_log):
     dj.validate_catalog(
         only_errors=True, fmt="list",
         export_path=os.path.join(reportes_catalog_dir,
-                                 "reporte-catalogo-errores.xlsx")
+            EXTRACTION_MAIL_CONFIG["attachments"]["errors_report"])
     )
 
     # genera reporte de datasets para federación
     dj.generate_datasets_report(
         catalog, harvest='valid',
-        export_path=os.path.join(reportes_catalog_dir, "reporte-datasets.xlsx")
+        export_path=os.path.join(reportes_catalog_dir,
+            EXTRACTION_MAIL_CONFIG["attachments"]["datasets_report"])
     )
 
     # genera mensaje de reporte
@@ -121,10 +124,10 @@ def _write_extraction_mail_texts(catalog_id, subject, message):
     ensure_dir_exists(reportes_catalog_dir)
 
     with open(os.path.join(reportes_catalog_dir,
-                           "extraction_mail_subject.txt"), "wb") as f:
+                           EXTRACTION_MAIL_CONFIG["subject"]), "wb") as f:
         f.write(subject.encode("utf-8"))
     with open(os.path.join(reportes_catalog_dir,
-                           "extraction_mail_message.txt"), "wb") as f:
+                           EXTRACTION_MAIL_CONFIG["message"]), "wb") as f:
         f.write(message.encode("utf-8"))
 
 

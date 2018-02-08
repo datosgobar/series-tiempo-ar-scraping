@@ -40,6 +40,24 @@ CONFIG_EMAIL_PATH = os.path.join(
 CONFIG_SERVER_PATH = os.path.join(
     PROJECT_DIR, "scripts", "config", "config_server.yaml")
 
+EXTRACTION_MAIL_CONFIG = {
+    "subject": "extraction_mail_subject.txt",
+    "message": "extraction_mail_message.txt",
+    "attachments": {
+        "errors_report": "reporte-catalogo-errores.xlsx",
+        "datasets_report": "reporte-datasets.xlsx"   
+    }
+}
+
+SCRAPING_MAIL_CONFIG = {
+    "subject": "scraping_mail_subject.txt",
+    "message": "scraping_mail_message.txt",
+    "attachments": {
+        "files_report": "reporte-files-scraping.xlsx",
+        "datasets_report": "reporte-datasets-scraping.xlsx",
+        "distributions_report": "reporte-distributions-scraping.xlsx"
+    }
+}
 
 def get_distribution_path(catalog_id, dataset_id, distribution_id,
                           catalogs_dir=CATALOGS_DIR):
