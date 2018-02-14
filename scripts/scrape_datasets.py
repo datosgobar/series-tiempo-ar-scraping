@@ -441,7 +441,7 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
             ))
             catalog.remove_dataset(dataset_identifier)
 
-    return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
+    return report_datasets, report_distributions
 
 
 def analyze_catalog(catalog, datasets_dir,
@@ -492,7 +492,7 @@ def analyze_catalog(catalog, datasets_dir,
             distribution_result["distribution_notes"] = distribution_notes
             report_distributions.append(distribution_result)
 
-    return pd.DataFrame(report_datasets), pd.DataFrame(report_distributions)
+    return report_datasets, report_distributions
 
 
 def generate_summary_message(catalog_id, indicators):
@@ -523,6 +523,12 @@ def generate_summary_indicators(report_files, report_datasets,
     distr_error = len(report_distributions[
         report_distributions.distribution_status != "OK"
     ])
+
+    if len(report_distributions) > 0:
+        distributions_ok_pctg = float(distr_ok) / (distr_ok + distr_error)
+    else:
+        distributions_ok_pctg = 1
+
     indicators = {
         "Datasets": len(report_datasets),
         "Datasets (OK)": len(report_datasets[
@@ -534,8 +540,7 @@ def generate_summary_indicators(report_files, report_datasets,
         "Distribuciones": len(report_distributions),
         "Distribuciones (OK)": distr_ok,
         "Distribuciones (ERROR)": distr_error,
-        "Distribuciones (OK %)": round(
-            float(distr_ok) / (distr_ok + distr_error), 3) * 100,
+        "Distribuciones (OK %)": round(distributions_ok_pctg, 3) * 100
     }
 
     if report_files is not None and len(report_files) > 0:
@@ -593,8 +598,8 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                 catalog, catalog_datasets_dir,
                 replace=replace, debug_mode=debug_mode,
                 debug_distribution_ids=debug_distribution_ids)
-            all_report_datasets.append(report_datasets)
-            all_report_distributions.append(report_distributions)
+            all_report_datasets.extend(report_datasets)
+            all_report_distributions.extend(report_distributions)
 
         except Exception as e:
             logger.error('Error al procesar las distribuciones con series de tiempo:')
@@ -619,8 +624,8 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                     debug_distribution_ids=debug_distribution_ids,
                     catalog_id=catalog_id)
 
-                all_report_datasets.append(report_datasets)
-                all_report_distributions.append(report_distributions)
+                all_report_datasets.extend(report_datasets)
+                all_report_distributions.extend(report_distributions)
 
                 report_files.append({
                     "file_name": scraping_xlsx_path,
@@ -644,34 +649,36 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                 if debug_mode:
                     raise
 
+    cols_rep_files = (
+        "file_name", "file_status", "file_notes"
+    )
+
+    cols_rep_dataset = (
+        "distribution_scrapingFileURL", "dataset_identifier", "dataset_status"
+    )
+
+    cols_rep_distribution = (
+        "distribution_scrapingFileURL", "dataset_identifier",
+        "distribution_identifier", "distribution_status", "distribution_notes"
+    )
+
     # concatena todos los reportes
-    complete_report_files = pd.DataFrame(report_files)
-    complete_report_datasets = pd.concat(all_report_datasets)
-    complete_report_distributions = pd.concat(all_report_distributions)
+    complete_report_files = pd.DataFrame(report_files, columns=cols_rep_files)
+    complete_report_datasets = pd.DataFrame(all_report_datasets, columns=cols_rep_dataset)
+    complete_report_distributions = pd.DataFrame(all_report_distributions, columns=cols_rep_distribution)
 
     # guarda el reporte de archivos en EXCEL
-    cols_rep_files = [
-        "file_name", "file_status", "file_notes"
-    ]
-    if len(complete_report_files) > 0:
-        complete_report_files[cols_rep_files].to_excel(
-            os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["files_report"]),
-            encoding="utf-8", index=False)
+    complete_report_files.to_excel(
+        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["files_report"]),
+        encoding="utf-8", index=False)
 
     # guarda el reporte de datasets en EXCEL
-    cols_rep_dataset = [
-        "distribution_scrapingFileURL", "dataset_identifier", "dataset_status"
-    ]
-    complete_report_datasets[cols_rep_dataset].to_excel(
+    complete_report_datasets.to_excel(
         os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["datasets_report"]),
         encoding="utf-8", index=False)
 
     # guarda el reporte de distribuciones en EXCEL
-    cols_rep_distribution = [
-        "distribution_scrapingFileURL", "dataset_identifier",
-        "distribution_identifier", "distribution_status", "distribution_notes"
-    ]
-    complete_report_distributions[cols_rep_distribution].to_excel(
+    complete_report_distributions.to_excel(
         os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["distributions_report"]),
         encoding="utf-8", index=False)
 
