@@ -6,6 +6,7 @@
 from __future__ import unicode_literals
 from __future__ import with_statement
 import os
+import codecs
 import sys
 import glob
 from pydatajson.helpers import title_to_name
@@ -99,7 +100,7 @@ def main(catalogs_dir, sources_type, sources_urls_path):
 
     logger.info("{} URLs de {} en total".format(len(urls), sources_type))
 
-    with open(sources_urls_path, "wb") as f:
+    with codecs.open(sources_urls_path, "wb", encoding="utf-8") as f:
         f.write("\n".join(urls))
         f.write("\n")
 
