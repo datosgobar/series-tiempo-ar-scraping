@@ -11,6 +11,7 @@ import os
 import sys
 import StringIO
 import yaml
+import traceback
 import requests
 import pandas as pd
 import arrow
@@ -262,9 +263,9 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         #     export_path=catalog_path_template.format('datasets.csv'))
 
     except Exception as e:
-        logger.error(
-            'Error al procesar el catálogo de {}'.format(catalog_id),
-            exc_info=True)
+        logger.error('Error al procesar el catálogo: {}'.format(catalog_id))
+        for line in traceback.format_exc().splitlines():
+            logger.error(line)
         subject, message = generate_validation_message(catalog_id, False, e)
         _write_extraction_mail_texts(catalog_id, subject, message)
     finally:

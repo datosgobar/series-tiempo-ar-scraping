@@ -87,11 +87,19 @@ def send_group_emails(group_name):
         if os.path.isfile(subject_file_path):
             with open(subject_file_path, "r") as f:
                 subject = f.read()
+        else:
+            logger.warning("Catálogo {}: no hay archivo de asunto".format(catalog_id))
+            logger.warning("Salteando catalogo...")
+            continue
 
         message_file_path = report_file_path(catalog_id, mail_files["message"])
         if os.path.isfile(message_file_path):
             with open(message_file_path, "r") as f:
                 message = f.read()
+        else:
+            logger.warning("Catálogo {}: no hay archivo de mensaje".format(catalog_id))
+            logger.warning("Salteando catalogo...")
+            continue
 
         # destinatarios y adjuntos
         recipients = catalogs_configs[catalog_id]["destinatarios"]
