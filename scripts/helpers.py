@@ -13,8 +13,11 @@ from openpyxl import load_workbook
 import zipfile
 import datetime
 import time
+import yaml
 import logging
 import logging.config
+
+from paths import CATALOGS_INDEX_PATH
 
 FREQ_ISO_TO_HUMAN = {
     "R/P1Y": "anual",
@@ -159,3 +162,8 @@ def get_logger(name=__name__):
     logger.addHandler(ch)
 
     return logger
+
+
+def get_catalogs_index():
+    with open(CATALOGS_INDEX_PATH) as config_file:
+        return yaml.load(config_file)

@@ -8,91 +8,75 @@ from __future__ import with_statement
 import os
 import codecs
 import sys
-import glob
+
+from helpers import get_logger, get_catalogs_index
 from pydatajson.helpers import title_to_name
+from series_tiempo_ar import TimeSeriesDataJson
 
-import pandas as pd
-from helpers import find_ws_name, get_logger
-from data import get_time_index_field
-
-DISTRIBUTION_SHEET_NAME = "distribution"
 
 logger = get_logger(os.path.basename(__file__))
 
-def get_distribution_download_urls(df, catalog_id):
+def get_distribution_download_urls(distributions, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
     urls = []
-    df_no_scraping = df[pd.notnull(df.distribution_downloadURL)]
 
-    for index, row in df_no_scraping.iterrows():
-
-        # tomo el nombre del archivo, si está, o lo genero
-        if ("distribution_fileName" in row and row["distribution_fileName"]
-                and pd.notnull(row["distribution_fileName"])):
-            distribution_fileName = row["distribution_fileName"]
+    for distribution in filter(lambda dist: 'downloadURL' in dist, distributions):
+        if "fileName" in distribution:
+            distribution_fileName = distribution["fileName"]
         else:
             distribution_fileName = "{}.{}".format(
-                title_to_name(row["distribution_title"]),
-                unicode(row["distribution_format"]).split("/")[-1].lower()
+                title_to_name(distribution["title"]),
+                unicode(distribution["format"]).split("/")[-1].lower()
             )
 
-        # solo agrega urls que tengan series de tiempo
-        if catalog_id != "modernizacion":
-            urls.append("{} {} {} {} {}".format(
-                catalog_id, row["dataset_identifier"],
-                row["distribution_identifier"],
-                distribution_fileName, row["distribution_downloadURL"]
-            ))
+        urls.append("{} {} {} {} {}".format(
+            catalog_id,
+            distribution["dataset_identifier"],
+            distribution["identifier"],
+            distribution_fileName,
+            distribution["downloadURL"]
+        ))
 
     return urls
 
 
-def get_scraping_sources_urls(df, catalog_id):
+def get_scraping_sources_urls(distributions, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
+    urls = {
+        dist['scrapingFileURL']
+        for dist in distributions
+        if 'scrapingFileURL' in dist and 'downloadURL' not in dist
+    }
+
     return [
         "{} {}".format(catalog_id, source_url)
-        for source_url in df.distribution_scrapingFileURL.unique()
-        if pd.notnull(source_url)
+        for source_url in urls
     ]
 
 
 def main(catalogs_dir, sources_type, sources_urls_path):
     urls = []
 
-    # ignora los archivos excel abiertos
-    catalog_xslx_paths = [
-        excel_file for excel_file
-        in glob.glob(os.path.join(catalogs_dir, "*", "*.xlsx"))
-        if "~$" not in excel_file
-    ]
-    for catalog_xlsx_path in catalog_xslx_paths:
-        catalog_id = os.path.basename(os.path.dirname(catalog_xlsx_path))
+    catalog_path_template = os.path.join(catalogs_dir, "{}", "data.json")
+
+    for catalog_id in get_catalogs_index():
+        catalog_path = catalog_path_template.format(catalog_id)
         logger.info("Extrayendo URLs de fuentes de {}: {}".format(
-            catalog_id, catalog_xlsx_path))
+            catalog_id, catalog_path))
 
         try:
-            df = pd.read_excel(
-                catalog_xlsx_path,
-                find_ws_name(catalog_xlsx_path, DISTRIBUTION_SHEET_NAME),
-                dtype={
-                    "dataset_identifier": object,
-                    "dataset_title": object,
-                    "distribution_identifier": object,
-                    "distribution_title": object
-                }
-            )
+            catalog = TimeSeriesDataJson(catalog_path)
+            distributions = catalog.get_distributions(only_time_series=True)
 
             if sources_type == "scraping":
-                if "distribution_scrapingFileURL" in df.columns:
-                    urls.extend(get_scraping_sources_urls(df, catalog_id))
-                else:
-                    logger.info("Nada que scrapear en el catalogo: {}".format(
-                        catalog_id))
+                # TODO: Agregar validaciones de scraping a series_tiempo_ar y utilizarlas
+                # Reportar el error y saltear la distribucion si falla la validacion
+                urls.extend(get_scraping_sources_urls(distributions, catalog_id))
             elif sources_type == "distribution":
-                urls.extend(get_distribution_download_urls(df, catalog_id))
-            else:
-                raise Exception("No se reconoce el tipo de fuente {}".format(
-                    sources_type))
+                # TODO: Agregar mas validaciones de metadatos a series_tiempo_ar y utilizarlas
+                # Reportar el error y saltear la distribucion si falla la validacion
+                urls.extend(get_distribution_download_urls(distributions, catalog_id))
+                
         except Exception as e:
             logger.error("No se pudo extraer URLs de fuentes del catalogo {}".format(
                 catalog_id))

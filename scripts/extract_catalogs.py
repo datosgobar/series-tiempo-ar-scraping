@@ -10,7 +10,6 @@ from __future__ import with_statement
 import os
 import sys
 import StringIO
-import yaml
 import traceback
 import requests
 import pandas as pd
@@ -21,7 +20,7 @@ from pydatajson import DataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
 
-from helpers import get_logger, ensure_dir_exists
+from helpers import get_logger, ensure_dir_exists, get_catalogs_index
 from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR
 from paths import CATALOGS_INDEX_PATH
 
@@ -237,10 +236,6 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
             catalog_filtered = validate_and_filter(catalog_id, catalog,
                                                    warnings_log)
 
-            logger.info("Setea el draft status de todas las distribuciones")
-            for distribution in catalog.get_distributions():
-                distribution["draft"] = False
-
             logger.info('Escritura de catálogo en JSON')
             write_json_catalog(
                 catalog_id, catalog_filtered,
@@ -276,8 +271,7 @@ def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
     logger.info('>>> COMIENZO DE LA EXTRACCION DE CATALOGOS <<<')
 
     # cargo los parámetros de los catálogos a extraer
-    with open(catalogs_index_path) as config_file:
-        catalogs_index = yaml.load(config_file)
+    catalogs_index = get_catalogs_index()
     logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
 
     # procesa los catálogos
