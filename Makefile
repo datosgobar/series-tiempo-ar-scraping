@@ -142,6 +142,7 @@ clean:
 	rm -rf data/test_output/
 	rm -f data/params/scraping_urls.txt
 	rm -f data/params/distribution_urls.txt
+	rm -rf data/reports
 	make create_dir
 
 # TEST
