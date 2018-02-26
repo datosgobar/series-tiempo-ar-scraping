@@ -11,7 +11,6 @@ import os
 import sys
 import StringIO
 import traceback
-import requests
 import pandas as pd
 import arrow
 import logging
@@ -21,6 +20,8 @@ import pydatajson.readers as readers
 import pydatajson.writers as writers
 
 from helpers import get_logger, ensure_dir_exists, get_catalogs_index
+from helpers import print_log_separator
+from download import download_file, get_catalog_download_config
 from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR
 from paths import CATALOGS_INDEX_PATH
 
@@ -194,25 +195,9 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
     try:
         logger.info('Descarga y lectura de catálogo')
         if catalog_format.lower() == 'xlsx':
-
-            # descarga del catálogo
-            # TODO: hacer que lea opcionalmente el .wgetrc u otra cosa
-            proxies = {
-                'http': 'http://proxy.jefatura.gob.ar:3128',
-                'https': 'https://proxy.jefatura.gob.ar:3128'
-            }
-            try:
-                res = requests.get(catalog_url, verify=True)
-            except:
-                try:
-                    res = requests.get(catalog_url, verify=False)
-                except:
-                    res = requests.get(
-                        catalog_url, verify=False, proxies=proxies)
-
+            config = get_catalog_download_config(catalog_id)["catalog"]
             catalog_xlsx_path = catalog_path_template.format("catalog.xlsx")
-            with open(catalog_xlsx_path, 'w') as f:
-                f.write(res.content)
+            download_file(catalog_url, catalog_xlsx_path, config)
 
             logger.info('Transformación de XLSX a JSON')
             catalog = read_xlsx_catalog(catalog_xlsx_path, logger)
@@ -268,7 +253,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
 
 
 def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
-    logger.info('>>> COMIENZO DE LA EXTRACCION DE CATALOGOS <<<')
+    print_log_separator(logger, "Extracción de catálogos")
 
     # cargo los parámetros de los catálogos a extraer
     catalogs_index = get_catalogs_index()

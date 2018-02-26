@@ -9,7 +9,7 @@ import os
 import codecs
 import sys
 
-from helpers import get_logger, get_catalogs_index
+from helpers import get_logger, get_catalogs_index, print_log_separator
 from pydatajson.helpers import title_to_name
 from series_tiempo_ar import TimeSeriesDataJson
 
@@ -58,6 +58,8 @@ def main(catalogs_dir, sources_type, sources_urls_path):
     urls = []
 
     catalog_path_template = os.path.join(catalogs_dir, "{}", "data.json")
+
+    print_log_separator(logger, "Extracción de URLS para: {}".format(sources_type))
 
     for catalog_id in get_catalogs_index():
         catalog_path = catalog_path_template.format(catalog_id)

@@ -119,8 +119,8 @@ data/params/distribution_urls.txt:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "distribution" "$@"
 
 download_sources:
-	bash scripts/download_scraping_sources.sh "data/params/scraping_urls.txt"
-	bash scripts/download_distributions.sh "data/params/distribution_urls.txt"
+	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "scraping" "data/params/scraping_urls.txt"
+	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "distribution" "data/params/distribution_urls.txt"
 
 # TRANSFORMATION
 # TODO: revisar como se usan adecuadamenten los directorios

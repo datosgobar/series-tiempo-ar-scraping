@@ -39,6 +39,8 @@ CONFIG_EMAIL_PATH = os.path.join(
     PROJECT_DIR, "scripts", "config", "config_email.yaml")
 CONFIG_SERVER_PATH = os.path.join(
     PROJECT_DIR, "scripts", "config", "config_server.yaml")
+CONFIG_DOWNLOADS_PATH = os.path.join(
+    PROJECT_DIR, "scripts", "config", "config_downloads.yaml")
 
 EXTRACTION_MAIL_CONFIG = {
     "subject": "extraction_mail_subject.txt",
@@ -59,12 +61,29 @@ SCRAPING_MAIL_CONFIG = {
     }
 }
 
-def get_distribution_path(catalog_id, dataset_id, distribution_id,
-                          catalogs_dir=CATALOGS_DIR):
-    distribution_download_dir = os.path.join(
+def get_distribution_download_dir(catalogs_dir, catalog_id, dataset_id, distribution_id):
+    return os.path.join(
         catalogs_dir, "catalog", catalog_id, "dataset", dataset_id,
         "distribution", distribution_id, "download"
     )
+
+def get_catalog_scraping_sources_dir(catalog_id):
+    return os.path.join(
+        CATALOGS_DIR_INPUT,
+        "catalog",
+        catalog_id,
+        "sources"
+    )
+
+def get_distribution_path(catalog_id, dataset_id, distribution_id,
+                          catalogs_dir=CATALOGS_DIR):
+    distribution_download_dir = get_distribution_download_dir(
+        catalogs_dir,
+        catalog_id,
+        dataset_id,
+        distribution_id
+    )
+
     glob_pattern = os.path.join(distribution_download_dir, "*.csv")
     distribution_csv_files = glob.glob(glob_pattern)
 

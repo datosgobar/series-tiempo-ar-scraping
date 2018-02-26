@@ -20,7 +20,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
-from helpers import get_logger
+from helpers import get_logger, print_log_separator
 from paths import CONFIG_EMAIL_PATH, REPORTES_DIR
 from paths import EXTRACTION_MAIL_CONFIG, SCRAPING_MAIL_CONFIG
 
@@ -80,6 +80,8 @@ def send_group_emails(group_name):
 
     # paths a archivos con componentes del mail
     mail_files = GROUP_CONFIGS[group_name]
+
+    print_log_separator(logger, "Envío de mails para: {}".format(group_name))
 
     for catalog_id in catalogs_configs:
         # asunto y mensaje

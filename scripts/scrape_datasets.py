@@ -28,7 +28,6 @@ from series_tiempo_ar.validations import validate_distribution
 from series_tiempo_ar import TimeSeriesDataJson
 
 import helpers
-from helpers import get_logger
 import custom_exceptions as ce
 
 from paths import REPORTES_DIR, CONFIG_SERVER_PATH
@@ -44,7 +43,7 @@ PRESERVE_WB_OBJ = False
 NOW = arrow.now().isoformat()
 TODAY = arrow.now().format('YYYY-MM-DD')
 
-logger = get_logger(os.path.basename(__file__))
+logger = helpers.get_logger(os.path.basename(__file__))
 
 XLSERIES_PARAMS = {
     'alignment': u'vertical',
@@ -369,11 +368,12 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
                 (distribution_identifier, repr(e).encode("utf8")))
 
             trace_string = traceback.format_exc()
-            print(msg.format(
+            logger.error(msg.format(
                 distribution_identifier, "ERROR",
                 repr(e).encode("utf8")
             ))
-            print(trace_string)
+            for line in trace_string.splitlines():
+                logger.error(line)
 
             if debug_mode:
                 raise
@@ -643,9 +643,10 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
                 })
 
                 trace_string = traceback.format_exc()
-                print(msg.format(scraping_xlsx_path, "ERROR",
+                logger.error(msg.format(scraping_xlsx_path, "ERROR",
                                  repr(e).encode("utf8")))
-                print(trace_string)
+                for line in trace_string.splitlines():
+                    logger.error(line)
                 if debug_mode:
                     raise
 
@@ -709,7 +710,7 @@ if __name__ == '__main__':
     with open(CATALOGS_INDEX_PATH) as config_file:
         catalogs_index = yaml.load(config_file)
 
-    logger.info('>>> COMIENZO DEL SCRAPING DE CATÁLOGOS <<<')
+    helpers.print_log_separator(logger, "Scraping de catálogos")
     logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
 
     for catalog_id in catalogs_index:

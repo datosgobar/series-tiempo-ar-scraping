@@ -27,6 +27,8 @@ FREQ_ISO_TO_HUMAN = {
     "R/P1D": "diaria"
 }
 
+SEPARATOR_WIDTH = 60
+
 
 def safe_sheet_name(string):
     invalid_chars = "[]:*?/\\"
@@ -167,3 +169,13 @@ def get_logger(name=__name__):
 def get_catalogs_index():
     with open(CATALOGS_INDEX_PATH) as config_file:
         return yaml.load(config_file)
+
+
+def print_log_separator(logger, message):
+    logger.info("=" * SEPARATOR_WIDTH)
+    logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
+    
+    logger.info("|" + message.center(SEPARATOR_WIDTH - 2) + "|")
+    
+    logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
+    logger.info("=" * SEPARATOR_WIDTH)
