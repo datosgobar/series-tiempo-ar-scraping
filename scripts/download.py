@@ -3,10 +3,14 @@
 
 import os
 import requests
+import time
 import yaml
 
 from paths import CONFIG_DOWNLOADS_PATH
 from helpers import get_logger
+
+DEFAULT_TRIES = 3
+RETRY_DELAY = 1
 
 logger = get_logger(os.path.basename(__file__))
 
@@ -32,6 +36,18 @@ def get_catalog_download_config(catalog_id):
 
 def download_file(url, file_path, config):
     logger.debug("DL config: {}".format(config))
-    res = requests.get(url, **config)
+    tries = config.pop("tries", DEFAULT_TRIES)
+
+    while True:
+        try:
+            tries -= 1
+            res = requests.get(url, **config)
+            break
+        except:
+            if not tries:
+                raise
+            time.sleep(RETRY_DELAY)
+            logger.debug("Re-intentando descarga...")
+
     with open(file_path, "wb") as f:
         f.write(res.content)

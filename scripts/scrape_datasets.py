@@ -156,16 +156,16 @@ def scrape_distribution(xl, catalog, distribution_identifier):
     return df
 
 
-def analyze_distribution(catalog, distribution_identifier):
+def analyze_distribution(catalog_id, catalog, dataset_id, distribution_id):
 
-    distrib_meta = catalog.get_distribution(distribution_identifier)
-    dataset_meta = catalog.get_dataset(distribution_identifier.split(".")[0])
+    distrib_meta = catalog.get_distribution(distribution_id)
+    dataset_meta = catalog.get_dataset(dataset_id)
 
     distribution_path = get_distribution_path(
-        catalog["identifier"], dataset_meta["identifier"], distribution_identifier,
+        catalog_id, dataset_meta["identifier"], distribution_id,
         CATALOGS_DIR_INPUT)
     # print("leyendo distribucion {} en {}".format(
-    #     distribution_identifier, distribution_path))
+    #     distribution_id, distribution_path))
 
     time_index = "indice_tiempo"
     df = pd.read_csv(
@@ -176,7 +176,7 @@ def analyze_distribution(catalog, distribution_identifier):
     )
 
     validate_distribution(df, catalog, dataset_meta, distrib_meta,
-                          distribution_identifier)
+                          distribution_id)
 
     return distribution_path, df
 
@@ -293,7 +293,8 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
     return res
 
 
-def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
+def analyze_dataset(catalog_id, catalog, dataset_identifier,
+                    datasets_output_dir,
                     debug_mode=False, replace=True,
                     config_server_path=CONFIG_SERVER_PATH,
                     debug_distribution_ids=None):
@@ -346,7 +347,11 @@ def analyze_dataset(catalog, dataset_identifier, datasets_output_dir,
             if not os.path.exists(dist_path) or replace:
                 status = "Replaced" if os.path.exists(dist_path) else "Created"
                 origin_dist_path, df = analyze_distribution(
-                    catalog, distribution_identifier)
+                    catalog_id,
+                    catalog,
+                    dataset_identifier,
+                    distribution_identifier
+                )
 
                 if isinstance(distribution, list):
                     distribution_complete = pd.concat(distribution)
@@ -444,7 +449,7 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
     return report_datasets, report_distributions
 
 
-def analyze_catalog(catalog, datasets_dir,
+def analyze_catalog(catalog_id, catalog, datasets_dir,
                     replace=True, debug_mode=False,
                     debug_distribution_ids=None):
     distributions_with_url = filter(
@@ -463,7 +468,7 @@ def analyze_catalog(catalog, datasets_dir,
     report_distributions = []
     for dataset_identifier in dataset_ids:
         result = analyze_dataset(
-            catalog, dataset_identifier, datasets_dir,
+            catalog_id, catalog, dataset_identifier, datasets_dir,
             replace=replace, debug_mode=debug_mode,
             debug_distribution_ids=debug_distribution_ids
         )
@@ -595,7 +600,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     if do_distributions:
         try:
             report_datasets, report_distributions = analyze_catalog(
-                catalog, catalog_datasets_dir,
+                catalog_id, catalog, catalog_datasets_dir,
                 replace=replace, debug_mode=debug_mode,
                 debug_distribution_ids=debug_distribution_ids)
             all_report_datasets.extend(report_datasets)

@@ -1,8 +1,10 @@
 defaults:
   timeout: 15
+  tries: 4
 example_catalog1:
   catalog:
     verify: false
+    tries: 5
   sources:
     proxies:
       http: http://example.proxy.com:3000
