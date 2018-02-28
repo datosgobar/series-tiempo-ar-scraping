@@ -395,7 +395,7 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
 
     # filtro los parametros para un excel en particular
     dataset_ids = set()
-    for distribution in catalog.get_distributions():
+    for distribution in catalog.get_distributions(only_time_series=True):
         if (
             ("scrapingFileURL" in distribution) and
                 (os.path.basename(distribution[
@@ -454,7 +454,7 @@ def analyze_catalog(catalog_id, catalog, datasets_dir,
                     debug_distribution_ids=None):
     distributions_with_url = filter(
         lambda x: "downloadURL" in x and bool(x["downloadURL"]),
-        catalog.get_distributions()
+        catalog.get_distributions(only_time_series=True)
     )
     logger.info("{} distribuciones con `downloadURL`".format(
         len(distributions_with_url))
@@ -582,11 +582,13 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
         return
     
     logger.info("Datasets: {}".format(len(catalog.get_datasets())))
-    logger.info("Distributions: {}".format(len(catalog.get_distributions())))
+    logger.info("Distributions: {}".format(len(catalog.get_distributions(
+        only_time_series=True))))
     logger.info("Fields: {}".format(len(catalog.get_fields())))
 
     # compone los paths a los excels de ied
-    scrapingURLs = set(catalog.get_distributions(meta_field="scrapingFileURL"))
+    scrapingURLs = set(catalog.get_distributions(only_time_series=True, 
+        meta_field="scrapingFileURL"))
     scraping_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
     scraping_xlsx_paths = [os.path.join(catalog_sources_dir, filename)
                            for filename in scraping_xlsx_filenames]
