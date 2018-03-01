@@ -33,15 +33,14 @@ def get_catalog_download_config(catalog_id):
 
     return config
 
-
-def download_file(url, file_path, config):
+def download(url, config):
     logger.debug("DL config: {}".format(config))
     tries = config.pop("tries", DEFAULT_TRIES)
 
     while True:
         try:
             tries -= 1
-            res = requests.get(url, **config)
+            return requests.get(url, **config).content
             break
         except:
             if not tries:
@@ -49,5 +48,8 @@ def download_file(url, file_path, config):
             time.sleep(RETRY_DELAY)
             logger.debug("Re-intentando descarga...")
 
+
+def download_file(url, file_path, config):
+    content = download(url, config)
     with open(file_path, "wb") as f:
-        f.write(res.content)
+        f.write(content)
