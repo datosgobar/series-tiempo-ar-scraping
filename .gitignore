@@ -114,14 +114,13 @@ data/test
 data/backup
 data/input
 data/reports
-/scripts/config/*
-/data/params/*
+
+/config/*
 
 # Exceptions
-!scripts/config/mime.types
-!scripts/config/nginx.conf
-!scripts/config/*example*
-!/data/params/*example*
+!/config/mime.types
+!/config/nginx.conf
+!/config/*example*
 
 catalogo
 custom_steps.sh
