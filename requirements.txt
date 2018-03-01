@@ -6,10 +6,4 @@ openpyxl>=2.5,<2.6
 xlrd
 requests
 pyyaml
-pycurl
-sqlalchemy
-psycopg2
-bs4
-xlsxwriter
-sqlalchemy
-pysftp
+urllib3[secure]
