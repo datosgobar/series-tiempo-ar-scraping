@@ -16,31 +16,19 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(
 # directorios del repositorio
 LOGS_DIR = os.path.join(PROJECT_DIR, "logs")
 DATOS_DIR = os.path.join(PROJECT_DIR, "data")
+CONFIG_DIR = os.path.join(PROJECT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "server")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input")
 TEST_CATALOGS_DIR = os.path.join(DATOS_DIR, "tests")
-DUMPS_DIR = os.path.join(DATOS_DIR, "output", "dump")
-CATALOG_PATH = os.path.join(
-    DATOS_DIR, "output", "catalog", "sspm", "data.json")
 BACKUP_CATALOG_DIR = os.path.join(DATOS_DIR, "backup", "catalog")
-BACKUP_DUMP_DIR = os.path.join(DATOS_DIR, "backup", "dump")
-DUMPS_PARAMS_PATH = os.path.join(
-    DATOS_DIR, "params", "dumps_params.json")
-CATALOGS_INDEX_PATH = os.path.join(DATOS_DIR, "params", "indice.yaml")
-SOURCES_DIR = os.path.join(DATOS_DIR, "catalog", "sspm", "source")
+CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index.yaml")
 SERIES_DIR = os.path.join(DATOS_DIR, "output", "series")
-DATASETS_DIR = os.path.join(
-    DATOS_DIR, "output", "catalog", "sspm", "dataset")
-CATALOGS_HISTORY_DIR = os.path.join(DATOS_DIR, "catalog", "sspm")
+DATASETS_DIR = os.path.join(DATOS_DIR, "output", "catalog", "sspm", "dataset")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
-CODIGO_DIR = os.path.join(PROJECT_DIR, "scripts")
-SCHEMAS_DIR = os.path.join(PROJECT_DIR, "scripts", "schemas")
-CONFIG_EMAIL_PATH = os.path.join(
-    PROJECT_DIR, "scripts", "config", "config_email.yaml")
-CONFIG_SERVER_PATH = os.path.join(
-    PROJECT_DIR, "scripts", "config", "config_server.yaml")
-CONFIG_DOWNLOADS_PATH = os.path.join(
-    PROJECT_DIR, "scripts", "config", "config_downloads.yaml")
+SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
+CONFIG_EMAIL_PATH = os.path.join(CONFIG_DIR, "config_email.yaml")
+CONFIG_SERVER_PATH = os.path.join(CONFIG_DIR, "config_server.yaml")
+CONFIG_DOWNLOADS_PATH = os.path.join(CONFIG_DIR, "config_downloads.yaml")
 
 EXTRACTION_MAIL_CONFIG = {
     "subject": "extraction_mail_subject.txt",

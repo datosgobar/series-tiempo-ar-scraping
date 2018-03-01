@@ -23,7 +23,7 @@ import pydatajson.writers as writers
 from pydatajson.helpers import parse_repeating_time_interval as parse_freq
 
 import custom_exceptions as ce
-from paths import CATALOGS_DIR, CATALOG_PATH, SERIES_DIR, get_distribution_path
+from paths import CATALOGS_DIR, SERIES_DIR, get_distribution_path
 from paths import get_catalogs_path, get_catalog_path, get_catalog_ids
 
 sys.path.insert(0, os.path.abspath(".."))

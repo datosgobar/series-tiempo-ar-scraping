@@ -1,6 +1,6 @@
 SHELL = bash
 
-.PHONY: all clean download_catalogs data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources data/params/scraping_urls.txt
+.PHONY: all clean download_catalogs data/input/scraping_urls.txt data/input/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources
 
 # git clone https://github.com/datosgobar/series-tiempo-ar-etl.git && cd series-tiempo
 # ambiente testeado para un Ubuntu 16.04
@@ -11,7 +11,7 @@ setup: install_anaconda setup_environment create_dir install_cron install_nginx 
 
 # recetas para correr el ETL
 all: extraction transformation
-extraction: extract_catalogs send_extraction_report data/params/scraping_urls.txt data/params/distribution_urls.txt download_sources
+extraction: extract_catalogs send_extraction_report data/input/scraping_urls.txt data/input/distribution_urls.txt download_sources
 transformation: scrape_datasets send_transformation_report
 
 # SETUP
@@ -26,7 +26,7 @@ install_nginx:
 	# sudo service apache2 stop
 	sudo apt-get update && sudo apt-get install nginx && sudo apt-get install nginx-extras
 	sudo ufw allow 'Nginx HTTP'
-	sudo cp scripts/config/nginx.conf /etc/nginx/nginx.conf
+	sudo cp config/nginx.conf /etc/nginx/nginx.conf
 	# sudo service nginx restart
 
 test_nginx_conf:
@@ -41,7 +41,7 @@ start_python_server:
 start_nginx:
 	# sudo nginx -p . -c scripts/config/nginx.conf
 	# /etc/init.d/nginx configtest
-	sudo cp scripts/config/nginx.conf /etc/nginx/nginx.conf
+	sudo cp config/nginx.conf /etc/nginx/nginx.conf
 	sudo systemctl start nginx
 
 stop_nginx:
@@ -86,7 +86,6 @@ create_dir:
 	mkdir -p data/output/server/catalog
 	mkdir -p data/test_output
 	mkdir -p data/test_output/server/catalog
-	mkdir -p data/params
 	mkdir -p data/reports
 	mkdir -p data/backup
 	mkdir -p data/backup/catalog
@@ -107,20 +106,20 @@ install_cron: cron_jobs
 
 # EXTRACTION
 extract_catalogs:
-	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "data/params/indice.yaml" "data/output/server/catalog"
+	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "config/index.yaml" "data/output/server/catalog"
 
 send_extraction_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
 
-data/params/scraping_urls.txt:
+data/input/scraping_urls.txt:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "scraping" "$@"
 
-data/params/distribution_urls.txt:
+data/input/distribution_urls.txt:
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "distribution" "$@"
 
 download_sources:
-	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "scraping" "data/params/scraping_urls.txt"
-	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "distribution" "data/params/distribution_urls.txt"
+	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "scraping" "data/input/scraping_urls.txt"
+	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "distribution" "data/input/distribution_urls.txt"
 
 # TRANSFORMATION
 # TODO: revisar como se usan adecuadamenten los directorios
@@ -140,8 +139,6 @@ clean:
 	rm -rf data/input/
 	rm -rf data/output/
 	rm -rf data/test_output/
-	rm -f data/params/scraping_urls.txt
-	rm -f data/params/distribution_urls.txt
 	rm -rf data/reports
 	make create_dir
 
