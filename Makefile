@@ -90,7 +90,7 @@ create_dir:
 	mkdir -p data/backup
 	mkdir -p data/backup/catalog
 
-install_cron: cron_jobs
+install_cron: config/cron_jobs
 	@echo "LANG=en_US.UTF-8" >> .cronfile
 	@echo "LANGUAGE=en" >> .cronfile
 	@echo "LC_CTYPE=en_US.UTF-8" >> .cronfile
@@ -99,10 +99,10 @@ install_cron: cron_jobs
 	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
 	@echo "SERIES_TIEMPO_PYTHON=$(SERIES_TIEMPO_PYTHON)" >> .cronfile
 	@echo "SERVER_ENVIRONMENT=$(SERVER_ENVIRONMENT)" >> .cronfile
-	cat cron_jobs >> .cronfile
+	cat config/cron_jobs >> .cronfile
 	crontab .cronfile
 	rm .cronfile
-	touch cron_jobs
+	touch config/cron_jobs
 
 # EXTRACTION
 extract_catalogs:

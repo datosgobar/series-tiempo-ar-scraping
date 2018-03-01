@@ -121,6 +121,7 @@ data/reports
 !/config/mime.types
 !/config/nginx.conf
 !/config/*example*
+!/config/cron_jobs
 
 catalogo
 custom_steps.sh

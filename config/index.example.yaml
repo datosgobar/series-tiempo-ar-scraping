@@ -1,3 +1,6 @@
-test1:
+example_catalog1:
   url: "https://example.com/catalog.xlsx"
   formato: "xlsx"
+example_catalog2:
+  url: "https://example.com/catalog2.json"
+  formato: "json"
