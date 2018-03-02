@@ -15,7 +15,7 @@ import sys
 
 from context import data, paths
 
-CATALOGS_DIR = paths.TEST_CATALOGS_DIR
+# CATALOGS_DIR = paths.TEST_CATALOGS_DIR
 
 
 class GetDataTestCase(unittest.TestCase):
