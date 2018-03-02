@@ -20,7 +20,10 @@ def get_distribution_download_urls(distributions, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
     urls = []
 
-    for distribution in filter(lambda dist: 'downloadURL' in dist, distributions):
+    for distribution in filter(
+        lambda dist: 'downloadURL' in dist and dist['downloadURL'],
+        distributions):
+        
         if "fileName" in distribution:
             distribution_fileName = distribution["fileName"]
         else:
@@ -45,7 +48,8 @@ def get_scraping_sources_urls(distributions, catalog_id):
     urls = {
         dist['scrapingFileURL']
         for dist in distributions
-        if 'scrapingFileURL' in dist and 'downloadURL' not in dist
+        if 'scrapingFileURL' in dist
+            and ('downloadURL' not in dist or not dist['downloadURL'])
     }
 
     return [
