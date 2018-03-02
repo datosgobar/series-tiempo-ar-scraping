@@ -69,6 +69,8 @@ def send_email(mailer_config, subject, message, recipients, files=None):
     logger.info("Se envió exitosamente un reporte a " + ", ".join(recipients))
 
 def send_group_emails(group_name):
+    print_log_separator(logger, "Envío de mails para: {}".format(group_name))
+
     try:
         with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
             cfg = yaml.load(ymlfile)
@@ -85,8 +87,6 @@ def send_group_emails(group_name):
 
     # paths a archivos con componentes del mail
     mail_files = GROUP_CONFIGS[group_name]
-
-    print_log_separator(logger, "Envío de mails para: {}".format(group_name))
 
     for catalog_id in catalogs_configs:
         # asunto y mensaje
