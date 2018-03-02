@@ -87,34 +87,11 @@ ENV/
 
 # Rope project settings
 .ropeproject
-*.DS_Store
-fred_api_key.txt
-catalogo-sspm.xlsx
-excels_urls.txt
-~$catalogo-sspm.xlsx
-actividad_ied.xlsx
-etl_params.csv
-config_ind.yaml
-catalogo-sspm-downloaded.xlsx
-catalogo_sspm_url.txt
-config_email.yaml
-profiling_test.png
-generate-catalog-errors.txt
-ca.pem
-config_webdav.yaml
-ca_webdav.pem
-reporte-field-title-too-long.xlsx
-reporte-invalid-field-titles.xlsx
-datasets_ind.zip
-series.zip
-datasets.zip
-data/output
-data/test_output
-data/test
-data/backup
-data/input
-data/reports
 
+*.DS_Store
+
+# series-tiempo-ar-scraping
+/data/*
 /config/*
 
 # Exceptions
@@ -122,10 +99,3 @@ data/reports
 !/config/nginx.conf
 !/config/*example*
 !/config/cron_jobs
-
-catalogo
-custom_steps.sh
-pruebas
-upload_config_files-dev.sh
-upload_config_files-prod.sh
-field_description_samples.txt
