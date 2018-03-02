@@ -13,6 +13,7 @@ from openpyxl import load_workbook
 import zipfile
 import datetime
 import time
+import urlparse
 import yaml
 import logging
 import logging.config
@@ -194,3 +195,6 @@ def print_log_separator(logger, message):
     
     logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
     logger.info("=" * SEPARATOR_WIDTH)
+
+def is_http_or_https(url):
+    return urlparse.urlparse(url).scheme in ["http", "https"]

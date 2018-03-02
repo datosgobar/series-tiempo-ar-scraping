@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import with_statement
 import os
 import sys
+import shutil
 import StringIO
 import traceback
 import pandas as pd
@@ -20,7 +21,7 @@ import pydatajson.readers as readers
 import pydatajson.writers as writers
 
 from helpers import get_logger, ensure_dir_exists, get_catalogs_index
-from helpers import print_log_separator, get_general_config
+from helpers import print_log_separator, get_general_config, is_http_or_https
 from download import download_file, get_catalog_download_config
 from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR
 from paths import CATALOGS_INDEX_PATH
@@ -197,9 +198,14 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         if catalog_format.lower() == 'xlsx':
             config = get_catalog_download_config(catalog_id)["catalog"]
             catalog_xlsx_path = catalog_path_template.format("catalog.xlsx")
-            download_file(catalog_url, catalog_xlsx_path, config)
 
             logger.info('Transformación de XLSX a JSON')
+
+            if is_http_or_https(catalog_url):
+                download_file(catalog_url, catalog_xlsx_path, config)
+            else:
+                shutil.copy(catalog_url, catalog_xlsx_path)
+
             catalog = read_xlsx_catalog(catalog_xlsx_path, logger)
 
         elif catalog_format.lower() == 'json':
