@@ -6,7 +6,7 @@ VIRTUALENV = bin/activate
 
 .PHONY: all clean download_catalogs data/input/scraping_urls.txt data/input/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources
 
-setup: setup_environment create_dir install_cron install_nginx start_nginx
+setup: setup_environment install_cron install_nginx start_nginx
 
 # recetas para correr el ETL
 all: extraction transformation
@@ -45,7 +45,7 @@ stop_nginx:
 
 restart_nginx: stop_nginx start_nginx
 
-setup_environment:
+setup_environment: create_dir
 	$(SERIES_TIEMPO_PIP) install virtualenv --upgrade
 	test -d $(VIRTUALENV) || virtualenv .
 	source $(VIRTUALENV)
