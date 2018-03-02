@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import with_statement
 
 import os
 import requests
@@ -15,8 +18,15 @@ RETRY_DELAY = 1
 logger = get_logger(os.path.basename(__file__))
 
 def get_catalog_download_config(catalog_id):
-    with open(CONFIG_DOWNLOADS_PATH) as config_file:
-        configs = yaml.load(config_file)
+    try:
+        with open(CONFIG_DOWNLOADS_PATH) as config_file:
+            configs = yaml.load(config_file)
+    except:
+        logger.warning("No se pudo cargar el archivo de configuración 'config_downloads.yaml'.")
+        logger.warning("Utilizando configuración default...")
+        configs = {
+            "defaults": {}
+        }
 
     default_config = configs["defaults"]
 

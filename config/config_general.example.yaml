@@ -1,0 +1,3 @@
+host: http://example.com:3030
+environment: prod # prod, stg o dev
+logging: info # critical, error, warning, info o debug

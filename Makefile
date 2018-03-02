@@ -3,15 +3,9 @@ SHELL = bash
 SERIES_TIEMPO_PIP = pip2
 SERIES_TIEMPO_PYTHON = python2
 VIRTUALENV = bin/activate
-SERVER_ENVIRONMENT = prod # TODO: mover a archivo de configuracion
 
 .PHONY: all clean download_catalogs data/input/scraping_urls.txt data/input/distribution_urls.txt download_sources upload_catalog upload_datasets send_transformation_report install_anaconda clone_repo setup_environment create_dir download_sources
 
-# git clone https://github.com/datosgobar/series-tiempo-ar-etl.git && cd series-tiempo
-# ambiente testeado para un Ubuntu 16.04
-# especificar el tipo de ambiente con SERVER_ENVIRONMENT:
-# `make setup SERVER_ENVIRONMENT=dev`
-# `make setup SERVER_ENVIRONMENT=prod`
 setup: setup_environment create_dir install_cron install_nginx start_nginx
 
 # recetas para correr el ETL
@@ -51,7 +45,6 @@ stop_nginx:
 
 restart_nginx: stop_nginx start_nginx
 
-# ambiente testeado para un Ubuntu 16.04
 setup_environment:
 	$(SERIES_TIEMPO_PIP) install virtualenv --upgrade
 	test -d $(VIRTUALENV) || virtualenv .
@@ -86,7 +79,6 @@ install_cron: config/cron_jobs
 	@echo "PATH=$(PATH)" >> .cronfile
 	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
 	@echo "SERIES_TIEMPO_PYTHON=$(SERIES_TIEMPO_PYTHON)" >> .cronfile
-	@echo "SERVER_ENVIRONMENT=$(SERVER_ENVIRONMENT)" >> .cronfile
 	cat config/cron_jobs >> .cronfile
 	crontab .cronfile
 	rm .cronfile
@@ -94,30 +86,30 @@ install_cron: config/cron_jobs
 
 # EXTRACTION
 extract_catalogs:
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "config/index.yaml" "data/output/server/catalog"
 
 send_extraction_report:
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
 
 data/input/scraping_urls.txt:
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "scraping" "$@"
 
 data/input/distribution_urls.txt:
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "distribution" "$@"
 
 download_sources:
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "scraping" "data/input/scraping_urls.txt"
 	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "distribution" "data/input/distribution_urls.txt"
 
 # TRANSFORMATION
 # TODO: revisar como se usan adecuadamenten los directorios
 scrape_datasets:
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py \
 		data/output/server/catalog/{}/data.json \
 		data/input/catalog/{}/sources/ \
@@ -126,7 +118,7 @@ scrape_datasets:
 		replace
 
 send_transformation_report:
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
 
 # CLEAN
@@ -139,7 +131,7 @@ clean:
 
 # TEST
 profiling_test: data/output/server/catalog/$(PROFILING_CATALOG_ID)/data.json
-	source $(VIRTUALENV)
+	@source $(VIRTUALENV)
 	$(SERIES_TIEMPO_PYTHON) -m scripts.tests.profiling $^ \
 		data/input/catalog/$(PROFILING_CATALOG_ID)/sources/ \
 		data/test_output/server/catalog/$(PROFILING_CATALOG_ID)/dataset/ \

@@ -20,7 +20,7 @@ import pydatajson.readers as readers
 import pydatajson.writers as writers
 
 from helpers import get_logger, ensure_dir_exists, get_catalogs_index
-from helpers import print_log_separator
+from helpers import print_log_separator, get_general_config
 from download import download_file, get_catalog_download_config
 from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR
 from paths import CATALOGS_INDEX_PATH
@@ -142,7 +142,7 @@ def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
     Return:
         tuple: (str, str) (asunto, mensaje)
     """
-    server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
+    server_environment = get_general_config()["environment"]
 
     # asunto del mail
     subject = "[{}] Validacion de catalogo '{}': {}".format(

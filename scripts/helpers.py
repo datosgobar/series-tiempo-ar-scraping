@@ -17,7 +17,7 @@ import yaml
 import logging
 import logging.config
 
-from paths import CATALOGS_INDEX_PATH
+from paths import CATALOGS_INDEX_PATH, CONFIG_GENERAL_PATH
 
 FREQ_ISO_TO_HUMAN = {
     "R/P1Y": "anual",
@@ -152,11 +152,22 @@ def row_from_cell_coord(coord):
 
 
 def get_logger(name=__name__):
+    levels = {
+        'critical': logging.CRITICAL,
+        'error': logging.ERROR,
+        'warning': logging.WARNING,
+        'info': logging.INFO,
+        'debug': logging.DEBUG
+    }
+
+    config = get_general_config()
+    selected_level = levels[config['logging']]
+
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(selected_level)
 
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(selected_level)
 
     logging_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
@@ -165,11 +176,15 @@ def get_logger(name=__name__):
 
     return logger
 
-
-def get_catalogs_index():
-    with open(CATALOGS_INDEX_PATH) as config_file:
+def load_yaml(path):
+    with open(path) as config_file:
         return yaml.load(config_file)
 
+def get_catalogs_index():
+    return load_yaml(CATALOGS_INDEX_PATH)
+
+def get_general_config():
+    return load_yaml(CONFIG_GENERAL_PATH)
 
 def print_log_separator(logger, message):
     logger.info("=" * SEPARATOR_WIDTH)

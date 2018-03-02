@@ -27,7 +27,7 @@ DATASETS_DIR = os.path.join(DATOS_DIR, "output", "catalog", "sspm", "dataset")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 CONFIG_EMAIL_PATH = os.path.join(CONFIG_DIR, "config_email.yaml")
-CONFIG_SERVER_PATH = os.path.join(CONFIG_DIR, "config_server.yaml")
+CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
 CONFIG_DOWNLOADS_PATH = os.path.join(CONFIG_DIR, "config_downloads.yaml")
 
 EXTRACTION_MAIL_CONFIG = {

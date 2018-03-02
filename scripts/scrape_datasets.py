@@ -30,7 +30,7 @@ from series_tiempo_ar import TimeSeriesDataJson
 import helpers
 import custom_exceptions as ce
 
-from paths import REPORTES_DIR, CONFIG_SERVER_PATH
+from paths import REPORTES_DIR
 from paths import get_distribution_path, CATALOGS_DIR_INPUT, CATALOGS_INDEX_PATH
 from paths import SCRAPING_MAIL_CONFIG
 
@@ -181,12 +181,9 @@ def analyze_distribution(catalog_id, catalog, dataset_id, distribution_id):
     return distribution_path, df
 
 
-def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
-
-    with open(config_server_path, 'r') as f:
-        server_params = yaml.load(f)
-
-    base_url = server_params["host"]
+def get_distribution_url(dist_path):
+    general_config = helpers.get_general_config()
+    base_url = general_config["host"]
 
     return urljoin(
         base_url,
@@ -195,9 +192,8 @@ def get_distribution_url(dist_path, config_server_path=CONFIG_SERVER_PATH):
 
 
 def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
-                   debug_mode=False, replace=True,
-                   config_server_path=CONFIG_SERVER_PATH,
-                   debug_distribution_ids=None, catalog_id=None):
+                   debug_mode=False, replace=True, debug_distribution_ids=None,
+                   catalog_id=None):
     res = {
         "dataset_status": None,
         "distributions_ok": [],
@@ -239,7 +235,7 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
             )
             dist_path = os.path.join(dist_download_dir,
                                      "{}".format(distribution_file_name))
-            dist_url = get_distribution_url(dist_path, config_server_path)
+            dist_url = get_distribution_url(dist_path)
             # print("esta es la URL QUE VA AL CATALOGO", dist_url)
             distrib_meta["downloadURL"] = dist_url
 
@@ -294,9 +290,7 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
 
 
 def analyze_dataset(catalog_id, catalog, dataset_identifier,
-                    datasets_output_dir,
-                    debug_mode=False, replace=True,
-                    config_server_path=CONFIG_SERVER_PATH,
+                    datasets_output_dir, debug_mode=False, replace=True,
                     debug_distribution_ids=None):
     res = {
         "dataset_status": None,
@@ -338,7 +332,7 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                 dataset_dir, "distribution", distribution_identifier,
                 "download", "{}".format(distribution_file_name)
             )
-            dist_url = get_distribution_url(dist_path, config_server_path)
+            dist_url = get_distribution_url(dist_path)
             # print("esta es la URL QUE VA AL CATALOGO", dist_url)
             distrib_meta["downloadURL"] = dist_url
 
@@ -509,7 +503,7 @@ def generate_summary_message(catalog_id, indicators):
     Return:
         tuple: (str, str) (asunto, mensaje)
     """
-    server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
+    server_environment = helpers.get_general_config()["environment"]
     subject = "[{}] Scraping de catalogo '{}': {}".format(
         server_environment,
         catalog_id,
@@ -566,7 +560,7 @@ def generate_summary_indicators(report_files, report_datasets,
 def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
          catalog_id, replace=True, debug_mode=False,
          debug_distribution_ids=None, do_scraping=True, do_distributions=True):
-    server_environment = os.environ.get("SERVER_ENVIRONMENT", "desconocido")
+    server_environment = helpers.get_general_config()["environment"]
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
 
     if server_environment == "prod":

@@ -69,8 +69,13 @@ def send_email(mailer_config, subject, message, recipients, files=None):
     logger.info("Se envió exitosamente un reporte a " + ", ".join(recipients))
 
 def send_group_emails(group_name):
-    with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
+    try:
+        with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
+            cfg = yaml.load(ymlfile)
+    except:
+        logger.warning("No se pudo cargar archivo de configuración 'config_email.yaml'.")
+        logger.warning("Salteando envío de mails...")
+        return
 
     # parametros de la cuenta que envía el mail
     mailer_config = cfg["mailer"]
