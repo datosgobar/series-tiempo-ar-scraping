@@ -16,7 +16,7 @@ import pandas as pd
 import arrow
 import logging
 from openpyxl import load_workbook
-from pydatajson import DataJson
+from series_tiempo_ar import TimeSeriesDataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
 
@@ -47,7 +47,7 @@ def read_xlsx_catalog(catalog_xlsx_path, logger=None):
     }
 
     catalogo = readers.read_xlsx_catalog(catalog_xlsx_path, logger)
-    catalogo = DataJson(catalogo, default_values=default_values)
+    catalogo = TimeSeriesDataJson(catalogo, default_values=default_values)
 
     clean_catalog(catalogo)
 
@@ -81,7 +81,7 @@ def write_json_catalog(catalog_id, catalog, catalog_json_path):
 
 def validate_and_filter(catalog_id, catalog, warnings_log):
     """Valida y filtra un catálogo en data.json."""
-    dj = DataJson(catalog,
+    dj = TimeSeriesDataJson(catalog,
                   schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
 
     # valida todo el catálogo para saber si está ok
@@ -210,7 +210,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
 
         elif catalog_format.lower() == 'json':
             logger.info('Lectura directa de JSON')
-            catalog = DataJson(catalog_url)
+            catalog = TimeSeriesDataJson(catalog_url)
 
         elif catalog_format.lower() == 'ckan':
             logger.info('Transformación de CKAN API a JSON')
