@@ -99,3 +99,5 @@ ENV/
 !/config/nginx.conf
 !/config/*example*
 !/config/cron_jobs
+bin
+pip-selfcheck.json
