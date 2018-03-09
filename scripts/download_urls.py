@@ -12,7 +12,7 @@ from paths import CATALOGS_DIR_INPUT
 from paths import get_distribution_download_dir
 from paths import get_catalog_scraping_sources_dir
 from helpers import get_logger, ensure_dir_exists, print_log_separator
-from download import download_file, get_catalog_download_config
+from helpers import download_with_config, get_catalog_download_config
 
 logger = get_logger(os.path.basename(__file__))
 
@@ -39,7 +39,7 @@ def download_scraping_sources(urls):
         file_path = os.path.join(catalog_scraping_sources_dir, file)
 
         try:
-            download_file(scraping_url, file_path, config)
+            download_with_config(scraping_url, file_path, config)
             logger.info("Archivo descargado")
         except Exception as e:
             logger.error("Error al descargar el archivo")
@@ -73,7 +73,7 @@ def download_distributions(urls):
         file_path = os.path.join(distribution_download_dir, filename)
 
         try:
-            download_file(url, file_path, config)
+            download_with_config(url, file_path, config)
             logger.info("Archivo descargado")
         except Exception as e:
             logger.error("Error al descargar el archivo")

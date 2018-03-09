@@ -17,7 +17,10 @@ import urlparse
 import yaml
 import logging
 import logging.config
+import yaml
+import download
 
+from paths import CONFIG_DOWNLOADS_PATH
 from paths import CATALOGS_INDEX_PATH, CONFIG_GENERAL_PATH
 
 FREQ_ISO_TO_HUMAN = {
@@ -177,15 +180,19 @@ def get_logger(name=__name__):
 
     return logger
 
+
 def load_yaml(path):
     with open(path) as config_file:
         return yaml.load(config_file)
 
+
 def get_catalogs_index():
     return load_yaml(CATALOGS_INDEX_PATH)
 
+
 def get_general_config():
     return load_yaml(CONFIG_GENERAL_PATH)
+
 
 def print_log_separator(logger, message):
     logger.info("=" * SEPARATOR_WIDTH)
@@ -196,5 +203,40 @@ def print_log_separator(logger, message):
     logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
     logger.info("=" * SEPARATOR_WIDTH)
 
+
 def is_http_or_https(url):
     return urlparse.urlparse(url).scheme in ["http", "https"]
+
+
+def get_catalog_download_config(catalog_id):
+    try:
+        configs = load_yaml(CONFIG_DOWNLOADS_PATH)
+    except:
+        logger.warning("No se pudo cargar el archivo de configuración 'config_downloads.yaml'.")
+        logger.warning("Utilizando configuración default...")
+        configs = {
+            "defaults": {}
+        }
+
+    default_config = configs["defaults"]
+
+    config = configs[catalog_id] if catalog_id in configs else {}
+    if "catalog" not in config:
+        config["catalog"] = {}
+    if "sources" not in config:
+        config["sources"] = {}
+
+    for key, value in default_config.items():
+        for subconfig in config.values():
+            if key not in subconfig:
+                subconfig[key] = value
+
+    return config
+
+
+def download_with_config(url, file_path, config):
+    download.download_to_file(url, file_path, 
+                              try_timeout=config.get("try_timeout"),
+                              tries=config.get("tries"),
+                              proxies=config.get("proxies"),
+                              verify=config.get("verify"))

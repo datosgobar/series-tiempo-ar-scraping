@@ -22,7 +22,7 @@ import pydatajson.writers as writers
 
 from helpers import get_logger, ensure_dir_exists, get_catalogs_index
 from helpers import print_log_separator, get_general_config, is_http_or_https
-from download import download_file, get_catalog_download_config
+from helpers import get_catalog_download_config, download_with_config
 from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR
 from paths import CATALOGS_INDEX_PATH
 
@@ -202,7 +202,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
             logger.info('Transformación de XLSX a JSON')
 
             if is_http_or_https(catalog_url):
-                download_file(catalog_url, catalog_xlsx_path, config)
+                download_with_config(catalog_url, catalog_xlsx_path, config)
             else:
                 shutil.copy(catalog_url, catalog_xlsx_path)
 

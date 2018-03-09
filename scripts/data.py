@@ -225,11 +225,8 @@ def get_catalog(catalog_id, catalogs_dir=CATALOGS_DIR):
     return pydatajson.DataJson(get_catalog_path(catalog_id))
 
 
-def get_series_data(
-        field_ids,
-        export_path="/Users/abenassi/github/series-tiempo/catalogo/datos/dumps/tablero-ministerial-ied.csv",
-        catalogs_dir=CATALOGS_DIR, logger=None
-):
+def get_series_data(field_ids, export_path, catalogs_dir=CATALOGS_DIR,
+                    logger=None):
 
     if isinstance(field_ids, list):
         field_ids = {field_id: None for field_id in field_ids}

@@ -1,5 +1,5 @@
 defaults:
-  timeout: 15
+  try_timeout: 15
   tries: 4
 example_catalog1:
   catalog:
@@ -10,8 +10,8 @@ example_catalog1:
       http: http://example.proxy.com:3000
       https: https://example.proxy.com:4000
     verify: false
-    timeout: 30
+    try_timeout: 30
 example_catalog2:
   catalog:
-    timeout: 10
+    try_timeout: 10
     verify: false
