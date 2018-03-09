@@ -13,10 +13,28 @@ $ sudo apt install python-pip git
 $ git clone https://github.com/datosgobar/series-tiempo-ar-scraping.git
 $ cd series-tiempo-ar-scraping
 ```
-3. Crear el entorno virtual de Python e instalar las dependencias del proyecto:
-```bash
-$ make setup_environment
-```
+3. Crear el entorno virtual de Python con *Anaconda* o *Virtualenv* e instalar las dependencias del proyecto:
+    
+    **Anaconda:**
+    
+    Si *Anaconda* **no** se encuentra instalado, instalarlo:
+    ```bash
+    $ make install_anaconda
+    ```
+    Luego, habilitar el comando `conda`:
+    ```bash
+    $ source ~/.bashrc
+    ```
+    Una vez instalado *Anaconda* y habilitado el comando `conda`, crear el entorno virtual:
+    ```bash
+    $ make setup_anaconda
+    ```
+    **Virtualenv:**
+    
+    Crear el entorno virtual e instalar las dependencias:
+    ```bash
+    $ make setup_virtualenv
+    ```
 4. Crear el índice de catálogos y el archivo de configuración general:
 ```bash
 $ cp config/index.example.yaml config/index.yaml
@@ -32,7 +50,15 @@ $ cp config/config_downloads.example.yaml config/config_downloads.yaml
 Luego, editar los archivos `config_email.yaml` y `config_downloads.yaml` con los parámetros deseados.
 
 6. Ejecutar el ETL:
-```bash
-$ make all
-```
+
+    **Anaconda:**
+    ```bash
+    $ source activate sta-scraping
+    $ make all
+    ```
+    **Virtualenv:**
+    ```bash
+    $ source bin/activate
+    $ make all
+    ```
 Al finalizar, los catálogos transformados al formato `data.json` y los archivos de distribuciones descargadas y scrapeadas se encontrarán en el directorio `data/output`.
