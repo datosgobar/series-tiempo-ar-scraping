@@ -75,3 +75,7 @@ Al finalizar, los catálogos transformados al formato `data.json` y los archivos
         - `catalog.json`: Catálogo en formato `.json`.
         - Archivos de distribuciones descargados vía `downloadURL`.
         - Archivos de distribuciones *scrapeadas*.
+    - Directorio `data/reports/`: Por cada catálogo procesado, se crea un subdirectorio con:
+        - Reporte del proceso de validación del catálogo.
+        - Reporte con información sobre los *datasets* del catálogo.
+        - Reportes del proceso de *scraping* del catálogo.
