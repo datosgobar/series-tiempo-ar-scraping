@@ -21,6 +21,8 @@ $ cd series-tiempo-ar-scraping
     ```bash
     $ make install_anaconda
     ```
+    Durante el proceso de instalación, asegurar que el instalador modifique el archivo `.bashrc` para incluir el comando `conda` en el `PATH`.
+
     Luego, habilitar el comando `conda`:
     ```bash
     $ source ~/.bashrc
@@ -53,12 +55,23 @@ Luego, editar los archivos `config_email.yaml` y `config_downloads.yaml` con los
 
     **Anaconda:**
     ```bash
-    $ source activate sta-scraping
+    $ source activate series-tiempo-ar-scraping
     $ make all
     ```
     **Virtualenv:**
     ```bash
-    $ source bin/activate
+    $ source series-tiempo-ar-scraping/bin/activate
     $ make all
     ```
 Al finalizar, los catálogos transformados al formato `data.json` y los archivos de distribuciones descargadas y scrapeadas se encontrarán en el directorio `data/output`.
+
+## Entradas/Salidas del ETL
+- **Entradas**:
+    - `index.yaml`: Contiene listado de catálogos y sus URLs respectivas.
+    - `config_general.yaml`: Contiene configuración del servidor donde ser servirán los archivos de salida.
+- **Salidas**:
+    - Directorio `data/output/server/`: Por cada catálogo procesado, se crea un subdirectorio con:
+        - `catalog.xlsx`: Catálogo en formato `.xlsx`.
+        - `catalog.json`: Catálogo en formato `.json`.
+        - Archivos de distribuciones descargados vía `downloadURL`.
+        - Archivos de distribuciones *scrapeadas*.

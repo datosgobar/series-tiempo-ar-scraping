@@ -251,7 +251,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
     except Exception as e:
         logger.error('Error al procesar el catálogo: {}'.format(catalog_id))
         for line in traceback.format_exc().splitlines():
-            logger.error(line)
+            logger.error(line.decode("utf8"))
         subject, message = generate_validation_message(catalog_id, False, e)
         _write_extraction_mail_texts(catalog_id, subject, message)
     finally:

@@ -2,8 +2,8 @@
 SHELL = bash
 SERIES_TIEMPO_PIP = pip
 SERIES_TIEMPO_PYTHON = python
-VIRTUALENV = bin/activate
-CONDA_ENV = sta-scraping
+VIRTUALENV = series-tiempo-ar-scraping
+CONDA_ENV = series-tiempo-ar-scraping
 
 .PHONY: \
 	all \
@@ -64,8 +64,8 @@ restart_nginx: stop_nginx start_nginx
 
 setup_virtualenv: create_dir
 	$(SERIES_TIEMPO_PIP) install virtualenv --upgrade
-	test -d $(VIRTUALENV) || virtualenv .
-	source $(VIRTUALENV); \
+	test -d $(VIRTUALENV)/bin/activate || virtualenv $(VIRTUALENV)
+	source $(VIRTUALENV)/bin/activate; \
 	$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
 setup_anaconda: create_dir

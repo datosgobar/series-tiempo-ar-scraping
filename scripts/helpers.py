@@ -155,6 +155,19 @@ def row_from_cell_coord(coord):
     return int(filter(lambda x: x.isdigit(), coord))
 
 
+def load_yaml(path):
+    with open(path) as config_file:
+        return yaml.load(config_file)
+
+
+def get_catalogs_index():
+    return load_yaml(CATALOGS_INDEX_PATH)
+
+
+def get_general_config():
+    return load_yaml(CONFIG_GENERAL_PATH)
+
+
 def get_logger(name=__name__):
     levels = {
         'critical': logging.CRITICAL,
@@ -180,18 +193,7 @@ def get_logger(name=__name__):
 
     return logger
 
-
-def load_yaml(path):
-    with open(path) as config_file:
-        return yaml.load(config_file)
-
-
-def get_catalogs_index():
-    return load_yaml(CATALOGS_INDEX_PATH)
-
-
-def get_general_config():
-    return load_yaml(CONFIG_GENERAL_PATH)
+logger = get_logger(os.path.basename(__file__))
 
 
 def print_log_separator(logger, message):
@@ -235,8 +237,4 @@ def get_catalog_download_config(catalog_id):
 
 
 def download_with_config(url, file_path, config):
-    download.download_to_file(url, file_path, 
-                              try_timeout=config.get("try_timeout"),
-                              tries=config.get("tries"),
-                              proxies=config.get("proxies"),
-                              verify=config.get("verify"))
+    download.download_to_file(url, file_path, **config)
