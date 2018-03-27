@@ -149,3 +149,26 @@ profiling_test: data/output/server/catalog/$(PROFILING_CATALOG_ID)/data.json
 		data/input/catalog/$(PROFILING_CATALOG_ID)/sources/ \
 		data/test_output/server/catalog/$(PROFILING_CATALOG_ID)/dataset/ \
 		$(PROFILING_CATALOG_ID)
+
+# DOCUMENTACIÓN Y RELEASE
+release: clean ## package and upload a release
+	python setup.py sdist upload
+	python setup.py bdist_wheel upload
+
+dist: clean ## builds source and wheel package
+	python setup.py sdist
+	python setup.py bdist_wheel
+	ls -l dist
+
+install: clean ## install the package to the active Python's site-packages
+	python setup.py install
+
+pypi: ## register the package to PyPi get travis ready to deploy to pip
+	make dist
+	twine upload dist/*
+	python travis_pypi_setup.py
+
+doctoc: ## generate table of contents, doctoc command line tool required
+        ## https://github.com/thlorenz/doctoc
+	doctoc --title "## Indice" README.md
+	bash fix_github_links.sh README.md
