@@ -33,7 +33,7 @@ EXTRACTION_MAIL_CONFIG = {
     "message": "extraction_mail_message.txt",
     "attachments": {
         "errors_report": "reporte-catalogo-errores.xlsx",
-        "datasets_report": "reporte-datasets.xlsx"   
+        "datasets_report": "reporte-datasets.xlsx"
     }
 }
 
@@ -47,11 +47,14 @@ SCRAPING_MAIL_CONFIG = {
     }
 }
 
-def get_distribution_download_dir(catalogs_dir, catalog_id, dataset_id, distribution_id):
+
+def get_distribution_download_dir(catalogs_dir, catalog_id, dataset_id,
+                                  distribution_id):
     return os.path.join(
         catalogs_dir, "catalog", catalog_id, "dataset", dataset_id,
         "distribution", distribution_id, "download"
     )
+
 
 def get_catalog_scraping_sources_dir(catalog_id):
     return os.path.join(
@@ -60,6 +63,7 @@ def get_catalog_scraping_sources_dir(catalog_id):
         catalog_id,
         "sources"
     )
+
 
 def get_distribution_path(catalog_id, dataset_id, distribution_id,
                           catalogs_dir=CATALOGS_DIR):

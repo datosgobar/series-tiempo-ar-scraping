@@ -31,7 +31,8 @@ import helpers
 import custom_exceptions as ce
 
 from paths import REPORTES_DIR
-from paths import get_distribution_path, CATALOGS_DIR_INPUT, CATALOGS_INDEX_PATH
+from paths import get_distribution_path, CATALOGS_DIR_INPUT
+from paths import CATALOGS_INDEX_PATH
 from paths import SCRAPING_MAIL_CONFIG
 
 from pydatajson.writers import write_json_catalog
@@ -569,20 +570,21 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     try:
         catalog = TimeSeriesDataJson(catalog_json_path)
     except:
-        logger.error("Error al intentar cargar el catálogo {}:".format(catalog_id))
+        logger.error(
+            "Error al intentar cargar el catálogo {}:".format(catalog_id))
         for line in traceback.format_exc().splitlines():
-                logger.error(line)
+            logger.error(line)
         logger.error("Salteando al catálogo siguiente...")
         return
-    
+
     logger.info("Datasets: {}".format(len(catalog.get_datasets())))
     logger.info("Distributions: {}".format(len(catalog.get_distributions(
         only_time_series=True))))
     logger.info("Fields: {}".format(len(catalog.get_fields())))
 
     # compone los paths a los excels de ied
-    scrapingURLs = set(catalog.get_distributions(only_time_series=True, 
-        meta_field="scrapingFileURL"))
+    scrapingURLs = set(catalog.get_distributions(only_time_series=True,
+                                                 meta_field="scrapingFileURL"))
     scraping_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
     scraping_xlsx_paths = [os.path.join(catalog_sources_dir, filename)
                            for filename in scraping_xlsx_filenames]
@@ -603,7 +605,8 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
             all_report_distributions.extend(report_distributions)
 
         except Exception as e:
-            logger.error('Error al procesar las distribuciones con series de tiempo:')
+            logger.error(
+                'Error al procesar las distribuciones con series de tiempo:')
             for line in traceback.format_exc().splitlines():
                 logger.error(line)
 
@@ -645,7 +648,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
 
                 trace_string = traceback.format_exc()
                 logger.error(msg.format(scraping_xlsx_path, "ERROR",
-                                 repr(e).encode("utf8")))
+                                        repr(e).encode("utf8")))
                 for line in trace_string.splitlines():
                     logger.error(line)
                 if debug_mode:
@@ -666,22 +669,27 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
 
     # concatena todos los reportes
     complete_report_files = pd.DataFrame(report_files, columns=cols_rep_files)
-    complete_report_datasets = pd.DataFrame(all_report_datasets, columns=cols_rep_dataset)
-    complete_report_distributions = pd.DataFrame(all_report_distributions, columns=cols_rep_distribution)
+    complete_report_datasets = pd.DataFrame(
+        all_report_datasets, columns=cols_rep_dataset)
+    complete_report_distributions = pd.DataFrame(
+        all_report_distributions, columns=cols_rep_distribution)
 
     # guarda el reporte de archivos en EXCEL
     complete_report_files.to_excel(
-        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["files_report"]),
+        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG[
+                     "attachments"]["files_report"]),
         encoding="utf-8", index=False)
 
     # guarda el reporte de datasets en EXCEL
     complete_report_datasets.to_excel(
-        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["datasets_report"]),
+        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG[
+                     "attachments"]["datasets_report"]),
         encoding="utf-8", index=False)
 
     # guarda el reporte de distribuciones en EXCEL
     complete_report_distributions.to_excel(
-        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["attachments"]["distributions_report"]),
+        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG[
+                     "attachments"]["distributions_report"]),
         encoding="utf-8", index=False)
 
     # imprime resultados a la terminal
@@ -692,9 +700,11 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     )
     subject, message = generate_summary_message(catalog_id, indicators)
 
-    with open(os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["subject"]), "wb") as f:
+    with open(os.path.join(REPORTES_DIR, catalog_id,
+                           SCRAPING_MAIL_CONFIG["subject"]), "wb") as f:
         f.write(subject)
-    with open(os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG["message"]), "wb") as f:
+    with open(os.path.join(REPORTES_DIR, catalog_id,
+                           SCRAPING_MAIL_CONFIG["message"]), "wb") as f:
         f.write(message)
 
     logger.info("Escribiendo nueva version de {}".format(catalog_json_path))
@@ -703,6 +713,7 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
     logger.info("Indicadores:")
     for line in message.splitlines():
         logger.info(line)
+
 
 if __name__ == '__main__':
     if len(sys.argv) >= 6 and sys.argv[5]:
@@ -717,9 +728,9 @@ if __name__ == '__main__':
     for catalog_id in catalogs_index:
         logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
         main(sys.argv[1].format(catalog_id),
-            sys.argv[2].format(catalog_id),
-            sys.argv[3].format(catalog_id),
-            sys.argv[4].format(catalog_id),
-            replace=replace, debug_mode=False, debug_distribution_ids=[])
-    
+             sys.argv[2].format(catalog_id),
+             sys.argv[3].format(catalog_id),
+             sys.argv[4].format(catalog_id),
+             replace=replace, debug_mode=False, debug_distribution_ids=[])
+
     logger.info('>>> FIN DEL SCRAPING DE CATÁLOGOS <<<')

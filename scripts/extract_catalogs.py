@@ -35,6 +35,7 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 
 logger = get_logger(os.path.basename(__file__))
 
+
 def read_xlsx_catalog(catalog_xlsx_path, logger=None):
     """Lee catálogo en excel."""
 
@@ -81,8 +82,8 @@ def write_json_catalog(catalog_id, catalog, catalog_json_path):
 
 def validate_and_filter(catalog_id, catalog, warnings_log):
     """Valida y filtra un catálogo en data.json."""
-    dj = TimeSeriesDataJson(catalog,
-                  schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
+    dj = TimeSeriesDataJson(
+        catalog, schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
 
     # valida todo el catálogo para saber si está ok
     is_valid_catalog = dj.is_valid_catalog()
@@ -96,14 +97,16 @@ def validate_and_filter(catalog_id, catalog, warnings_log):
     # genera reporte de validación completo
     dj.validate_catalog(
         only_errors=True, fmt="list",
-        export_path=os.path.join(reportes_catalog_dir,
+        export_path=os.path.join(
+            reportes_catalog_dir,
             EXTRACTION_MAIL_CONFIG["attachments"]["errors_report"])
     )
 
     # genera reporte de datasets para federación
     dj.generate_datasets_report(
         catalog, harvest='valid',
-        export_path=os.path.join(reportes_catalog_dir,
+        export_path=os.path.join(
+            reportes_catalog_dir,
             EXTRACTION_MAIL_CONFIG["attachments"]["datasets_report"])
     )
 
