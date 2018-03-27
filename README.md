@@ -113,6 +113,90 @@ Si se corre luego de los pasos de instalación, el proceso se ejecuta con el cat
         - Reporte con información sobre los *datasets* del catálogo.
         - Reportes del proceso de *scraping* del catálogo.
 
+### Crear un catálogo con series de tiempo
+
+El *scraper* se basa en una extensión del [Perfil Nacional de Metadatos](http://paquete-apertura-datos.readthedocs.io/es/stable/guia_metadatos.html) que documenta cómo debe crearse un catálogo de datos abiertos.
+
+El Perfil de Metadatos especifica [cómo deben documentarse distribuciones CSV que contengan series de tiempo](http://paquete-apertura-datos.readthedocs.io/es/stable/guia_metadatos.html#series-de-tiempo). Esta es una especificación estricta que propone generar CSVs estándares y documentarlos para su extracción e interpretación segura por aplicaciones de todo tipo.
+
+Este proyecto, añade algunos campos de metadatos extra al catálogo que **no son parte del Perfil de Metadatos** y están pensados para poder generar estos CSVs estándares a partir de series que están publicadas en Excels semi-estructurados.
+
+#### Nuevos campos para *scraping*
+
+##### Distribución (`distribution`)
+
+<table  class="six-columns">
+<colgroup>
+    <col style="width:13%">
+    <col style="width:13%">
+    <col style="width:28%">
+    <col style="width:20%">
+    <col style="width:13%">
+    <col style="width:13%">
+  </colgroup>
+  <tr>
+    <td>Nombre</td>
+    <td>Requerido</td>
+    <td>Descripción</td>
+    <td>Ejemplo</td>
+    <td>Variable (data.json)</td>
+    <td>Tipo (data.json)</td>
+  </tr>
+  <tr>
+    <td>URL de Excel fuente</td>
+    <td>Si</td>
+    <td>URL que permite la descarga directa de un archivo XLSX que tiene series de tiempo.</td>
+    <td>https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/sources/actividad_ied.xlsx</td>
+    <td>scrapingFileURL</td>
+    <td>String</td>
+  </tr>
+  <tr>
+    <td>URL de Excel fuente</td>
+    <td>Si</td>
+    <td>Nombre de la hoja del Excel donde están las series a scrapear para generar la distribución.</td>
+    <td>1.2 OyD real s.e.</td>
+    <td>scrapingFileSheet</td>
+    <td>String</td>
+  </tr>
+</table>
+
+##### Campo (`field`)
+
+<table  class="six-columns">
+<colgroup>
+    <col style="width:13%">
+    <col style="width:13%">
+    <col style="width:28%">
+    <col style="width:20%">
+    <col style="width:13%">
+    <col style="width:13%">
+  </colgroup>
+  <tr>
+    <td>Nombre</td>
+    <td>Requerido</td>
+    <td>Descripción</td>
+    <td>Ejemplo</td>
+    <td>Variable (data.json)</td>
+    <td>Tipo (data.json)</td>
+  </tr>
+  <tr>
+    <td>Celda comienzo de la serie</td>
+    <td>Si</td>
+    <td>Coordenadas de la celda donde comienzan los datos de la serie o los valores del índice de tiempo.</td>
+    <td>A9</td>
+    <td>scrapingDataStartCell</td>
+    <td>String</td>
+  </tr>
+  <tr>
+    <td>Celda identificador de la serie</td>
+    <td>Si</td>
+    <td>Coordenadas de la celda donde está el identificador o nomenclador de la serie. Este campo sólo es necesario para las series (no para el índice de tiempo). El identificador debe estar en una celda que sea el "encabezado" de la serie y debe coincidir con el documentado como `id` en el catálogo.</td>
+    <td>A8</td>
+    <td>scrapingIdentifierCell</td>
+    <td>String</td>
+  </tr>
+</table>
+
 ## Contacto
 
 Te invitamos a [crearnos un issue](https://github.com/datosgobar/series-tiempo-ar-scraping/issues/new?title=Encontre%20un%20bug%20en%20series-tiempo-ar-scraping) en caso de que encuentres algún bug o tengas feedback de alguna parte de `series-tiempo-ar-scraping`.
