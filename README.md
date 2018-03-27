@@ -114,6 +114,6 @@ Si se corre luego de los pasos de instalación, el proceso se ejecuta con el cat
 
 ## Contacto
 
-Te invitamos a [crearnos un issue](https://github.com/datosgobar/series-tiempo-ar-scraping/issues/new?title=Encontre%20un%20bug%20en series-tiempo-ar-scraping) en caso de que encuentres algún bug o tengas feedback de alguna parte de `series-tiempo-ar-scraping`.
+Te invitamos a [crearnos un issue](https://github.com/datosgobar/series-tiempo-ar-scraping/issues/new?title=Encontre%20un%20bug%20en%20series-tiempo-ar-scraping) en caso de que encuentres algún bug o tengas feedback de alguna parte de `series-tiempo-ar-scraping`.
 
 Para todo lo demás, podés mandarnos tu comentario o consulta a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar).
