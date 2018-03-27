@@ -39,13 +39,13 @@ logger = get_logger(os.path.basename(__file__))
 def read_xlsx_catalog(catalog_xlsx_path, logger=None):
     """Lee catálogo en excel."""
 
-    # default_values = {
-    #     "catalog_modified": NOW,
-    #     "dataset_issued": NOW,
-    #     "distribution_issued": NOW,
-    #     "dataset_modified": NOW,
-    #     "distribution_modified": NOW
-    # }
+    default_values = {
+        #     "catalog_modified": NOW,
+        #     "dataset_issued": NOW,
+        #     "distribution_issued": NOW,
+        #     "dataset_modified": NOW,
+        #     "distribution_modified": NOW
+    }
 
     catalogo = readers.read_xlsx_catalog(catalog_xlsx_path, logger)
     catalogo = TimeSeriesDataJson(catalogo, default_values=default_values)
