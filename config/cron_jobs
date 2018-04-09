@@ -1,4 +1,1 @@
-
-
-# m h  dom mon dow   command
-00 07 * * * cd $SERIES_TIEMPO_DIR && make update_environment && make all --ignore-errors >> $SERIES_TIEMPO_DIR/logs/cron.log 2>&1
+0 0,12,15,17 * * * cd $SERIES_TIEMPO_DIR && make update_environment && make -i all >> $SERIES_TIEMPO_DIR/logs/cron.log 2>&1

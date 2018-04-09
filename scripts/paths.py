@@ -10,8 +10,7 @@ from __future__ import with_statement
 import os
 import glob
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # directorios del repositorio
 LOGS_DIR = os.path.join(PROJECT_DIR, "logs")
@@ -23,7 +22,6 @@ CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 BACKUP_CATALOG_DIR = os.path.join(DATOS_DIR, "backup", "catalog")
 CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index.yaml")
-SERIES_DIR = os.path.join(DATOS_DIR, "output", "series")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 CONFIG_EMAIL_PATH = os.path.join(CONFIG_DIR, "config_email.yaml")

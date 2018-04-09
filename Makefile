@@ -1,7 +1,7 @@
 # Makefile para Ubuntu 16.04
 SHELL = bash
-SERIES_TIEMPO_PIP = pip
-SERIES_TIEMPO_PYTHON = python
+SERIES_TIEMPO_PIP ?= pip
+SERIES_TIEMPO_PYTHON ?= python
 VIRTUALENV = series-tiempo-ar-scraping
 CONDA_ENV = series-tiempo-ar-scraping
 
@@ -74,7 +74,8 @@ setup_anaconda: create_dir
 	$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
 update_environment: create_dir
-	git pull
+	echo $(SERIES_TIEMPO_PYTHON)
+	git pull origin master
 	$(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
 
 create_dir:
@@ -99,7 +100,8 @@ install_cron: config/cron_jobs
 	@echo "PYTHONIOENCODING=utf8" >> .cronfile
 	@echo "PATH=$(PATH)" >> .cronfile
 	@echo "SERIES_TIEMPO_DIR=$$PWD" >> .cronfile
-	@echo "SERIES_TIEMPO_PYTHON=$(SERIES_TIEMPO_PYTHON)" >> .cronfile
+	@echo "SERIES_TIEMPO_PYTHON=`which python`" >> .cronfile
+	@echo "SERIES_TIEMPO_PIP=`which pip`" >> .cronfile
 	cat config/cron_jobs >> .cronfile
 	crontab .cronfile
 	rm .cronfile

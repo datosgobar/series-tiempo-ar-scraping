@@ -103,11 +103,10 @@ Si se corre luego de los pasos de instalación, el proceso se ejecuta con el cat
     - `config_general.yaml`: Contiene la configuración del servidor donde se servirán los archivos de salida ([Ver ejemplo](config/config_general.example.yaml)).
 
 - **Salidas**:
-    - Directorio `data/output/server/`: Por cada catálogo procesado, se crea un subdirectorio con:
-        - `catalog.xlsx`: Catálogo en formato `.xlsx` (`data/output/server/catalog/{catalog_id}/catalog.xlsx`).
-        - `catalog.json`: Catálogo en formato `.json` (`data/output/server/catalog/{catalog_id}/data.json`).
-        - Archivos de distribuciones descargados vía `downloadURL` (`data/output/server/catalog/{catalog_id}/dataset/{dataset_id}/distribution/{distribution_id}/distribucion-descargada-nombre.csv`).
-        - Archivos de distribuciones *scrapeadas* (`data/output/server/catalog/{catalog_id}/dataset/{dataset_id}/distribution/{distribution_id}/distribucion-scrapeada-nombre.csv`).
+    - Directorio `data/output/`: Por cada catálogo procesado, se crea un subdirectorio con:
+        - `catalog.json`: Catálogo en formato `.json` (`data/output/catalog/{catalog_id}/data.json`).
+        - Archivos de distribuciones descargados vía `downloadURL` (`data/output/catalog/{catalog_id}/dataset/{dataset_id}/distribution/{distribution_id}/distribucion-descargada-nombre.csv`).
+        - Archivos de distribuciones *scrapeadas* (`data/output/catalog/{catalog_id}/dataset/{dataset_id}/distribution/{distribution_id}/distribucion-scrapeada-nombre.csv`).
     - Directorio `data/reports/`: Por cada catálogo procesado, se crea un subdirectorio con:
         - Reporte del proceso de validación del catálogo.
         - Reporte con información sobre los *datasets* del catálogo.
