@@ -94,6 +94,24 @@ El proceso toma catálogos de datos abiertos en Excel con series de tiempo docum
 
 Si se corre luego de los pasos de instalación, el proceso se ejecuta con el catálogo de ejemplo.
 
+### Ejecución Automática con `cron`
+
+Utilizando la herramienta `cron`, es posible ejecutar de forma automática el ETL en horarios determinados. Para instalar el archivo de configuración `cron` del proyecto, seguir las siguientes instrucciones:
+
+**Anaconda:**
+```bash
+$ source activate series-tiempo-ar-scraping # asegurar que el entorno virtual Python esté activado
+$ make install_cron
+```
+
+**Virtualenv:**
+```bash
+$ source series-tiempo-ar-scraping/bin/activate # asegurar que el entorno virtual Python esté activado
+$ make install_cron
+```
+
+Una vez instalado el archivo de configuración, el ETL se ejecutará a las 00, 12, 15 y 17 horas de cada día.
+
 ### Entradas/Salidas del ETL
 
 - **Entradas**:
