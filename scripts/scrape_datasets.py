@@ -31,8 +31,9 @@ import helpers
 import custom_exceptions as ce
 
 from paths import REPORTES_DIR
-from paths import get_distribution_path, CATALOGS_DIR_INPUT
-from paths import CATALOGS_INDEX_PATH
+from paths import get_distribution_path, get_catalog_path, \
+    get_catalog_scraping_sources_dir, get_catalog_datasets_dir
+from paths import CATALOGS_INDEX_PATH, CATALOGS_DIR_INPUT
 from paths import SCRAPING_MAIL_CONFIG
 
 from pydatajson.writers import write_json_catalog
@@ -558,11 +559,14 @@ def generate_summary_indicators(report_files, report_datasets,
     return indicators
 
 
-def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
-         catalog_id, replace=True, debug_mode=False,
+def main(catalog_id, replace=True, debug_mode=False, 
          debug_distribution_ids=None, do_scraping=True, do_distributions=True):
     server_environment = helpers.get_general_config()["environment"]
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
+
+    catalog_json_path = get_catalog_path(catalog_id)
+    catalog_sources_dir = get_catalog_scraping_sources_dir(catalog_id)
+    catalog_datasets_dir = get_catalog_datasets_dir(catalog_id)
 
     if server_environment == "prod":
         replace = True
@@ -716,8 +720,8 @@ def main(catalog_json_path, catalog_sources_dir, catalog_datasets_dir,
 
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 6 and sys.argv[5]:
-        replace = True if sys.argv[5] == "replace" else False
+    if len(sys.argv) == 2:
+        replace = True if sys.argv[1] == "replace" else False
 
     with open(CATALOGS_INDEX_PATH) as config_file:
         catalogs_index = yaml.load(config_file)
@@ -727,10 +731,6 @@ if __name__ == '__main__':
 
     for catalog_id in catalogs_index:
         logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
-        main(sys.argv[1].format(catalog_id),
-             sys.argv[2].format(catalog_id),
-             sys.argv[3].format(catalog_id),
-             sys.argv[4].format(catalog_id),
-             replace=replace, debug_mode=False, debug_distribution_ids=[])
+        main(catalog_id, replace=replace, debug_mode=False, debug_distribution_ids=[])
 
     logger.info('>>> FIN DEL SCRAPING DE CATÁLOGOS <<<')

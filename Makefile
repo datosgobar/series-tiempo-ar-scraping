@@ -5,24 +5,24 @@ SERIES_TIEMPO_PYTHON = python
 VIRTUALENV = series-tiempo-ar-scraping
 CONDA_ENV = series-tiempo-ar-scraping
 
-.PHONY: \
-	all \
-	clean \
-	data/input/scraping_urls.txt \
-	data/input/distribution_urls.txt \
-	download_sources \
-	send_transformation_report \
-	install_anaconda \
-	create_dir \
-	download_sources \
-	setup_anaconda \
-	setup_virtualenv
+.PHONY: all \
+		clean \
+		extract_catalogs \
+		send_extraction_report \
+		generate_urls \
+		download_sources \
+		scrape_datasets \
+		send_transformation_report \
+		install_anaconda \
+		create_dir \
+		setup_anaconda \
+		setup_virtualenv
 
 setup_server: install_cron install_nginx start_nginx
 
 # recetas para correr el ETL
 all: extraction transformation
-extraction: extract_catalogs send_extraction_report data/input/scraping_urls.txt data/input/distribution_urls.txt download_sources
+extraction: extract_catalogs send_extraction_report generate_urls download_sources
 transformation: scrape_datasets send_transformation_report
 
 install_anaconda:
@@ -46,7 +46,7 @@ test_nginx_conf:
 
 # FILE SERVER
 start_python_server:
-	cd data/output/server && python -m SimpleHTTPServer 8080
+	cd data/output && python -m SimpleHTTPServer 8080
 
 start_nginx:
 	# sudo nginx -p . -c scripts/config/nginx.conf
@@ -85,9 +85,9 @@ create_dir:
 	mkdir -p data/input
 	mkdir -p data/input/catalog
 	mkdir -p data/output
-	mkdir -p data/output/server/catalog
+	mkdir -p data/output/catalog
 	mkdir -p data/test_output
-	mkdir -p data/test_output/server/catalog
+	mkdir -p data/test_output/catalog
 	mkdir -p data/reports
 	mkdir -p data/backup
 	mkdir -p data/backup/catalog
@@ -107,30 +107,22 @@ install_cron: config/cron_jobs
 
 # EXTRACTION
 extract_catalogs:
-	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py "config/index.yaml" "data/output/server/catalog"
+	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py
 
 send_extraction_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
 
-data/input/scraping_urls.txt:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "scraping" "$@"
-
-data/input/distribution_urls.txt:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py "data/output/server/catalog" "distribution" "$@"
+generate_urls:
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py scraping
+	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py distribution
 
 download_sources:
-	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "scraping" "data/input/scraping_urls.txt"
-	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py "distribution" "data/input/distribution_urls.txt"
+	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py scraping
+	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py distribution
 
 # TRANSFORMATION
-# TODO: revisar como se usan adecuadamenten los directorios
 scrape_datasets:
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py \
-		data/output/server/catalog/{}/data.json \
-		data/input/catalog/{}/sources/ \
-		data/output/server/catalog/{}/dataset/ \
-		{} \
-		replace
+	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py replace
 
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
@@ -144,10 +136,10 @@ clean:
 	make create_dir
 
 # TEST
-profiling_test: data/output/server/catalog/$(PROFILING_CATALOG_ID)/data.json
+profiling_test: data/output/catalog/$(PROFILING_CATALOG_ID)/data.json
 	$(SERIES_TIEMPO_PYTHON) -m scripts.tests.profiling $^ \
 		data/input/catalog/$(PROFILING_CATALOG_ID)/sources/ \
-		data/test_output/server/catalog/$(PROFILING_CATALOG_ID)/dataset/ \
+		data/test_output/catalog/$(PROFILING_CATALOG_ID)/dataset/ \
 		$(PROFILING_CATALOG_ID)
 
 # DOCUMENTACIÓN Y RELEASE

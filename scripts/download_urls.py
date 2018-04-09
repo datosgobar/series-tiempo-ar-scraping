@@ -8,7 +8,7 @@ import codecs
 import sys
 import urlparse
 
-from paths import CATALOGS_DIR_INPUT
+from paths import CATALOGS_DIR_INPUT, DIST_URLS_PATH, SCRAP_URLS_PATH
 from paths import get_distribution_download_dir
 from paths import get_catalog_scraping_sources_dir
 from helpers import get_logger, ensure_dir_exists, print_log_separator
@@ -80,7 +80,12 @@ def download_distributions(urls):
             logger.error(e)
 
 
-def main(sources_type, sources_urls_path):
+def main(sources_type):
+    if sources_type == "scraping":
+        sources_urls_path = SCRAP_URLS_PATH
+    elif sources_type == "distribution":
+        sources_urls_path = DIST_URLS_PATH
+
     with codecs.open(sources_urls_path, "rb") as f:
         urls = f.readlines()
 
@@ -96,4 +101,4 @@ def main(sources_type, sources_urls_path):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1])

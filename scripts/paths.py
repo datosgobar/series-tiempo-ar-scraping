@@ -17,8 +17,10 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(
 LOGS_DIR = os.path.join(PROJECT_DIR, "logs")
 DATOS_DIR = os.path.join(PROJECT_DIR, "data")
 CONFIG_DIR = os.path.join(PROJECT_DIR, "config")
-CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "server")
-CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input")
+DIST_URLS_PATH = os.path.join(DATOS_DIR, "input", "distribution_urls.txt")
+SCRAP_URLS_PATH = os.path.join(DATOS_DIR, "input", "scraping_urls.txt")
+CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
+CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 BACKUP_CATALOG_DIR = os.path.join(DATOS_DIR, "backup", "catalog")
 CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index.yaml")
 SERIES_DIR = os.path.join(DATOS_DIR, "output", "series")
@@ -51,7 +53,7 @@ SCRAPING_MAIL_CONFIG = {
 def get_distribution_download_dir(catalogs_dir, catalog_id, dataset_id,
                                   distribution_id):
     return os.path.join(
-        catalogs_dir, "catalog", catalog_id, "dataset", dataset_id,
+        catalogs_dir, catalog_id, "dataset", dataset_id,
         "distribution", distribution_id, "download"
     )
 
@@ -59,9 +61,16 @@ def get_distribution_download_dir(catalogs_dir, catalog_id, dataset_id,
 def get_catalog_scraping_sources_dir(catalog_id):
     return os.path.join(
         CATALOGS_DIR_INPUT,
-        "catalog",
         catalog_id,
         "sources"
+    )
+
+
+def get_catalog_datasets_dir(catalog_id):
+    return os.path.join(
+        CATALOGS_DIR,
+        catalog_id,
+        "dataset"
     )
 
 
@@ -91,14 +100,5 @@ def get_distribution_path(catalog_id, dataset_id, distribution_id,
         )
 
 
-def get_catalogs_path(catalogs_dir=CATALOGS_DIR):
-    return glob.glob(os.path.join(catalogs_dir, "catalog", "*", "*.json"))
-
-
 def get_catalog_path(catalog_id, catalogs_dir=CATALOGS_DIR):
-    return os.path.join(catalogs_dir, "catalog", catalog_id, "data.json")
-
-
-def get_catalog_ids(catalogs_dir=CATALOGS_DIR):
-    return [os.path.basename(os.path.dirname(catalog_path))
-            for catalog_path in get_catalogs_path(catalogs_dir)]
+    return os.path.join(catalogs_dir, catalog_id, "data.json")

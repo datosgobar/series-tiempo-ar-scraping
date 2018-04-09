@@ -19,12 +19,13 @@ from openpyxl import load_workbook
 from series_tiempo_ar import TimeSeriesDataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
+from pydatajson.ckan_reader import read_ckan_catalog
 
 from helpers import get_logger, ensure_dir_exists, get_catalogs_index
 from helpers import print_log_separator, get_general_config, is_http_or_https
 from helpers import get_catalog_download_config, download_with_config
-from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR
-from paths import CATALOGS_INDEX_PATH
+from paths import SCHEMAS_DIR, REPORTES_DIR, BACKUP_CATALOG_DIR, CATALOGS_DIR,\
+    CATALOGS_DIR_INPUT
 
 from paths import EXTRACTION_MAIL_CONFIG
 
@@ -35,6 +36,9 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 
 logger = get_logger(os.path.basename(__file__))
 
+# pydatajson.ckan_reader modifica el root logger, agregando outputs no deseados
+# a la pantalla. Evitar que los logs se propaguen al root logger.
+logger.propagate = False
 
 def read_xlsx_catalog(catalog_xlsx_path, logger=None):
     """Lee catálogo en excel."""
@@ -194,30 +198,37 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
     ensure_dir_exists(catalog_dir)
     catalog_path_template = os.path.join(catalog_dir, "{}")
 
+    # crea directorio y template de path para catálogo original
+    catalog_input_dir = os.path.join(CATALOGS_DIR_INPUT, catalog_id)
+    ensure_dir_exists(catalog_input_dir)
+    catalog_input_path_template = os.path.join(catalog_input_dir, "{}")
+
     # procesa el catálogo dependiendo del formato
     logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
     try:
         logger.info('Descarga y lectura de catálogo')
-        if catalog_format.lower() == 'xlsx':
-            config = get_catalog_download_config(catalog_id)["catalog"]
-            catalog_xlsx_path = catalog_path_template.format("catalog.xlsx")
+        extension = catalog_format.lower()
 
-            logger.info('Transformación de XLSX a JSON')
+        if extension in ['xlsx', 'json']:
+            config = get_catalog_download_config(catalog_id)["catalog"]
+            catalog_input_path = catalog_input_path_template.format(
+                                                        "catalog." + extension)
 
             if is_http_or_https(catalog_url):
-                download_with_config(catalog_url, catalog_xlsx_path, config)
+                download_with_config(catalog_url, catalog_input_path, config)
             else:
-                shutil.copy(catalog_url, catalog_xlsx_path)
+                shutil.copy(catalog_url, catalog_input_path)
 
-            catalog = read_xlsx_catalog(catalog_xlsx_path, logger)
+            if extension == 'xlsx':
+                logger.info('Transformación de XLSX a JSON')
+                catalog = TimeSeriesDataJson(
+                    read_xlsx_catalog(catalog_input_path, logger))
+            else:
+                catalog = TimeSeriesDataJson(catalog_input_path)
 
-        elif catalog_format.lower() == 'json':
-            logger.info('Lectura directa de JSON')
-            catalog = TimeSeriesDataJson(catalog_url)
-
-        elif catalog_format.lower() == 'ckan':
+        elif extension == 'ckan':
             logger.info('Transformación de CKAN API a JSON')
-            catalog = read_ckan_catalog(catalog_url)
+            catalog = TimeSeriesDataJson(read_ckan_catalog(catalog_url))
 
         else:
             raise ValueError(
@@ -261,7 +272,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         logger.removeHandler(fh)
 
 
-def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
+def main():
     print_log_separator(logger, "Extracción de catálogos")
 
     # cargo los parámetros de los catálogos a extraer
@@ -274,11 +285,11 @@ def main(catalogs_index_path=CATALOGS_INDEX_PATH, catalogs_dir=CATALOGS_DIR):
             catalog_id,
             catalogs_index[catalog_id]["formato"],
             catalogs_index[catalog_id]["url"],
-            catalogs_dir
+            CATALOGS_DIR
         )
 
     logger.info('>>> FIN DE LA EXTRACCION DE CATALOGOS <<<')
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main()
