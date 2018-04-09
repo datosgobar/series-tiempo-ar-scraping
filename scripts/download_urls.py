@@ -86,8 +86,13 @@ def main(sources_type):
     elif sources_type == "distribution":
         sources_urls_path = DIST_URLS_PATH
 
-    with codecs.open(sources_urls_path, "rb") as f:
-        urls = f.readlines()
+    try:
+        with codecs.open(sources_urls_path, "rb") as f:
+            urls = f.readlines()
+    except IOError as e:
+        logger.error("No se pudo abrir el archivo de URLS.")
+        logger.error(e)
+        return
 
     print_log_separator(logger, "Descarga de fuentes: {}".format(sources_type))
     logger.info("# URLS: {}".format(len(urls)))

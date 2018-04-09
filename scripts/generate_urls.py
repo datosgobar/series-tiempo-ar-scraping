@@ -73,18 +73,19 @@ def main(sources_type):
 
     for catalog_id in get_catalogs_index():
         catalog_path = catalog_path_template.format(catalog_id)
-        logger.info("Extrayendo URLs de fuentes de {}: {}".format(
-            catalog_id, catalog_path))
 
         try:
             catalog = TimeSeriesDataJson(catalog_path)
             distributions = catalog.get_distributions(only_time_series=True)
 
             if sources_type == "scraping":
+                logger.info("Extrayendo URLs de fuentes de {}...".format(catalog_id))
+
                 # TODO: Agregar validaciones de scraping a series_tiempo_ar y utilizarlas
                 # Reportar el error y saltear la distribucion si falla la validacion
                 urls.extend(get_scraping_sources_urls(distributions, catalog_id))
             elif sources_type == "distribution":
+                logger.info("Extrayendo URLs de distribuciones de {}...".format(catalog_id))
                 # TODO: Agregar mas validaciones de metadatos a series_tiempo_ar y utilizarlas
                 # Reportar el error y saltear la distribucion si falla la validacion
                 urls.extend(get_distribution_download_urls(distributions, catalog_id))
