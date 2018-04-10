@@ -100,3 +100,7 @@ def get_distribution_path(catalog_id, dataset_id, distribution_id,
 
 def get_catalog_path(catalog_id, catalogs_dir=CATALOGS_DIR):
     return os.path.join(catalogs_dir, catalog_id, "data.json")
+
+
+if __name__ == "__main__":
+    print(CATALOGS_DIR)

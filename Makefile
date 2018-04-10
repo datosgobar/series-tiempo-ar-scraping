@@ -16,12 +16,13 @@ CONDA_ENV = series-tiempo-ar-scraping
 		install_anaconda \
 		create_dir \
 		setup_anaconda \
-		setup_virtualenv
+		setup_virtualenv \
+		custom_steps
 
 setup_server: install_cron install_nginx start_nginx
 
 # recetas para correr el ETL
-all: extraction transformation
+all: extraction transformation custom_steps
 extraction: extract_catalogs send_extraction_report generate_urls download_sources
 transformation: scrape_datasets send_transformation_report
 
@@ -41,7 +42,7 @@ install_nginx:
 
 test_nginx_conf:
 	# TODO: hacer que no levante nginx si falla el test
-	# sudo /etc/init.d/nginx configtest -c scripts/config/nginx.conf
+	sudo /etc/init.d/nginx configtest -c scripts/config/nginx.conf
 	sudo /etc/init.d/nginx configtest
 
 # FILE SERVER
@@ -74,7 +75,6 @@ setup_anaconda: create_dir
 	$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
 update_environment: create_dir
-	echo $(SERIES_TIEMPO_PYTHON)
 	git pull origin master
 	$(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
 
@@ -136,6 +136,9 @@ clean:
 	rm -rf data/test_output/
 	rm -rf data/reports
 	make create_dir
+
+custom_steps:
+	bash config/custom_steps.sh `$(SERIES_TIEMPO_PYTHON) scripts/paths.py`
 
 # TEST
 profiling_test: data/output/catalog/$(PROFILING_CATALOG_ID)/data.json
