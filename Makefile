@@ -31,37 +31,16 @@ install_anaconda:
 	bash Miniconda2-latest-Linux-x86_64.sh
 	rm Miniconda2-latest-Linux-x86_64.sh
 
-# para esto es necesario frenar cualquier otro servicio web en el puerto 80
-# también conviene instalar el monitoreo con amplify
 install_nginx:
-	# sudo service apache2 stop
-	sudo apt-get update && sudo apt-get install nginx && sudo apt-get install nginx-extras
+	sudo apt-get update && sudo apt-get install nginx nginx-extras
 	sudo ufw allow 'Nginx HTTP'
-	sudo cp config/nginx.conf /etc/nginx/nginx.conf
-	# sudo service nginx restart
 
-test_nginx_conf:
-	# TODO: hacer que no levante nginx si falla el test
-	sudo /etc/init.d/nginx configtest -c scripts/config/nginx.conf
-	sudo /etc/init.d/nginx configtest
+copy_nginx_conf:
+	sudo cp config/nginx.conf /etc/nginx/nginx.conf
 
 # FILE SERVER
 start_python_server:
-	cd data/output && python -m SimpleHTTPServer 8080
-
-start_nginx:
-	# sudo nginx -p . -c scripts/config/nginx.conf
-	# /etc/init.d/nginx configtest
-	sudo cp config/nginx.conf /etc/nginx/nginx.conf
-	sudo systemctl start nginx
-
-stop_nginx:
-	# Usar en casos extremos
-	# killall nginx
-	# sudo nginx -s stop
-	sudo systemctl stop nginx
-
-restart_nginx: stop_nginx start_nginx
+	cd data/output && $(SERIES_TIEMPO_PYTHON) -m SimpleHTTPServer 8080
 
 setup_virtualenv: create_dir
 	$(SERIES_TIEMPO_PIP) install virtualenv --upgrade
