@@ -20,7 +20,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
-from helpers import get_logger, print_log_separator
+from helpers import get_logger, print_log_separator, get_catalogs_index
 from paths import CONFIG_EMAIL_PATH, REPORTES_DIR
 from paths import EXTRACTION_MAIL_CONFIG, SCRAPING_MAIL_CONFIG
 
@@ -35,7 +35,7 @@ def report_file_path(catalog_id, filename):
     return os.path.join(REPORTES_DIR, catalog_id, filename)
 
 def send_email(mailer_config, subject, message, recipients, files=None):
-    # parametros
+    # parámetros
     msg = MIMEMultipart()
     msg["Subject"] = subject
     msg["From"] = mailer_config["user"]
@@ -82,13 +82,21 @@ def send_group_emails(group_name):
     # parametros de la cuenta que envía el mail
     mailer_config = cfg["mailer"]
 
-    # paremtros por catalogo
+    # parámetros por catálogo
     catalogs_configs = cfg[group_name]
 
     # paths a archivos con componentes del mail
     mail_files = GROUP_CONFIGS[group_name]
 
-    for catalog_id in catalogs_configs:
+    # catálogos listados en index.yaml
+    catalogs_index = get_catalogs_index()
+
+    for catalog_id in catalogs_index:
+        if catalog_id not in catalogs_configs:
+            logger.warning("No hay configuración de mails para catálogo {}.".format(catalog_id))
+            logger.warning("Salteando catalogo...")
+            continue
+
         # asunto y mensaje
         subject_file_path = report_file_path(catalog_id, mail_files["subject"])
         if os.path.isfile(subject_file_path):

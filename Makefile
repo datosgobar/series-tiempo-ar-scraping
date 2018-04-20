@@ -17,7 +17,8 @@ CONDA_ENV = series-tiempo-ar-scraping
 		create_dir \
 		setup_anaconda \
 		setup_virtualenv \
-		custom_steps
+		custom_steps \
+		list_catalogs
 
 setup_server: install_cron install_nginx start_nginx
 
@@ -46,12 +47,12 @@ setup_virtualenv: create_dir
 	$(SERIES_TIEMPO_PIP) install virtualenv --upgrade
 	test -d $(VIRTUALENV)/bin/activate || virtualenv $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
-	$(SERIES_TIEMPO_PIP) install -r requirements.txt
+		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
 setup_anaconda: create_dir
 	conda create -n $(CONDA_ENV) --no-default-packages
 	source activate $(CONDA_ENV); \
-	$(SERIES_TIEMPO_PIP) install -r requirements.txt
+		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
 update_environment: create_dir
 	git pull origin master
@@ -107,6 +108,10 @@ scrape_datasets:
 
 send_transformation_report:
 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
+
+list_catalogs:
+	@cd scripts && \
+		$(SERIES_TIEMPO_PYTHON) -c "import helpers; helpers.list_catalogs()"
 
 # CLEAN
 clean:
