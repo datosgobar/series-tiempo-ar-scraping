@@ -40,6 +40,7 @@ logger = get_logger(os.path.basename(__file__))
 # a la pantalla. Evitar que los logs se propaguen al root logger.
 logger.propagate = False
 
+
 def read_xlsx_catalog(catalog_xlsx_path, logger=None):
     """Lee catálogo en excel."""
 
@@ -212,7 +213,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         if extension in ['xlsx', 'json']:
             config = get_catalog_download_config(catalog_id)["catalog"]
             catalog_input_path = catalog_input_path_template.format(
-                                                        "catalog." + extension)
+                "catalog." + extension)
 
             if is_http_or_https(catalog_url):
                 download_with_config(catalog_url, catalog_input_path, config)
@@ -272,15 +273,21 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         logger.removeHandler(fh)
 
 
-def main():
+def main(catalog_ids=None):
     print_log_separator(logger, "Extracción de catálogos")
 
     # cargo los parámetros de los catálogos a extraer
     catalogs_index = get_catalogs_index()
     logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
 
+    # si no se pasan identificadores de catálogo, se procesan todos los que hay
+    if not catalog_ids:
+        catalog_ids = catalogs_index
+    else:
+        catalog_ids = catalog_ids.split(",")
+
     # procesa los catálogos
-    for catalog_id in catalogs_index:
+    for catalog_id in catalog_ids:
         process_catalog(
             catalog_id,
             catalogs_index[catalog_id]["formato"],
@@ -292,4 +299,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # opcionalmente se puede pasar un catalog_id para extraer un sólo catálogo
+    catalog_id = sys.argv[1] if len(sys.argv) > 1 else None
+    main(catalog_id)
