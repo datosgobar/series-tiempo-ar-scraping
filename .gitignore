@@ -102,3 +102,6 @@ ENV/
 !/config/custom_steps.sh
 bin
 pip-selfcheck.json
+sync_mirror_server.sh
+upload_config_files-dev.sh
+upload_config_files-prod.sh
