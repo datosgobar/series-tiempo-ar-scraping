@@ -164,6 +164,12 @@ def get_catalogs_index():
     return load_yaml(CATALOGS_INDEX_PATH)
 
 
+def list_catalogs():
+    index = get_catalogs_index()
+    for catalog in index:
+        print('{} -> ({})'.format(catalog, index[catalog]['url']))
+
+
 def get_general_config():
     return load_yaml(CONFIG_GENERAL_PATH)
 
