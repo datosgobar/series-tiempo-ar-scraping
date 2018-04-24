@@ -122,7 +122,9 @@ clean:
 	make create_dir
 
 custom_steps:
-	bash config/custom_steps.sh `$(SERIES_TIEMPO_PYTHON) scripts/paths.py`
+	if [[ -f config/custom_steps.sh ]]; then \
+		bash config/custom_steps.sh `$(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
+	fi;
 
 # TEST
 profiling_test: data/output/catalog/$(PROFILING_CATALOG_ID)/data.json

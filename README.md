@@ -10,6 +10,7 @@ ETL y servidor web que scrapea series de tiempo de archivos `.xlsx` semi-estruct
 - [Instalación](#instalacion)
 - [Uso](#uso)
   - [Correr el ETL](#correr-el-etl)
+  - [Ejecución Automática con cron](#ejecución-automática-con-cron)
   - [Entradas/Salidas del ETL](#entradassalidas-del-etl)
 - [Contacto](#contacto)
 
@@ -63,14 +64,15 @@ $ cp config/config_general.example.yaml config/config_general.yaml
 
 El archivo `index.yaml` contiene el listado de catálogos a ser descargados y scrapeados. Por defecto, incluye un catálogo de ejemplo llamado `example_catalog1`, cuyos archivos están almacenados en este repositorio.
 
-5. **(Opcional)** Crear los archivos de configuración para el envio de reportes por mail y para descargas:
+5. **(Opcional)** Crear los archivos de configuración para el envio de reportes por mail y para descargas, asi también como el archivo `custom_steps.sh`, el cual permite ejecutar comandos a elección del usuario una vez que el ETL finaliza.
 
 ```bash
 $ cp config/config_email.example.yaml config/config_email.yaml
 $ cp config/config_downloads.example.yaml config/config_downloads.yaml
+$ cp config/custom_steps.example.sh config/custom_steps.sh
 ```
 
-Luego, editar los archivos `config_email.yaml` y `config_downloads.yaml` con los parámetros deseados.
+Luego, editar los archivos `config_email.yaml`, `config_downloads.yaml` y `custom_steps.sh` con los parámetros deseados.
 
 ## Uso
 
