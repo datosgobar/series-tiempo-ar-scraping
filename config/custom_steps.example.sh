@@ -6,5 +6,3 @@ CATALOGS_DIR=$1
 # La variable CATALOGS_DIR contiene el path donde se ubican
 # los archivos creados: catálogos en formato data.json y
 # archivos de distribuciones.
-
-sudo cp -rf $CATALOGS_DIR /datos/output/server
