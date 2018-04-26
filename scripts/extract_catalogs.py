@@ -247,9 +247,10 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
                 catalog_id, catalog_filtered,
                 catalog_path_template.format("data.json"))
 
-            # logger.info('Escritura de catálogo en XLSX')
-            # writers.write_xlsx_catalog(
-            # catalog_filtered, catalog_path_template.format("catalog.xlsx"))
+            logger.info('Escritura de catálogo en XLSX')
+            catalog_filtered.to_xlsx(
+                catalog_path_template.format("catalog.xlsx")
+            )
         else:
             raise Exception("El catálogo {} no se pudo generar".format(
                 catalog_id))
