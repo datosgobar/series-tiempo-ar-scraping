@@ -100,7 +100,8 @@ def send_group_emails(group_name):
 
     for catalog_id in catalogs_index:
         if catalog_id not in catalogs_configs:
-            logger.warning("No hay configuración de mails para catálogo {}.".format(catalog_id))
+            logger.warning(
+                "No hay configuración de mails para catálogo {}.".format(catalog_id))
             logger.warning("Salteando catalogo...")
             continue
 
