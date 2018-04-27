@@ -94,15 +94,20 @@ def main(sources_type):
         logger.error(e)
         return
 
+    urls = [url.strip() for url in urls if url.strip()]
+
     print_log_separator(logger, "Descarga de fuentes: {}".format(sources_type))
-    logger.info("# URLS: {}".format(len(urls)))
+    if urls:
+        logger.info("# URLS: {}".format(len(urls)))
 
-    if sources_type == "scraping":
-        download_scraping_sources(urls)
-    elif sources_type == "distribution":
-        download_distributions(urls)
+        if sources_type == "scraping":
+            download_scraping_sources(urls)
+        elif sources_type == "distribution":
+            download_distributions(urls)
 
-    logger.info("Descargas finalizadas para {}.".format(sources_type))
+        logger.info("Descargas finalizadas para {}.".format(sources_type))
+    else:
+        logger.info("Sin URLs para: {}.".format(sources_type))
 
 
 if __name__ == '__main__':
