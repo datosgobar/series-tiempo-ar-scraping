@@ -21,6 +21,7 @@ from urlparse import urljoin
 from pprint import pprint
 
 from pydatajson.helpers import title_to_name
+from pydatajson.time_series import get_distribution_time_index
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from series_tiempo_ar.validations import validate_distribution_scraping
@@ -169,7 +170,7 @@ def analyze_distribution(catalog_id, catalog, dataset_id, distribution_id):
     # print("leyendo distribucion {} en {}".format(
     #     distribution_id, distribution_path))
 
-    time_index = "indice_tiempo"
+    time_index = get_distribution_time_index(distrib_meta)
     df = pd.read_csv(
         distribution_path, index_col=time_index,
         parse_dates=[time_index],
@@ -559,7 +560,7 @@ def generate_summary_indicators(report_files, report_datasets,
     return indicators
 
 
-def main(catalog_id, replace=True, debug_mode=False, 
+def main(catalog_id, replace=True, debug_mode=False,
          debug_distribution_ids=None, do_scraping=True, do_distributions=True):
     server_environment = helpers.get_general_config()["environment"]
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
@@ -731,6 +732,7 @@ if __name__ == '__main__':
 
     for catalog_id in catalogs_index:
         logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
-        main(catalog_id, replace=replace, debug_mode=False, debug_distribution_ids=[])
+        main(catalog_id, replace=replace,
+             debug_mode=False, debug_distribution_ids=[])
 
     logger.info('>>> FIN DEL SCRAPING DE CATÁLOGOS <<<')
