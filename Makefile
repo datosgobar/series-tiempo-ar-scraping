@@ -126,13 +126,6 @@ custom_steps:
 		bash config/custom_steps.sh `$(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
 	fi;
 
-# TEST
-profiling_test: data/output/catalog/$(PROFILING_CATALOG_ID)/data.json
-	$(SERIES_TIEMPO_PYTHON) -m scripts.tests.profiling $^ \
-		data/input/catalog/$(PROFILING_CATALOG_ID)/sources/ \
-		data/test_output/catalog/$(PROFILING_CATALOG_ID)/dataset/ \
-		$(PROFILING_CATALOG_ID)
-
 # DOCUMENTACIÓN Y RELEASE
 release: clean ## package and upload a release
 	python setup.py sdist upload
