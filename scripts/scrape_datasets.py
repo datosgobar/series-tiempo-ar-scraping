@@ -21,7 +21,7 @@ from urlparse import urljoin
 from pprint import pprint
 
 from pydatajson.helpers import title_to_name
-from pydatajson.time_series import get_distribution_time_index
+# from pydatajson.time_series import get_distribution_time_index
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from series_tiempo_ar.validations import validate_distribution_scraping
@@ -170,7 +170,8 @@ def analyze_distribution(catalog_id, catalog, dataset_id, distribution_id):
     # print("leyendo distribucion {} en {}".format(
     #     distribution_id, distribution_path))
 
-    time_index = get_distribution_time_index(distrib_meta)
+    # time_index = get_distribution_time_index(distrib_meta)
+    time_index = "indice_tiempo"
     df = pd.read_csv(
         distribution_path, index_col=time_index,
         parse_dates=[time_index],
