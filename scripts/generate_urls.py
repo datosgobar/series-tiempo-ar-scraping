@@ -10,6 +10,7 @@ import codecs
 import sys
 
 from paths import CATALOGS_DIR, DIST_URLS_PATH, SCRAP_URLS_PATH
+from paths import get_catalog_path
 from helpers import get_logger, get_catalogs_index, print_log_separator
 from pydatajson.helpers import title_to_name
 from series_tiempo_ar import TimeSeriesDataJson
@@ -61,9 +62,6 @@ def get_scraping_sources_urls(distributions, catalog_id):
 
 def main(sources_type):
     urls = []
-
-    catalog_path_template = os.path.join(CATALOGS_DIR, "{}", "data.json")
-
     print_log_separator(logger, "Extracción de URLS para: {}".format(sources_type))
 
     if sources_type == "scraping":
@@ -72,7 +70,7 @@ def main(sources_type):
         sources_urls_path = DIST_URLS_PATH
 
     for catalog_id in get_catalogs_index():
-        catalog_path = catalog_path_template.format(catalog_id)
+        catalog_path = get_catalog_path(catalog_id)
 
         try:
             catalog = TimeSeriesDataJson(catalog_path)
