@@ -294,8 +294,8 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
 
 
 def analyze_dataset(catalog_id, catalog, dataset_identifier,
-                    datasets_output_dir, debug_mode=False, replace=True,
-                    debug_distribution_ids=None):
+                    datasets_output_dir, time_series_ids, debug_mode=False,
+                    replace=True, debug_distribution_ids=None):
     res = {
         "dataset_status": None,
         "distributions_ok": [],
@@ -313,7 +313,8 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
         return res
 
     distribution_ids = [distribution["identifier"]
-                        for distribution in dataset_meta["distribution"]]
+                        for distribution in dataset_meta["distribution"]
+                        if distribution["identifier"] in time_series_ids]
 
     # si está en debug mode, se puede especificar sólo algunos ids
     if debug_mode and debug_distribution_ids:
@@ -462,12 +463,16 @@ def analyze_catalog(catalog_id, catalog, datasets_dir,
         for distribution in distributions_with_url
     ))
 
+    time_series_ids = [distribution["identifier"]
+                        for distribution in
+                        catalog.get_distributions(only_time_series=True)]    
+
     report_datasets = []
     report_distributions = []
     for dataset_identifier in dataset_ids:
         result = analyze_dataset(
             catalog_id, catalog, dataset_identifier, datasets_dir,
-            replace=replace, debug_mode=debug_mode,
+            time_series_ids, replace=replace, debug_mode=debug_mode,
             debug_distribution_ids=debug_distribution_ids
         )
 
