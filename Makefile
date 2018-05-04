@@ -126,6 +126,10 @@ custom_steps:
 		bash config/custom_steps.sh `$(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
 	fi;
 
+# ENTORNOS
+venv:
+	source series-tiempo-ar-scraping/bin/activate
+
 # DOCUMENTACIÓN Y RELEASE
 release: clean ## package and upload a release
 	python setup.py sdist upload
