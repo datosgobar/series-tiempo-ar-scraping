@@ -1,5 +1,5 @@
-series_tiempo_ar>=0.1.1
-pydatajson>=0.4.11
+series_tiempo_ar>=0.1.2
+pydatajson>=0.4.12
 xlseries>=0.1.25
 pandas
 openpyxl>=2.5,<2.6
