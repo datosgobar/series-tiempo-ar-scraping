@@ -234,7 +234,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         else:
             raise ValueError(
                 '{} no es una extension valida para un catalogo.'.format(
-                    file_ext))
+                    extension))
 
         # filtra, valida y escribe el catálogo en JSON y XLSX
         if catalog and len(catalog) > 0:

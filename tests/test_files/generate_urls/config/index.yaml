@@ -1,0 +1,7 @@
+test1:
+  url: "https://example.com/test1.json"
+  formato: "json"
+
+test2:
+  url: "https://example.com/test2.json"
+  formato: "json"

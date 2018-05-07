@@ -1,0 +1,12 @@
+invalid_format:
+  url: "https://example.com/invalid_format"
+  formato: "foobar"
+
+invalid_file:
+  url: "https://example.com/invalid_file"
+  formato: "json"
+
+invalid_url:
+  url: "https://example.com/invalid_url"
+  formato: "xlsx"
+

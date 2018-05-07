@@ -10,7 +10,14 @@ from __future__ import with_statement
 import os
 import glob
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Si la variable de entorno TESTING está definida, establecer la raíz del
+# proyecto en la carpeta test/project
+if "TESTING" in os.environ:
+    PROJECT_DIR = os.path.join(ROOT_DIR, "tests", "project")
+else:
+    PROJECT_DIR = ROOT_DIR
 
 # directorios del repositorio
 LOGS_DIR = os.path.join(PROJECT_DIR, "logs")
