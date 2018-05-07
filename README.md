@@ -1,4 +1,7 @@
 # series-tiempo-ar-scraping
+[![Build Status](https://travis-ci.org/datosgobar/series-tiempo-ar-scraping.svg?branch=master)](https://travis-ci.org/datosgobar/series-tiempo-ar-scraping)
+![license](https://img.shields.io/github/license/datosgobar/series-tiempo-ar-scraping.svg)
+![python](https://img.shields.io/badge/python-2.X-blue.svg)
 
 ETL y servidor web que scrapea series de tiempo de archivos `.xlsx` semi-estructurados y los transforma en distribuciones de formato abierto. La aplicación está basada en una extensión experimental del Perfil de Metadatos del Paquete de Apertura de Datos.
 
