@@ -566,7 +566,7 @@ def generate_summary_indicators(report_files, report_datasets,
     return indicators
 
 
-def main(catalog_id, replace=True, debug_mode=False,
+def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
          debug_distribution_ids=None, do_scraping=True, do_distributions=True):
     server_environment = helpers.get_general_config()["environment"]
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
@@ -685,6 +685,8 @@ def main(catalog_id, replace=True, debug_mode=False,
     complete_report_distributions = pd.DataFrame(
         all_report_distributions, columns=cols_rep_distribution)
 
+    helpers.ensure_dir_exists(os.path.join(REPORTES_DIR, catalog_id))
+
     # guarda el reporte de archivos en EXCEL
     complete_report_files.to_excel(
         os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG[
@@ -726,19 +728,22 @@ def main(catalog_id, replace=True, debug_mode=False,
         logger.info(line)
 
 
-if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        replace = True if sys.argv[1] == "replace" else False
-
-    with open(CATALOGS_INDEX_PATH) as config_file:
-        catalogs_index = yaml.load(config_file)
+def main(replace):
+    catalogs_index = helpers.get_catalogs_index()
 
     helpers.print_log_separator(logger, "Scraping de catálogos")
     logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
 
     for catalog_id in catalogs_index:
         logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
-        main(catalog_id, replace=replace,
+        scrape_catalogs(catalog_id, replace=replace,
              debug_mode=False, debug_distribution_ids=[])
 
     logger.info('>>> FIN DEL SCRAPING DE CATÁLOGOS <<<')
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        replace = True if sys.argv[1] == "replace" else False
+
+    main(replace)

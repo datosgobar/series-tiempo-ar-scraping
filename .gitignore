@@ -93,6 +93,7 @@ ENV/
 # series-tiempo-ar-scraping
 /data/*
 /config/*
+/series-tiempo-ar-scraping/
 
 # Exceptions
 !/config/mime.types
