@@ -18,7 +18,9 @@ CONDA_ENV = series-tiempo-ar-scraping
 		setup_anaconda \
 		setup_virtualenv \
 		custom_steps \
-		list_catalogs
+		list_catalogs \
+		test \
+		test_verbose
 
 setup_server: install_cron install_nginx start_nginx
 
@@ -127,7 +129,10 @@ custom_steps:
 	fi;
 
 test:
-	@TESTING=True nosetests
+	@TESTING=quiet nosetests
+
+test_verbose:
+	@TESTING=verbose nosetests -v
 
 # DOCUMENTACIÓN Y RELEASE
 release: clean ## package and upload a release

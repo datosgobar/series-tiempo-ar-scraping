@@ -26,6 +26,10 @@ class TestDownloadSources(TestBase):
         self._mocker.stop()
 
     def test_scraping_sources_downloaded(self):
+        """
+        Probar que se descargan todos los archivos de scraping, incluso cuando
+        algunas URLs son inválidas.
+        """
         self._mocker.add_url_files([
             ("https://example.com/file1.xlsx", test_files_dir(self._name, "mock", "test.xlsx")),
             ("https://example.com/file2.xlsx", test_files_dir(self._name, "mock", "test.xlsx"))
@@ -45,6 +49,10 @@ class TestDownloadSources(TestBase):
         self.assertTrue(all(found) and found)
 
     def test_distribution_sources_downloaded(self):
+        """
+        Probar que se descargan todos los archivos de distribuciones, incluso
+        cuando algunas URLs son inválidas.
+        """
         self._mocker.add_url_files([
             ("https://example.com/file1.csv", test_files_dir(self._name, "mock", "test.csv")),
             ("https://example.com/file2.csv", test_files_dir(self._name, "mock", "test.csv"))
@@ -69,11 +77,19 @@ class TestDownloadSources(TestBase):
         self.assertTrue(all(found) and found)
 
     def test_no_scraping_sources(self):
+        """
+        Probar que no se lanzan excepciones si el archivo de URLs de scraping
+        no existe.
+        """
         os.remove(paths.SCRAP_URLS_PATH)
         # El test pasa si no se lanza una excepción
         download_urls.main("scraping")
 
     def test_empty_scraping_sources(self):
+        """
+        Probar que no se lanzan excepciones si el archivo de URLs de scraping
+        está vacío.
+        """
         # Truncar archivo
         with open(paths.SCRAP_URLS_PATH, "w") as f:
             pass
@@ -82,11 +98,19 @@ class TestDownloadSources(TestBase):
         download_urls.main("scraping")
 
     def test_no_distribution_sources(self):
+        """
+        Probar que no se lanzan excepciones si el archivo de URLs de distribuciones
+        no existe.
+        """
         os.remove(paths.DIST_URLS_PATH)
         # El test pasa si no se lanza una excepción
         download_urls.main("distribution")
 
     def test_empty_distribution_sources(self):
+        """
+        Probar que no se lanzan excepciones si el archivo de URLs de distribuciones
+        está vacío.
+        """
         # Truncar archivo
         with open(paths.DIST_URLS_PATH, "w") as f:
             pass

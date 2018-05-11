@@ -1,0 +1,351 @@
+{
+    "dataset": [
+        {
+            "issued": "2017-09-28",
+            "superTheme": [
+                "ECON"
+            ],
+            "title": "Oferta y Demanda Globales. Datos desestacionalizados. Base 1993",
+            "temporal": "1993-01-01/2013-09-01",
+            "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+            "theme": [
+                "actividad"
+            ],
+            "spatial": "ARG",
+            "description": "Componentes desestacionalizados de la oferta y demanda globales a precios de 1993.",
+            "contactPoint": {
+                "fn": "Subsecretaría de Programación Macroeconómica."
+            },
+            "landingPage": "https://www.minhacienda.gob.ar/secretarias/politica-economica/programacion-macroeconomica/",
+            "publisher": {
+                "mbox": "datoseconomicos@mecon.gov.ar",
+                "name": "Subsecretaría de Programación Macroeconómica."
+            },
+            "keyword": [
+                "Información Económica al Día",
+                "Actividad"
+            ],
+            "language": [
+                "SPA"
+            ],
+            "modified": "2018-03-02T00:00:02.345747-03:00",
+            "accrualPeriodicity": "R/P3M",
+            "distribution": [
+                {
+                    "accessURL": "https://www.minhacienda.gob.ar/secretarias/politica-economica/programacion-macroeconomica/",
+                    "scrapingFileSheet": "1.2 OyD real s.e.",
+                    "description": "Oferta y Demanda Globales por componente, a precios de comprador, en millones de pesos de 1993 y valores anuales desestacionalizados.",
+                    "title": "Oferta y Demanda Global. Precios constantes desestacionalizados. Base 1993. Valores anuales.",
+                    "issued": "2017-09-28",
+                    "format": "CSV",
+                    "modified": "2018-03-02T00:00:02.345747-03:00",
+                    "fileName": "oferta-demanda-globales-datos-desestacionalizados-valores-anuales-base-1993.csv",
+                    "field": [
+                        {
+                            "specialTypeDetail": "R/P1Y",
+                            "type": "date",
+                            "scrapingIdentifierCell": "A8",
+                            "title": "indice_tiempo",
+                            "scrapingDataStartCell": "A9",
+                            "id": "1.1_IT_D_1993_A_13",
+                            "specialType": "time_index"
+                        },
+                        {
+                            "description": "PIB desestacionalizado, en millones de pesos de 1993 y valores trimestrales",
+                            "title": "oferta_global_pib",
+                            "type": "number",
+                            "scrapingIdentifierCell": "B8",
+                            "scrapingDataStartCell": "B9",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.1_OGP_D_1993_A_17"
+                        },
+                        {
+                            "description": "Importaciones desestacionalizadas, en millones de pesos de 1993 y valores trimestrales",
+                            "title": "oferta_global_importacion",
+                            "type": "number",
+                            "scrapingIdentifierCell": "C8",
+                            "scrapingDataStartCell": "C9",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.1_OGI_D_1993_A_25"
+                        },
+                        {
+                            "description": "Exportaciones desestacionalizadas, en millones de pesos de 1993 y valores trimestrales",
+                            "title": "demanda_global_exportacion",
+                            "type": "number",
+                            "scrapingIdentifierCell": "D8",
+                            "scrapingDataStartCell": "D9",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.1_DGE_D_1993_A_26"
+                        },
+                        {
+                            "description": "Inversion bruta interna fija desestacionalizada, en millones de pesos de 1993 y valores trimestrales",
+                            "title": "demanda_global_ibif",
+                            "type": "number",
+                            "scrapingIdentifierCell": "E8",
+                            "scrapingDataStartCell": "E9",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.1_DGI_D_1993_A_19"
+                        },
+                        {
+                            "description": "Consumo privado desestacionalizado, en millones de pesos de 1993 y valores trimestrales",
+                            "title": "demanda_global_consumo_priv",
+                            "type": "number",
+                            "scrapingIdentifierCell": "F8",
+                            "scrapingDataStartCell": "F9",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.1_DGCP_D_1993_A_27"
+                        },
+                        {
+                            "description": "Consumo publico desestacionalizado, en millones de pesos de 1993 y valores trimestrales",
+                            "title": "demanda_global_consumo_publico",
+                            "type": "number",
+                            "scrapingIdentifierCell": "G8",
+                            "scrapingDataStartCell": "G9",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.1_DGCP_D_1993_A_30"
+                        }
+                    ],
+                    "identifier": "1.1",
+                    "scrapingFileURL": "https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/sources/actividad_ied.xlsx"
+                },
+                {
+                    "accessURL": "https://www.minhacienda.gob.ar/secretarias/politica-economica/programacion-macroeconomica/",
+                    "scrapingFileSheet": "1.2 OyD real s.e.",
+                    "description": "Oferta y Demanda Globales por componente, a precios de comprador, en millones de pesos de 1993 y valores trimestrales desestacionalizados.",
+                    "title": "Oferta y Demanda Global. Precios constantes desestacionalizados. Base 1993. Valores trimestrales.",
+                    "issued": "2017-09-28",
+                    "format": "CSV",
+                    "modified": "2018-03-02T00:00:02.345747-03:00",
+                    "fileName": "oferta-demanda-globales-datos-desestacionalizados-valores-trimestrales-base-1993.csv",
+                    "field": [
+                        {
+                            "specialTypeDetail": "R/P3M",
+                            "type": "date",
+                            "scrapingIdentifierCell": "A46",
+                            "title": "indice_tiempo",
+                            "scrapingDataStartCell": "A47",
+                            "id": "1.2_IT_D_1993_T_13",
+                            "specialType": "time_index"
+                        },
+                        {
+                            "description": "PIB a precios de comprador, en millones de pesos de 1993 y valores anuales.",
+                            "title": "oferta_global_pib",
+                            "type": "number",
+                            "scrapingIdentifierCell": "B46",
+                            "scrapingDataStartCell": "B47",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.2_OGP_D_1993_T_17"
+                        },
+                        {
+                            "description": "Importación a precios de comprador, en millones de pesos de 1993 y valores anuales.",
+                            "title": "oferta_global_importacion",
+                            "type": "number",
+                            "scrapingIdentifierCell": "C46",
+                            "scrapingDataStartCell": "C47",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.2_OGI_D_1993_T_25"
+                        },
+                        {
+                            "description": "Oferta global total a precios de comprador, en millones de pesos de 1993 y valores anuales.",
+                            "title": "demanda_global_exportacion",
+                            "type": "number",
+                            "scrapingIdentifierCell": "D46",
+                            "scrapingDataStartCell": "D47",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.2_DGE_D_1993_T_26"
+                        },
+                        {
+                            "description": "Consumo privado, en millones de pesos de 1993 y valores anuales.",
+                            "title": "demanda_global_ibif",
+                            "type": "number",
+                            "scrapingIdentifierCell": "E46",
+                            "scrapingDataStartCell": "E47",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.2_DGI_D_1993_T_19"
+                        },
+                        {
+                            "description": "Consumo publico, en millones de pesos de 1993 y valores anuales.",
+                            "title": "demanda_global_consumo_priv",
+                            "type": "number",
+                            "scrapingIdentifierCell": "F46",
+                            "scrapingDataStartCell": "F47",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.2_DGCP_D_1993_T_27"
+                        },
+                        {
+                            "description": "Inversion bruta interna fija, en millones de pesos de 1993 y valores anuales.",
+                            "title": "demanda_global_consumo_publico",
+                            "type": "number",
+                            "scrapingIdentifierCell": "G46",
+                            "scrapingDataStartCell": "G47",
+                            "units": "Millones de pesos a precios de 1993",
+                            "id": "1.2_DGCP_D_1993_T_30"
+                        }
+                    ],
+                    "identifier": "1.2",
+                    "scrapingFileURL": "https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/sources/actividad_ied.xlsx"
+                }
+            ],
+            "identifier": "1"
+        },
+        {
+            "issued": "2017-09-28",
+            "superTheme": [
+                "ECON"
+            ],
+            "title": "Oferta y Demanda Global en millones de pesos de 1960",
+            "temporal": "1970-01-01/1980-10-01",
+            "source": "Banco Central de la República Argentina (BCRA)",
+            "theme": [
+                "actividad"
+            ],
+            "spatial": "ARG",
+            "description": "Componentes de la oferta y demanda global en millones de pesos de 1960. Valores trimestrales",
+            "contactPoint": {
+                "fn": "Subsecretaría de Programación Macroeconómica."
+            },
+            "publisher": {
+                "mbox": "datoseconomicos@mecon.gov.ar",
+                "name": "Subsecretaría de Programación Macroeconómica."
+            },
+            "keyword": [
+                "Información Económica Histórica",
+                "Actividad"
+            ],
+            "language": [
+                "SPA"
+            ],
+            "accrualPeriodicity": "R/P3M",
+            "distribution": [
+                {
+                    "accessURL": "https://www.minhacienda.gob.ar/secretarias/politica-economica/programacion-macroeconomica/",
+                    "field": [
+                        {
+                            "specialTypeDetail": "R/P3M",
+                            "type": "date",
+                            "title": "indice_tiempo",
+                            "id": "200.1_ICE_TIEMPO_0_0_13",
+                            "units": "Millones de pesos",
+                            "specialType": "time_index"
+                        },
+                        {
+                            "description": "Oferta Total en millones de pesos de 1960",
+                            "title": "oferta_total_60",
+                            "type": "number",
+                            "units": "Millones de pesos",
+                            "id": "200.1_OTA_TOT_60_0_0_15"
+                        },
+                        {
+                            "description": "PIB Total a precios de mercado en millones de pesos de 1960",
+                            "title": "pib_total_pm_60",
+                            "type": "number",
+                            "units": "Millones de pesos",
+                            "id": "200.1_PTOTAL_60_0_0_15"
+                        },
+                        {
+                            "description": "Importaciones en millones de pesos de 1960",
+                            "title": "importaciones_60",
+                            "type": "number",
+                            "units": "Millones de pesos",
+                            "id": "200.1_IRTACIO_60_0_0_16"
+                        },
+                        {
+                            "description": "Demanda Total en millones de pesos de 1960",
+                            "title": "demanda_total_60",
+                            "type": "number",
+                            "units": "Millones de pesos",
+                            "id": "200.1_DNDA_TO_60_0_0_16"
+                        },
+                        {
+                            "description": "Consumo en millones de pesos de 1960",
+                            "title": "consumo_60",
+                            "type": "number",
+                            "units": "Millones de pesos",
+                            "id": "200.1_CUMO_60_60_0_0_10"
+                        },
+                        {
+                            "description": "IBI en millones de pesos de 1960",
+                            "title": "inversion_bruta_interna_60",
+                            "type": "number",
+                            "units": "Millones de pesos",
+                            "id": "200.1_IRSION_60_0_0_26"
+                        },
+                        {
+                            "description": "Exportaciones en millones de pesos de 1960",
+                            "title": "exportaciones_60",
+                            "type": "number",
+                            "units": "Millones de pesos",
+                            "id": "200.1_ERTACIO_60_0_0_16"
+                        }
+                    ],
+                    "description": "ODG Total en millones de pesos de 1960. 1970-1980",
+                    "title": "Oferta y Demanda Global. Millones de pesos constantes. Base 1960. Valores trimestrales",
+                    "issued": "2017-09-28",
+                    "format": "CSV",
+                    "fileName": "odg-total-millones-pesos-1960-trimestral.csv",
+                    "downloadURL": "https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/sources/odg-total-millones-pesos-1960-trimestral.csv",
+                    "identifier": "200.1"
+                }
+            ],
+            "identifier": "200"
+        }
+    ],
+    "publisher": {
+        "mbox": "datoseconomicos@mecon.gov.ar",
+        "name": "Subsecretaría de Programación Macroeconómica."
+    },
+    "license": "Open Database License (ODbL) v1.0",
+    "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+    "language": [
+        "SPA"
+    ],
+    "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+    "issued": "2017-09-28",
+    "rights": "2017-09-28",
+    "modified": "2017-09-28",
+    "themeTaxonomy": [
+        {
+            "id": "actividad",
+            "description": "Series de actividad: cuentas nacionales, consumo, producción, etc.",
+            "label": "Actividad"
+        },
+        {
+            "id": "empleo",
+            "description": "Series de empleo e ingresos: mercado laboral, salarios, etc.",
+            "label": "Empleo e Ingresos"
+        },
+        {
+            "id": "externo",
+            "description": "Series externas: Balance de Pagos, Intercambio Comercial, etc.",
+            "label": "Sector Externo"
+        },
+        {
+            "id": "moneda",
+            "description": "Series monetarias y bancarias",
+            "label": "Dinero y Bancos"
+        },
+        {
+            "id": "precios",
+            "description": "Series de precios",
+            "label": "Precios"
+        },
+        {
+            "id": "internacional",
+            "description": "Series económicas mundiales",
+            "label": "Economía Internacional"
+        },
+        {
+            "id": "fiscal",
+            "description": "Series de recaudación, ingresos, gastos, etc.",
+            "label": "Finanzas Públicas"
+        },
+        {
+            "id": "finanzas",
+            "description": "Series financieras y de mercado de capitales",
+            "label": "Mercados Financieros"
+        }
+    ],
+    "spatial": "ARG",
+    "title": "Datos Programación Macroeconómica",
+    "identifier": "example_catalog1"
+}

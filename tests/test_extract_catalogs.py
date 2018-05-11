@@ -26,6 +26,8 @@ class TestExtractValidCatalogs(TestBase):
         ])
         self._mocker.start()
 
+        extract_catalogs.main()
+
     def tearDown(self):
         super(TestExtractValidCatalogs, self).tearDown()
         self._mocker.stop()
@@ -33,9 +35,7 @@ class TestExtractValidCatalogs(TestBase):
     def test_extraction(self):
         """
         Probar la extracción de los catálogos listados en el índice.
-        """            
-        extract_catalogs.main()
-
+        """
         found = []
         for catalog in helpers.get_catalogs_index():
             found.append(os.path.isfile(paths.get_catalog_path(catalog)))
@@ -45,9 +45,7 @@ class TestExtractValidCatalogs(TestBase):
     def test_extraction_validates(self):
         """
         Probar que los catálogos extraídos son válidos.
-        """            
-        extract_catalogs.main()
-
+        """
         valid = []
         for catalog in helpers.get_catalogs_index():
             path = paths.get_catalog_path(catalog)
@@ -60,9 +58,7 @@ class TestExtractValidCatalogs(TestBase):
     def test_extraction_validates(self):
         """
         Probar que los catálogos extraídos son válidos.
-        """            
-        extract_catalogs.main()
-
+        """
         valid = []
         for catalog in helpers.get_catalogs_index():
             path = paths.get_catalog_path(catalog)
@@ -75,9 +71,7 @@ class TestExtractValidCatalogs(TestBase):
     def test_reports_generated(self):
         """
         Probar que los reportes de extracción de catálogos fueron generados.
-        """            
-        extract_catalogs.main()
-
+        """
         found = []
         for catalog in helpers.get_catalogs_index():
             reports_path = os.path.join(paths.REPORTES_DIR, catalog)
@@ -91,6 +85,17 @@ class TestExtractValidCatalogs(TestBase):
             for report in reports:
                 found.append(os.path.isfile(os.path.join(reports_path, report)))
 
+        self.assertTrue(all(found) and found)
+
+    def test_xlsx_json_generated(self):
+        """
+        Probar que los catálogos se almacenan en formatos .json y .xlsx.
+        """
+        found = []
+        for catalog in helpers.get_catalogs_index():
+            found.append(os.path.isfile(paths.get_catalog_path(catalog, extension="json")))
+            found.append(os.path.isfile(paths.get_catalog_path(catalog, extension="xlsx")))
+        
         self.assertTrue(all(found) and found)
 
 
@@ -117,7 +122,7 @@ class TestExtractInvalidCatalogs(TestBase):
     def test_extraction_passes(self):
         """
         Probar que la extracción no procesa ningún catálogo.
-        """            
+        """
         extract_catalogs.main()
 
         not_exists = []

@@ -186,13 +186,14 @@ def get_logger(name=__name__):
     logger = logging.getLogger(name)
 
     if 'TESTING' in os.environ:
-        logger.disabled = True
+        logger.disabled = os.environ['TESTING'] != 'verbose'
         selected_level = logging.DEBUG
     else:
         config = get_general_config()
         selected_level = levels[config['logging']]
-        logger.setLevel(selected_level)
 
+    logger.setLevel(selected_level)
+    
     ch = logging.StreamHandler()
     ch.setLevel(selected_level)
 

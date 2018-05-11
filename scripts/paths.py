@@ -105,8 +105,14 @@ def get_distribution_path(catalog_id, dataset_id, distribution_id,
         )
 
 
-def get_catalog_path(catalog_id, catalogs_dir=CATALOGS_DIR):
-    return os.path.join(catalogs_dir, catalog_id, "data.json")
+def get_catalog_path(catalog_id, catalogs_dir=CATALOGS_DIR, extension="json"):
+    if extension == "json":
+        name = "data.json"
+    elif extension == "xlsx":
+        name = "catalog.xlsx"
+    else:
+        raise ValueError("Extensión inválida.")
+    return os.path.join(catalogs_dir, catalog_id, name)
 
 
 if __name__ == "__main__":
