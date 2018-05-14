@@ -127,7 +127,8 @@ Una vez instalado el archivo de configuración, el ETL se ejecutará a las 00, 1
 
 - **Salidas**:
     - Directorio `data/output/`: Por cada catálogo procesado, se crea un subdirectorio con:
-        - `catalog.json`: Catálogo en formato `.json` (`data/output/catalog/{catalog_id}/data.json`).
+        - `data.json`: Catálogo en formato `.json` (`data/output/catalog/{catalog_id}/data.json`).
+        - `catalog.xlsx`: Catálogo en formato `.xlsx` (`data/output/catalog/{catalog_id}/catalog.xlsx`).
         - Archivos de distribuciones descargados vía `downloadURL` (`data/output/catalog/{catalog_id}/dataset/{dataset_id}/distribution/{distribution_id}/distribucion-descargada-nombre.csv`).
         - Archivos de distribuciones *scrapeadas* (`data/output/catalog/{catalog_id}/dataset/{dataset_id}/distribution/{distribution_id}/distribucion-scrapeada-nombre.csv`).
     - Directorio `data/reports/`: Por cada catálogo procesado, se crea un subdirectorio con:
