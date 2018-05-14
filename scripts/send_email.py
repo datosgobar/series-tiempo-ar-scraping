@@ -5,8 +5,8 @@
 Envía un mail en texto plano desde un script de python. Usa un archivo de
 configuración para tomar un usuario, password, servidor SMTP y puerto.
 
-Debe crearse un config_email.yaml utilizando como plantilla el archivo encontrado
-en scripts/config/config_email.example.yaml.
+Debe crearse un config_email.yaml utilizando como plantilla el archivo
+encontrado en scripts/config/config_email.example.yaml.
 """
 
 from __future__ import unicode_literals
@@ -52,8 +52,9 @@ def send_email(mailer_config, subject, message, recipients, files=None):
                 with open(f, "rb") as fil:
                     part = MIMEApplication(
                         fil.read(), Name=os.path.basename(f))
-                    part[
-                        'Content-Disposition'] = 'attachment; filename="%s"' % os.path.basename(f)
+                    part['Content-Disposition'] = (
+                        'attachment; filename="%s"' % os.path.basename(f)
+                    )
                     msg.attach(part)
             else:
                 logger.warning("El archivo {} no existe".format(f))
@@ -80,7 +81,7 @@ def send_group_emails(group_name):
         print(CONFIG_EMAIL_PATH)
         with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
             cfg = yaml.load(ymlfile)
-    except:
+    except (IOError, yaml.parser.ParserError):
         logger.warning(
             "No se pudo cargar archivo de configuración 'config_email.yaml'.")
         logger.warning("Salteando envío de mails...")
@@ -101,7 +102,10 @@ def send_group_emails(group_name):
     for catalog_id in catalogs_index:
         if catalog_id not in catalogs_configs:
             logger.warning(
-                "No hay configuración de mails para catálogo {}.".format(catalog_id))
+                "No hay configuración de mails para catálogo {}.".format(
+                    catalog_id
+                )
+            )
             logger.warning("Salteando catalogo...")
             continue
 

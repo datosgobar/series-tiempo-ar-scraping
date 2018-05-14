@@ -193,16 +193,18 @@ def get_logger(name=__name__):
         selected_level = levels[config['logging']]
 
     logger.setLevel(selected_level)
-    
+
     ch = logging.StreamHandler()
     ch.setLevel(selected_level)
 
     logging_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        '%Y-%m-%d %H:%M:%S')
     ch.setFormatter(logging_formatter)
     logger.addHandler(ch)
 
     return logger
+
 
 logger = get_logger(os.path.basename(__file__))
 
@@ -210,9 +212,9 @@ logger = get_logger(os.path.basename(__file__))
 def print_log_separator(logger, message):
     logger.info("=" * SEPARATOR_WIDTH)
     logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
-    
+
     logger.info("|" + message.center(SEPARATOR_WIDTH - 2) + "|")
-    
+
     logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
     logger.info("=" * SEPARATOR_WIDTH)
 
@@ -224,8 +226,9 @@ def is_http_or_https(url):
 def get_catalog_download_config(catalog_id):
     try:
         configs = load_yaml(CONFIG_DOWNLOADS_PATH)
-    except:
-        logger.warning("No se pudo cargar el archivo de configuración 'config_downloads.yaml'.")
+    except (IOError, yaml.parser.ParserError):
+        logger.warning("No se pudo cargar el archivo de configuración \
+            'config_downloads.yaml'.")
         logger.warning("Utilizando configuración default...")
         configs = {
             "defaults": {}

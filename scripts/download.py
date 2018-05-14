@@ -23,7 +23,7 @@ def download(url, tries=DEFAULT_TRIES, retry_delay=RETRY_DELAY,
         proxies (dict): Proxies a utilizar. El diccionario debe contener los
             valores 'http' y 'https', cada uno asociados a la URL del proxy
             correspondiente.
-        
+
     Returns:
         bytes: Contenido del archivo
     """

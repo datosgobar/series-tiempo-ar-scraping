@@ -31,8 +31,10 @@ class TestDownloadSources(TestBase):
         algunas URLs son inválidas.
         """
         self._mocker.add_url_files([
-            ("https://example.com/file1.xlsx", test_files_dir(self._name, "mock", "test.xlsx")),
-            ("https://example.com/file2.xlsx", test_files_dir(self._name, "mock", "test.xlsx"))
+            ("https://example.com/file1.xlsx",
+                test_files_dir(self._name, "mock", "test.xlsx")),
+            ("https://example.com/file2.xlsx",
+                test_files_dir(self._name, "mock", "test.xlsx"))
         ])
         self._mocker.add_url_errors([
             ("https://example.com/invalid_url", 404)
@@ -44,7 +46,8 @@ class TestDownloadSources(TestBase):
         with open(paths.SCRAP_URLS_PATH) as f:
             for line in f.readlines():
                 catalog = line.strip().split()[0]
-                found.append(os.path.isdir(paths.get_catalog_scraping_sources_dir(catalog)))
+                found.append(os.path.isdir(
+                    paths.get_catalog_scraping_sources_dir(catalog)))
 
         self.assertTrue(all(found) and found)
 
@@ -54,8 +57,10 @@ class TestDownloadSources(TestBase):
         cuando algunas URLs son inválidas.
         """
         self._mocker.add_url_files([
-            ("https://example.com/file1.csv", test_files_dir(self._name, "mock", "test.csv")),
-            ("https://example.com/file2.csv", test_files_dir(self._name, "mock", "test.csv"))
+            ("https://example.com/file1.csv",
+                test_files_dir(self._name, "mock", "test.csv")),
+            ("https://example.com/file2.csv",
+                test_files_dir(self._name, "mock", "test.csv"))
         ])
         self._mocker.add_url_errors([
             ("https://example.com/invalid_url", 404)
@@ -66,8 +71,9 @@ class TestDownloadSources(TestBase):
         found = []
         with open(paths.DIST_URLS_PATH) as f:
             for line in f.readlines():
-                catalog, dataset, distribution, filename, _ = line.strip().split()
-                
+                catalog, dataset, distribution, filename, _ = \
+                    line.strip().split()
+
                 filepath = os.path.join(paths.get_distribution_download_dir(
                     paths.CATALOGS_DIR_INPUT, catalog, dataset, distribution
                 ), filename)
@@ -99,8 +105,8 @@ class TestDownloadSources(TestBase):
 
     def test_no_distribution_sources(self):
         """
-        Probar que no se lanzan excepciones si el archivo de URLs de distribuciones
-        no existe.
+        Probar que no se lanzan excepciones si el archivo de URLs de
+        distribuciones no existe.
         """
         os.remove(paths.DIST_URLS_PATH)
         # El test pasa si no se lanza una excepción
@@ -108,8 +114,8 @@ class TestDownloadSources(TestBase):
 
     def test_empty_distribution_sources(self):
         """
-        Probar que no se lanzan excepciones si el archivo de URLs de distribuciones
-        está vacío.
+        Probar que no se lanzan excepciones si el archivo de URLs de
+        distribuciones está vacío.
         """
         # Truncar archivo
         with open(paths.DIST_URLS_PATH, "w") as f:
@@ -117,4 +123,3 @@ class TestDownloadSources(TestBase):
 
         # El test pasa si no se lanza una excepción
         download_urls.main("distribution")
-

@@ -15,8 +15,8 @@ from helpers import get_logger, get_catalogs_index, print_log_separator
 from pydatajson.helpers import title_to_name
 from series_tiempo_ar import TimeSeriesDataJson
 
-
 logger = get_logger(os.path.basename(__file__))
+
 
 def get_distribution_download_urls(distributions, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
@@ -24,8 +24,8 @@ def get_distribution_download_urls(distributions, catalog_id):
 
     for distribution in filter(
         lambda dist: 'downloadURL' in dist and dist['downloadURL'],
-        distributions):
-        
+            distributions):
+
         if "fileName" in distribution:
             distribution_fileName = distribution["fileName"]
         else:
@@ -50,8 +50,9 @@ def get_scraping_sources_urls(distributions, catalog_id):
     urls = {
         dist['scrapingFileURL']
         for dist in distributions
-        if 'scrapingFileURL' in dist
-            and ('downloadURL' not in dist or not dist['downloadURL'])
+        if 'scrapingFileURL' in dist and (
+            'downloadURL' not in dist or not dist['downloadURL']
+        )
     }
 
     return [
@@ -62,7 +63,8 @@ def get_scraping_sources_urls(distributions, catalog_id):
 
 def main(sources_type):
     urls = []
-    print_log_separator(logger, "Extracción de URLS para: {}".format(sources_type))
+    print_log_separator(logger, "Extracción de URLS para: {}".format(
+        sources_type))
 
     if sources_type == "scraping":
         sources_urls_path = SCRAP_URLS_PATH
@@ -77,20 +79,30 @@ def main(sources_type):
             distributions = catalog.get_distributions(only_time_series=True)
 
             if sources_type == "scraping":
-                logger.info("Extrayendo URLs de fuentes de {}...".format(catalog_id))
+                logger.info("Extrayendo URLs de fuentes de {}...".format(
+                    catalog_id))
 
-                # TODO: Agregar validaciones de scraping a series_tiempo_ar y utilizarlas
-                # Reportar el error y saltear la distribucion si falla la validacion
-                urls.extend(get_scraping_sources_urls(distributions, catalog_id))
+                # TODO: Agregar validaciones de scraping a series_tiempo_ar
+                # y utilizarlas.
+                # Reportar el error y saltear la distribucion si falla la
+                # validacion.
+                urls.extend(get_scraping_sources_urls(
+                    distributions, catalog_id))
             elif sources_type == "distribution":
-                logger.info("Extrayendo URLs de distribuciones de {}...".format(catalog_id))
-                # TODO: Agregar mas validaciones de metadatos a series_tiempo_ar y utilizarlas
-                # Reportar el error y saltear la distribucion si falla la validacion
-                urls.extend(get_distribution_download_urls(distributions, catalog_id))
-                
+                logger.info(
+                    "Extrayendo URLs de distribuciones de {}...".format(
+                        catalog_id))
+                # TODO: Agregar mas validaciones de metadatos a
+                # series_tiempo_ar y utilizarlas.
+                # Reportar el error y saltear la distribucion si falla la
+                # validacion.
+                urls.extend(get_distribution_download_urls(
+                    distributions, catalog_id))
+
         except Exception as e:
-            logger.error("No se pudo extraer URLs de fuentes del catalogo {}".format(
-                catalog_id))
+            logger.error(
+                "No se pudo extraer URLs de fuentes del catalogo {}".format(
+                    catalog_id))
             logger.error(e)
 
     logger.info("{} URLs de {} en total".format(len(urls), sources_type))

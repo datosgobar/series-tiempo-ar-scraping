@@ -286,7 +286,7 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
             try:
                 get_distribution_path(catalog_id, dataset_identifier,
                                       distribution_identifier)
-            except:
+            except Exception:
                 catalog.remove_distribution(
                     distribution_identifier, dataset_identifier)
 
@@ -440,9 +440,11 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
         distributions = catalog.get_dataset(
             dataset_identifier).get("distribution", [])
         if len(distributions) == 0:
-            logger.info("Se elimina el dataset {}, no tiene distribuciones".format(
-                dataset_identifier
-            ))
+            logger.info(
+                "Se elimina el dataset {}, no tiene distribuciones".format(
+                    dataset_identifier
+                )
+            )
             catalog.remove_dataset(dataset_identifier)
 
     return report_datasets, report_distributions
@@ -464,8 +466,8 @@ def analyze_catalog(catalog_id, catalog, datasets_dir,
     ))
 
     time_series_ids = [distribution["identifier"]
-                        for distribution in
-                        catalog.get_distributions(only_time_series=True)]    
+                       for distribution in
+                       catalog.get_distributions(only_time_series=True)]
 
     report_datasets = []
     report_distributions = []
@@ -567,7 +569,8 @@ def generate_summary_indicators(report_files, report_datasets,
 
 
 def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
-         debug_distribution_ids=None, do_scraping=True, do_distributions=True):
+                    debug_distribution_ids=None, do_scraping=True,
+                    do_distributions=True):
     server_environment = helpers.get_general_config()["environment"]
     # en un ambiente productivo SIEMPRE reemplaza por la nueva opción
 
@@ -580,7 +583,7 @@ def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
 
     try:
         catalog = TimeSeriesDataJson(catalog_json_path)
-    except:
+    except Exception:
         logger.error(
             "Error al intentar cargar el catálogo {}:".format(catalog_id))
         for line in traceback.format_exc().splitlines():
@@ -736,8 +739,8 @@ def main(replace):
 
     for catalog_id in catalogs_index:
         logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
-        scrape_catalogs(catalog_id, replace=replace,
-             debug_mode=False, debug_distribution_ids=[])
+        scrape_catalogs(catalog_id, replace=replace, debug_mode=False,
+                        debug_distribution_ids=[])
 
     logger.info('>>> FIN DEL SCRAPING DE CATÁLOGOS <<<')
 

@@ -20,16 +20,16 @@ class TestScrapeDatasets(TestBase):
 
     def test_scraping_successful_no_replace(self):
         """
-        Probar que no se lanzan excepciones cuando se scrapean las distribuciones
-        utilizando replace=False.
+        Probar que no se lanzan excepciones cuando se scrapean las
+        distribuciones utilizando replace=False.
         """
         # El test pasa si no se lanza una excepción
         scrape_datasets.main(False)
 
     def test_distributions_created(self):
         """
-        Probar que todas las distribuciones del catálogo se encuentran descargadas,
-        ya sea directamente o a través de scraping. 
+        Probar que todas las distribuciones del catálogo se encuentran
+        descargadas, ya sea directamente o a través de scraping.
         """
         catalog = TimeSeriesDataJson(
             paths.get_catalog_path("example_catalog1"))
@@ -62,7 +62,7 @@ class TestScrapeDatasets(TestBase):
         for distribution in distributions:
             valid.append("downloadURL" in distribution)
 
-        self.assertTrue(all(valid) and valid)        
+        self.assertTrue(all(valid) and valid)
 
     def test_reports_generated(self):
         """
@@ -78,11 +78,13 @@ class TestScrapeDatasets(TestBase):
                 paths.SCRAPING_MAIL_CONFIG["message"],
                 paths.SCRAPING_MAIL_CONFIG["attachments"]["files_report"],
                 paths.SCRAPING_MAIL_CONFIG["attachments"]["datasets_report"],
-                paths.SCRAPING_MAIL_CONFIG["attachments"]["distributions_report"]
+                paths.SCRAPING_MAIL_CONFIG["attachments"][
+                    "distributions_report"]
             ]
 
             for report in reports:
-                found.append(os.path.isfile(os.path.join(reports_path, report)))
+                found.append(
+                    os.path.isfile(os.path.join(reports_path, report)))
 
         self.assertTrue(all(found) and found)
 
@@ -95,8 +97,8 @@ class TestScrapeDatasetsMissingFiles(TestBase):
     def test_scraping_successful(self):
         """
         Probar que las distribuciones con downloadURL fueron descargadas. Las
-        distribuciones a ser scrapeadas cuyos archivos no pudieron ser descargados
-        se ignoran.
+        distribuciones a ser scrapeadas cuyos archivos no pudieron ser
+        descargados se ignoran.
         """
         scrape_datasets.main(True)
 
@@ -119,5 +121,5 @@ class TestScrapeDatasetsMissingFiles(TestBase):
                     distribution["identifier"]
                 )
                 found.append(os.path.isfile(filepath))
-        
+
         self.assertTrue(all(found) and found)

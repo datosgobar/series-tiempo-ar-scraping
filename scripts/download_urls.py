@@ -16,12 +16,13 @@ from helpers import download_with_config, get_catalog_download_config
 
 logger = get_logger(os.path.basename(__file__))
 
+
 def download_scraping_sources(urls):
     for entry in urls:
         catalog_id, scraping_url = entry.split()
-        
+
         config = get_catalog_download_config(catalog_id)["sources"]
-        
+
         logger.info("Descargando archivo de scraping para catalogo: {}".format(
             catalog_id
         ))
@@ -52,12 +53,13 @@ def download_distributions(urls):
         catalog_id, dataset_id, distribution_id, filename, url = parts
 
         config = get_catalog_download_config(catalog_id)["sources"]
-        
+
         logger.info(
             "Descargando archivo de distribucion: {} (catálogo {})".format(
-            distribution_id,
-            catalog_id
-        ))
+                distribution_id,
+                catalog_id
+            )
+        )
 
         logger.info("URL: {}".format(url))
         logger.info("Comenzando...")

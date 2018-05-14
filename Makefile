@@ -134,6 +134,9 @@ test:
 test_verbose:
 	@TESTING=verbose nosetests -v
 
+code_style:
+	pycodestyle scripts/ tests/
+
 # DOCUMENTACIÓN Y RELEASE
 release: clean ## package and upload a release
 	python setup.py sdist upload

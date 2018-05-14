@@ -21,8 +21,10 @@ class TestExtractValidCatalogs(TestBase):
         super(TestExtractValidCatalogs, self).setUp()
         self._mocker = MockDownloads()
         self._mocker.add_url_files([
-            ("https://example.com/test1.json", test_files_dir(self._name, "mock", "test1.json")),
-            ("https://example.com/test2.xlsx", test_files_dir(self._name, "mock", "test2.xlsx"))
+            ("https://example.com/test1.json",
+                test_files_dir(self._name, "mock", "test1.json")),
+            ("https://example.com/test2.xlsx",
+                test_files_dir(self._name, "mock", "test2.xlsx"))
         ])
         self._mocker.start()
 
@@ -83,7 +85,8 @@ class TestExtractValidCatalogs(TestBase):
             ]
 
             for report in reports:
-                found.append(os.path.isfile(os.path.join(reports_path, report)))
+                found.append(os.path.isfile(
+                    os.path.join(reports_path, report)))
 
         self.assertTrue(all(found) and found)
 
@@ -93,9 +96,11 @@ class TestExtractValidCatalogs(TestBase):
         """
         found = []
         for catalog in helpers.get_catalogs_index():
-            found.append(os.path.isfile(paths.get_catalog_path(catalog, extension="json")))
-            found.append(os.path.isfile(paths.get_catalog_path(catalog, extension="xlsx")))
-        
+            found.append(os.path.isfile(
+                paths.get_catalog_path(catalog, extension="json")))
+            found.append(os.path.isfile(
+                paths.get_catalog_path(catalog, extension="xlsx")))
+
         self.assertTrue(all(found) and found)
 
 
@@ -108,7 +113,8 @@ class TestExtractInvalidCatalogs(TestBase):
         super(TestExtractInvalidCatalogs, self).setUp()
         self._mocker = MockDownloads()
         self._mocker.add_url_files([
-            ("https://example.com/invalid_file", test_files_dir(self._name, "mock", "test.txt"))
+            ("https://example.com/invalid_file",
+                test_files_dir(self._name, "mock", "test.txt"))
         ])
         self._mocker.add_url_errors([
             ("https://example.com/invalid_url", 404)

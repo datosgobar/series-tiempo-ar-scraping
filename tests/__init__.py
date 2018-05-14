@@ -31,7 +31,7 @@ class TestBase(unittest.TestCase):
         # Copiar archivos JSON Schema
         shutil.copytree(os.path.join(paths.ROOT_DIR, "config", "schemas"),
                         os.path.join(paths.PROJECT_DIR, "config", "schemas"))
-        
+
         # Crear directorios vacíos (equivalente a make create_dir)
         for path in [paths.DATOS_DIR,
                      paths.REPORTES_DIR,
@@ -70,7 +70,7 @@ class MockDownloads(object):
     def __enter__(self):
         self.start()
         return self
-    
+
     def __exit__(self, type, value, traceback):
         self.stop()
         return False
