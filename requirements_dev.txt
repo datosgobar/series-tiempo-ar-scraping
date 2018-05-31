@@ -1,2 +1,2 @@
-responses
-pycodestyle
+responses==0.9.0
+pycodestyle==2.4.0

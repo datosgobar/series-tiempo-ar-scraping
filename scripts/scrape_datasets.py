@@ -240,7 +240,7 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
             dist_path = os.path.join(dist_download_dir,
                                      "{}".format(distribution_file_name))
             dist_url = get_distribution_url(dist_path)
-            # print("esta es la URL QUE VA AL CATALOGO", dist_url)
+
             distrib_meta["downloadURL"] = dist_url
 
             # chequea si ante la existencia del archivo hay que reemplazarlo o
@@ -338,8 +338,6 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                 "download", "{}".format(distribution_file_name)
             )
             dist_url = get_distribution_url(dist_path)
-            # print("esta es la URL QUE VA AL CATALOGO", dist_url)
-            distrib_meta["downloadURL"] = dist_url
 
             # chequea si ante la existencia del archivo hay que reemplazarlo o
             # saltearlo
