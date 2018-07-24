@@ -29,7 +29,6 @@ from series_tiempo_ar.validations import validate_distribution
 from series_tiempo_ar import TimeSeriesDataJson
 
 import helpers
-import custom_exceptions as ce
 
 from paths import REPORTES_DIR
 from paths import get_distribution_path, get_catalog_path, \
