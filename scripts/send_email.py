@@ -18,7 +18,7 @@ import os.path
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import COMMASPACE, formatdate
+from email.utils import formatdate
 
 from helpers import get_logger, print_log_separator, get_catalogs_index
 from paths import CONFIG_EMAIL_PATH, REPORTES_DIR

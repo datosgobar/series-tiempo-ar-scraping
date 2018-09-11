@@ -17,7 +17,6 @@ import urlparse
 import yaml
 import logging
 import logging.config
-import yaml
 import download
 
 from paths import CONFIG_DOWNLOADS_PATH

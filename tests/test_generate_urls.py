@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import shutil
-import os
-
 from . import TestBase
-from . import test_files_dir
 
 from scripts import generate_urls
 from scripts import paths

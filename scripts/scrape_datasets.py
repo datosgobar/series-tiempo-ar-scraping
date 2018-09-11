@@ -8,17 +8,13 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import with_statement
 import os
-import yaml
 import sys
 import pandas as pd
 import arrow
 import shutil
 import traceback
-from openpyxl import load_workbook
-import logging
 from copy import deepcopy
 from urlparse import urljoin
-from pprint import pprint
 
 from pydatajson.helpers import title_to_name
 from pydatajson.time_series import get_distribution_time_index
@@ -33,7 +29,7 @@ import helpers
 from paths import REPORTES_DIR
 from paths import get_distribution_path, get_catalog_path, \
     get_catalog_scraping_sources_dir, get_catalog_datasets_dir
-from paths import CATALOGS_INDEX_PATH, CATALOGS_DIR_INPUT
+from paths import CATALOGS_DIR_INPUT
 from paths import SCRAPING_MAIL_CONFIG
 
 from pydatajson.writers import write_json_catalog
@@ -106,8 +102,8 @@ def gen_distribution_params(catalog, distribution_identifier):
     params["time_header_coord"] = field["scrapingIdentifierCell"]
 
     # nombres de las series
-    params["series_names"] = [field["title"] for field in fields
-                              if not field.get("specialType")]
+    params["series_names"] = [f["title"] for f in fields
+                              if not f.get("specialType")]
 
     return params
 
@@ -336,7 +332,6 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                 dataset_dir, "distribution", distribution_identifier,
                 "download", "{}".format(distribution_file_name)
             )
-            dist_url = get_distribution_url(dist_path)
 
             # chequea si ante la existencia del archivo hay que reemplazarlo o
             # saltearlo
@@ -348,11 +343,6 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                     dataset_identifier,
                     distribution_identifier
                 )
-
-                if isinstance(distribution, list):
-                    distribution_complete = pd.concat(distribution)
-                else:
-                    distribution_complete = distribution
 
                 helpers.ensure_dir_exists(os.path.dirname(dist_path))
                 shutil.copyfile(origin_dist_path, dist_path)
