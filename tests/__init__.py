@@ -45,7 +45,6 @@ class MockDownloads(object):
     def __init__(self):
         self._mocker = responses.RequestsMock()
         self._files = []
-        pass
 
     def add_url_files(self, url_files):
         for url, path in url_files:

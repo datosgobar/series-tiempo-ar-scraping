@@ -49,8 +49,7 @@ def download_scraping_sources(urls):
 
 def download_distributions(urls):
     for entry in urls:
-        parts = entry.split()
-        catalog_id, dataset_id, distribution_id, filename, url = parts
+        catalog_id, dataset_id, distribution_id, filename, url = entry.split()
 
         config = get_catalog_download_config(catalog_id)["sources"]
 
