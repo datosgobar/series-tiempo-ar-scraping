@@ -242,12 +242,16 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
             catalog_filtered = validate_and_filter(catalog_id, catalog,
                                                    warnings_log)
 
-            logger.info('Escritura de catálogo en JSON')
+            logger.info('Escritura de catálogo en JSON: {}'.format(
+                catalog_path_template.format("data.json"))
+            )
             write_json_catalog(
                 catalog_id, catalog_filtered,
                 catalog_path_template.format("data.json"))
 
-            logger.info('Escritura de catálogo en XLSX')
+            logger.info('Escritura de catálogo en XLSX: {}'.format(
+                catalog_path_template.format("catalog.xlsx"))
+            )
             catalog_filtered.to_xlsx(
                 catalog_path_template.format("catalog.xlsx")
             )
