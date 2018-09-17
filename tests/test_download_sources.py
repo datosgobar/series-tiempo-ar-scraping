@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import shutil
 import os
 
 from . import TestBase
@@ -97,8 +96,7 @@ class TestDownloadSources(TestBase):
         está vacío.
         """
         # Truncar archivo
-        with open(paths.SCRAP_URLS_PATH, "w") as f:
-            pass
+        open(paths.SCRAP_URLS_PATH, "w").close()
 
         # El test pasa si no se lanza una excepción
         download_urls.main("scraping")
@@ -118,8 +116,7 @@ class TestDownloadSources(TestBase):
         distribuciones está vacío.
         """
         # Truncar archivo
-        with open(paths.DIST_URLS_PATH, "w") as f:
-            pass
+        open(paths.DIST_URLS_PATH, "w").close()
 
         # El test pasa si no se lanza una excepción
         download_urls.main("distribution")

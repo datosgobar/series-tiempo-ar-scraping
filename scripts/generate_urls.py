@@ -9,7 +9,7 @@ import os
 import codecs
 import sys
 
-from paths import CATALOGS_DIR, DIST_URLS_PATH, SCRAP_URLS_PATH
+from paths import DIST_URLS_PATH, SCRAP_URLS_PATH
 from paths import get_catalog_path
 from helpers import get_logger, get_catalogs_index, print_log_separator
 from pydatajson.helpers import title_to_name

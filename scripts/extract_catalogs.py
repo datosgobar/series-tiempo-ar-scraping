@@ -12,10 +12,8 @@ import sys
 import shutil
 import StringIO
 import traceback
-import pandas as pd
 import arrow
 import logging
-from openpyxl import load_workbook
 from series_tiempo_ar import TimeSeriesDataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers

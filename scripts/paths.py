@@ -80,7 +80,7 @@ def get_catalog_datasets_dir(catalog_id):
 
 
 def get_distribution_path(catalog_id, dataset_id, distribution_id,
-                          catalogs_dir=CATALOGS_DIR):
+                          catalogs_dir=CATALOGS_DIR, extension="csv"):
     distribution_download_dir = get_distribution_download_dir(
         catalogs_dir,
         catalog_id,
@@ -88,21 +88,20 @@ def get_distribution_path(catalog_id, dataset_id, distribution_id,
         distribution_id
     )
 
-    glob_pattern = os.path.join(distribution_download_dir, "*.csv")
-    distribution_csv_files = glob.glob(glob_pattern)
+    glob_pattern = os.path.join(distribution_download_dir,
+                                "*.{}".format(extension))
 
-    if len(distribution_csv_files) == 1:
-        return distribution_csv_files[0]
-    elif len(distribution_csv_files) == 0:
+    distribution_files = sorted(glob.glob(glob_pattern),
+                                reverse=True,
+                                key=lambda f: os.stat(f).st_mtime)
+
+    if distribution_files:
+        # Tomar el primer elemento de la lista: el archivo más reciente
+        return distribution_files[0]
+    else:
         raise Exception(
             "Sin archivos para la distribucion {} del dataset {}\n{}".format(
                 distribution_id, dataset_id, glob_pattern))
-    else:
-        raise Exception(
-            "{} archivos para la distribucion {} del dataset {}\n{}".format(
-                len(distribution_csv_files), distribution_id,
-                dataset_id, glob_pattern)
-        )
 
 
 def get_catalog_path(catalog_id, catalogs_dir=CATALOGS_DIR, extension="json"):

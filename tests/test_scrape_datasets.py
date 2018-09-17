@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import shutil
 import os
 
 from series_tiempo_ar import TimeSeriesDataJson
 
 from . import TestBase
-from . import test_files_dir
 
 from scripts import scrape_datasets
 from scripts import paths

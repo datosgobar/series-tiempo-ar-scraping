@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
 from series_tiempo_ar import TimeSeriesDataJson
 
 from . import TestBase
@@ -43,19 +42,6 @@ class TestExtractValidCatalogs(TestBase):
             found.append(os.path.isfile(paths.get_catalog_path(catalog)))
 
         self.assertTrue(all(found) and found)
-
-    def test_extraction_validates(self):
-        """
-        Probar que los catálogos extraídos son válidos.
-        """
-        valid = []
-        for catalog in helpers.get_catalogs_index():
-            path = paths.get_catalog_path(catalog)
-
-            catalog = TimeSeriesDataJson(path)
-            valid.append(catalog.is_valid_catalog())
-
-        self.assertTrue(all(valid) and valid)
 
     def test_extraction_validates(self):
         """
