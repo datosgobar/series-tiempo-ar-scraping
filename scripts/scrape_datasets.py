@@ -335,6 +335,12 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                 "download", "{}".format(distribution_file_name)
             )
 
+            # agrega URL de descarga si no la tiene
+            if ("downloadURL" not in distrib_meta or
+                    not distrib_meta["downloadURL"]):
+                dist_url = get_distribution_url(dist_path)
+                distrib_meta["downloadURL"] = dist_url
+
             # chequea si ante la existencia del archivo hay que reemplazarlo o
             # saltearlo
             if not os.path.exists(dist_path) or replace:
