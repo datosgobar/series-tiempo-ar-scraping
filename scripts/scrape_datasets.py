@@ -335,12 +335,6 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                 "download", "{}".format(distribution_file_name)
             )
 
-            # agrega URL de descarga si no la tiene
-            if ("downloadURL" not in distrib_meta or
-                    not distrib_meta["downloadURL"]):
-                dist_url = get_distribution_url(dist_path)
-                distrib_meta["downloadURL"] = dist_url
-
             # chequea si ante la existencia del archivo hay que reemplazarlo o
             # saltearlo
             if not os.path.exists(dist_path) or replace:
@@ -353,14 +347,21 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                 )
 
                 helpers.ensure_dir_exists(os.path.dirname(dist_path))
+                helpers.remove_other_files(os.path.dirname(dist_path))
 
-                # if origin_dist_path:
-                #     shutil.copyfile(origin_dist_path, dist_path)
-                # else:
-                df.to_csv(dist_path, encoding="utf-8",
-                          index_label="indice_tiempo")
+                if origin_dist_path:
+                    shutil.copyfile(origin_dist_path, dist_path)
+                else:
+                    df.to_csv(dist_path, encoding="utf-8",
+                              index_label="indice_tiempo")
             else:
                 status = "Skipped"
+
+            # agrega URL de descarga si no la tiene
+            if ("downloadURL" not in distrib_meta or
+                    not distrib_meta["downloadURL"]):
+                dist_url = get_distribution_url(dist_path)
+                distrib_meta["downloadURL"] = dist_url
 
             res["distributions_ok"].append((distribution_identifier, status))
             logger.info(msg.format(distribution_identifier, "OK", status))
