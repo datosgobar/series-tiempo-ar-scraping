@@ -354,11 +354,11 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
 
                 helpers.ensure_dir_exists(os.path.dirname(dist_path))
 
-                if origin_dist_path:
-                    shutil.copyfile(origin_dist_path, dist_path)
-                else:
-                    df.to_csv(dist_path, encoding="utf-8",
-                              index_label="indice_tiempo")
+                # if origin_dist_path:
+                #     shutil.copyfile(origin_dist_path, dist_path)
+                # else:
+                df.to_csv(dist_path, encoding="utf-8",
+                          index_label="indice_tiempo")
             else:
                 status = "Skipped"
 
