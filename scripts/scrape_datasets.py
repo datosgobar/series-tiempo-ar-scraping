@@ -17,7 +17,6 @@ from copy import deepcopy
 from urlparse import urljoin
 
 from pydatajson.helpers import title_to_name
-from pydatajson.time_series import get_distribution_time_index
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from series_tiempo_ar.validations import validate_distribution_scraping
