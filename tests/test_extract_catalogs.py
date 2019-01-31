@@ -12,6 +12,7 @@ from scripts import helpers
 
 
 class TestExtractValidCatalogs(TestBase):
+
     def __init__(self, *args, **kwargs):
         super(TestExtractValidCatalogs, self).__init__(*args, **kwargs)
         self._name = "valid_extraction"
@@ -91,6 +92,7 @@ class TestExtractValidCatalogs(TestBase):
 
 
 class TestExtractInvalidCatalogs(TestBase):
+
     def __init__(self, *args, **kwargs):
         super(TestExtractInvalidCatalogs, self).__init__(*args, **kwargs)
         self._name = "invalid_extraction"

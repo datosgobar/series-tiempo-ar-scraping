@@ -23,6 +23,8 @@ from xlseries import XlSeries
 from series_tiempo_ar.validations import validate_distribution_scraping
 from series_tiempo_ar.validations import validate_distribution
 from series_tiempo_ar import TimeSeriesDataJson
+from series_tiempo_ar.readers import get_ts_distributions_by_method
+from series_tiempo_ar.readers import get_distribution_generation_method
 
 import helpers
 
@@ -102,8 +104,10 @@ def gen_distribution_params(catalog, distribution_identifier):
     params["time_header_coord"] = field["scrapingIdentifierCell"]
 
     # nombres de las series
-    params["series_names"] = [f["title"] for f in fields
-                              if not f.get("specialType")]
+    params["series_names"] = [
+        f["title"].encode("utf-8") for f in fields
+        if not f.get("specialType")
+    ]
 
     return params
 
@@ -159,20 +163,19 @@ def analyze_distribution(catalog_id, catalog, dataset_id, distribution_id):
     distrib_meta = catalog.get_distribution(distribution_id)
     dataset_meta = catalog.get_dataset(dataset_id)
 
-    distribution_path = get_distribution_path(
-        catalog_id, dataset_meta["identifier"], distribution_id,
-        CATALOGS_DIR_INPUT)
+    method = get_distribution_generation_method(distrib_meta)
+
+    if method == "csv_file":
+        distribution_path = get_distribution_path(
+            catalog_id, dataset_meta["identifier"], distribution_id,
+            CATALOGS_DIR_INPUT)
+    else:
+        distribution_path = None
     # print("leyendo distribucion {} en {}".format(
     #     distribution_id, distribution_path))
 
-    time_index = get_distribution_time_index(distrib_meta)
-    # time_index = "indice_tiempo"
-    df = pd.read_csv(
-        distribution_path, index_col=time_index,
-        parse_dates=[time_index],
-        date_parser=lambda x: arrow.get(x, "YYYY-MM-DD").datetime
-        # encoding="utf-8"
-    )
+    df = catalog.load_ts_distribution(distribution_id, catalog_id,
+                                      file_source=distribution_path)
 
     validate_distribution(df, catalog, dataset_meta, distrib_meta,
                           distribution_id)
@@ -345,7 +348,12 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
                 )
 
                 helpers.ensure_dir_exists(os.path.dirname(dist_path))
-                shutil.copyfile(origin_dist_path, dist_path)
+
+                if origin_dist_path:
+                    shutil.copyfile(origin_dist_path, dist_path)
+                else:
+                    df.to_csv(dist_path, encoding="utf-8",
+                              index_label="indice_tiempo")
             else:
                 status = "Skipped"
 
@@ -440,16 +448,18 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
 def analyze_catalog(catalog_id, catalog, datasets_dir,
                     replace=True, debug_mode=False,
                     debug_distribution_ids=None):
-    distributions_with_url = filter(
-        lambda x: "downloadURL" in x and bool(x["downloadURL"]),
-        catalog.get_distributions(only_time_series=True)
+    text_distributions = get_ts_distributions_by_method(catalog, "text_file")
+    csv_distributions = get_ts_distributions_by_method(catalog, "csv_file")
+
+    logger.info("{} distribuciones con CSV normalizados".format(
+        len(csv_distributions))
     )
-    logger.info("{} distribuciones con `downloadURL`".format(
-        len(distributions_with_url))
+    logger.info("{} distribuciones a generar de archivos de texto".format(
+        len(text_distributions))
     )
     dataset_ids = set((
         distribution["dataset_identifier"]
-        for distribution in distributions_with_url
+        for distribution in csv_distributions + text_distributions
     ))
 
     time_series_ids = [distribution["identifier"]
@@ -586,7 +596,13 @@ def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
     # compone los paths a los excels de ied
     scrapingURLs = set(catalog.get_distributions(only_time_series=True,
                                                  meta_field="scrapingFileURL"))
-    scraping_xlsx_filenames = [os.path.basename(x) for x in scrapingURLs]
+    scraping_xlsx_filenames = [
+        os.path.basename(x) for x in scrapingURLs
+        if (
+            os.path.basename(x).split(".")[-1].lower() == "xlsx" or
+            os.path.basename(x).split(".")[-1].lower() == "xls"
+        )
+    ]
     scraping_xlsx_paths = [os.path.join(catalog_sources_dir, filename)
                            for filename in scraping_xlsx_filenames]
 

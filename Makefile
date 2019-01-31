@@ -129,10 +129,12 @@ custom_steps:
 	fi;
 
 test:
-	@TESTING=quiet nosetests
+	@TESTING=quiet nosetests --nocapture
+	# @TESTING=quiet nosetests --nocapture tests.test_extract_catalogs:TestExtractValidCatalogs.test_extraction_validates
 
 test_verbose:
-	@TESTING=verbose nosetests -v
+	@TESTING=verbose nosetests -v --nocapture
+	# @TESTING=verbose nosetests -v  --nocapture tests.test_scrape_datasets:TestScrapeDatasets.test_distributions_created
 
 code_style:
 	$(SERIES_TIEMPO_PYTHON) -m flake8 tests/ scripts/
