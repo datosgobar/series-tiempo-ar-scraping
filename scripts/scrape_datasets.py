@@ -9,14 +9,15 @@ from __future__ import print_function
 from __future__ import with_statement
 import os
 import sys
-import pandas as pd
-import arrow
 import shutil
 import traceback
 from copy import deepcopy
 from urlparse import urljoin
 
+import pandas as pd
+import arrow
 from pydatajson.helpers import title_to_name
+from pydatajson.writers import write_json_catalog
 from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 from xlseries import XlSeries
 from series_tiempo_ar.validations import validate_distribution_scraping
@@ -32,8 +33,6 @@ from paths import get_distribution_path, get_catalog_path, \
     get_catalog_scraping_sources_dir, get_catalog_datasets_dir
 from paths import CATALOGS_DIR_INPUT
 from paths import SCRAPING_MAIL_CONFIG
-
-from pydatajson.writers import write_json_catalog
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -111,6 +110,7 @@ def gen_distribution_params(catalog, distribution_identifier):
     return params
 
 
+# pylint: disable=unused-argument
 def scrape_dataframe(xl, worksheet, headers_coord, headers_value, data_starts,
                      frequency, time_header_coord, series_names):
     params = deepcopy(XLSERIES_PARAMS)
@@ -133,7 +133,6 @@ def scrape_dataframe(xl, worksheet, headers_coord, headers_value, data_starts,
 
 
 def scrape_distribution(xl, catalog, distribution_identifier):
-
     distribution_params = gen_distribution_params(
         catalog, distribution_identifier)
     distrib_meta = catalog.get_distribution(distribution_identifier)
@@ -158,7 +157,6 @@ def scrape_distribution(xl, catalog, distribution_identifier):
 
 
 def analyze_distribution(catalog_id, catalog, dataset_id, distribution_id):
-
     distrib_meta = catalog.get_distribution(distribution_id)
     dataset_meta = catalog.get_dataset(dataset_id)
 
@@ -192,6 +190,8 @@ def get_distribution_url(dist_path):
     )
 
 
+# pylint: disable=too-many-locals
+# pylint: disable=broad-except
 def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
                    debug_mode=False, replace=True, debug_distribution_ids=None,
                    catalog_id=None):
@@ -290,6 +290,8 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
     return res
 
 
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
 def analyze_dataset(catalog_id, catalog, dataset_identifier,
                     datasets_output_dir, time_series_ids, debug_mode=False,
                     replace=True, debug_distribution_ids=None):
@@ -396,11 +398,8 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
     # filtro los parametros para un excel en particular
     dataset_ids = set()
     for distribution in catalog.get_distributions(only_time_series=True):
-        if (
-            ("scrapingFileURL" in distribution) and
-                (os.path.basename(distribution[
-                    "scrapingFileURL"]) == scraping_filename)
-        ):
+        url = distribution.get("scrapingFileURL")
+        if url and os.path.basename(url) == scraping_filename:
             dataset_ids.add(distribution["dataset_identifier"])
 
     report_datasets = []
@@ -440,7 +439,7 @@ def scrape_file(scraping_xlsx_path, catalog, datasets_dir,
         # si se eliminaron las distribuciones del dataset, se borra el dataset
         distributions = catalog.get_dataset(
             dataset_identifier).get("distribution", [])
-        if len(distributions) == 0:
+        if not distributions:
             logger.info(
                 "Se elimina el dataset {}, no tiene distribuciones".format(
                     dataset_identifier
@@ -457,12 +456,10 @@ def analyze_catalog(catalog_id, catalog, datasets_dir,
     text_distributions = get_ts_distributions_by_method(catalog, "text_file")
     csv_distributions = get_ts_distributions_by_method(catalog, "csv_file")
 
-    logger.info("{} distribuciones con CSV normalizados".format(
-        len(csv_distributions))
-    )
-    logger.info("{} distribuciones a generar de archivos de texto".format(
-        len(text_distributions))
-    )
+    logger.info("{} distribuciones con CSV normalizados".format(len(
+        csv_distributions)))
+    logger.info("{} distribuciones a generar de archivos de texto".format(len(
+        text_distributions)))
     dataset_ids = set((
         distribution["dataset_identifier"]
         for distribution in csv_distributions + text_distributions
@@ -537,7 +534,7 @@ def generate_summary_indicators(report_files, report_datasets,
         report_distributions.distribution_status != "OK"
     ])
 
-    if len(report_distributions) > 0:
+    if len(report_distributions):  # pylint: disable=len-as-condition
         distributions_ok_pctg = float(distr_ok) / (distr_ok + distr_error)
     else:
         distributions_ok_pctg = 1
@@ -556,7 +553,7 @@ def generate_summary_indicators(report_files, report_datasets,
         "Distribuciones (OK %)": round(distributions_ok_pctg, 3) * 100
     }
 
-    if report_files is not None and len(report_files) > 0:
+    if len(report_files):  # pylint: disable=len-as-condition
         indicators_files = {
             "Archivos": len(report_files),
             "Archivos (OK)": len(report_files[
@@ -571,6 +568,8 @@ def generate_summary_indicators(report_files, report_datasets,
     return indicators
 
 
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
                     debug_distribution_ids=None, do_scraping=True,
                     do_distributions=True):
@@ -699,22 +698,23 @@ def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
 
     helpers.ensure_dir_exists(os.path.join(REPORTES_DIR, catalog_id))
 
+    attachment_cfg = SCRAPING_MAIL_CONFIG["attachments"]
+
     # guarda el reporte de archivos en EXCEL
     complete_report_files.to_excel(
-        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG[
-                     "attachments"]["files_report"]),
+        os.path.join(REPORTES_DIR, catalog_id, attachment_cfg["files_report"]),
         encoding="utf-8", index=False)
 
     # guarda el reporte de datasets en EXCEL
     complete_report_datasets.to_excel(
-        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG[
-                     "attachments"]["datasets_report"]),
+        os.path.join(REPORTES_DIR, catalog_id,
+                     attachment_cfg["datasets_report"]),
         encoding="utf-8", index=False)
 
     # guarda el reporte de distribuciones en EXCEL
     complete_report_distributions.to_excel(
-        os.path.join(REPORTES_DIR, catalog_id, SCRAPING_MAIL_CONFIG[
-                     "attachments"]["distributions_report"]),
+        os.path.join(REPORTES_DIR, catalog_id,
+                     attachment_cfg["distributions_report"]),
         encoding="utf-8", index=False)
 
     # imprime resultados a la terminal
@@ -755,7 +755,5 @@ def main(replace):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        replace = True if sys.argv[1] == "replace" else False
-
-    main(replace)
+    enable_replace = len(sys.argv) >= 2 and sys.argv[1] == "replace"
+    main(enable_replace)

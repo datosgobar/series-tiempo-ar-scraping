@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+from scripts import download_urls
+from scripts import paths
 from . import TestBase
 from . import MockDownloads
 from . import test_files_dir
-
-from scripts import download_urls
-from scripts import paths
 
 
 class TestDownloadSources(TestBase):
@@ -31,9 +29,9 @@ class TestDownloadSources(TestBase):
         """
         self._mocker.add_url_files([
             ("https://example.com/file1.xlsx",
-                test_files_dir(self._name, "mock", "test.xlsx")),
+             test_files_dir(self._name, "mock", "test.xlsx")),
             ("https://example.com/file2.xlsx",
-                test_files_dir(self._name, "mock", "test.xlsx"))
+             test_files_dir(self._name, "mock", "test.xlsx"))
         ])
         self._mocker.add_url_errors([
             ("https://example.com/invalid_url", 404)
@@ -57,9 +55,9 @@ class TestDownloadSources(TestBase):
         """
         self._mocker.add_url_files([
             ("https://example.com/file1.csv",
-                test_files_dir(self._name, "mock", "test.csv")),
+             test_files_dir(self._name, "mock", "test.csv")),
             ("https://example.com/file2.csv",
-                test_files_dir(self._name, "mock", "test.csv"))
+             test_files_dir(self._name, "mock", "test.csv"))
         ])
         self._mocker.add_url_errors([
             ("https://example.com/invalid_url", 404)
@@ -67,7 +65,7 @@ class TestDownloadSources(TestBase):
 
         download_urls.main("distribution")
 
-        found = []
+        found = {}
         with open(paths.DIST_URLS_PATH) as f:
             for line in f.readlines():
                 catalog, dataset, distribution, filename, _ = \
@@ -77,9 +75,13 @@ class TestDownloadSources(TestBase):
                     paths.CATALOGS_DIR_INPUT, catalog, dataset, distribution
                 ), filename)
 
-                found.append(os.path.isfile(filepath))
+                found[distribution] = os.path.isfile(filepath)
 
-        self.assertTrue(all(found) and found)
+        self.assertDictEqual(found, {
+            '200.1': True,
+            '200.2': True,
+            '200.3': False
+        })
 
     def test_no_scraping_sources(self):
         """

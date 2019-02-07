@@ -7,12 +7,12 @@ import os
 import codecs
 import sys
 import urlparse
-
 from paths import CATALOGS_DIR_INPUT, DIST_URLS_PATH, SCRAP_URLS_PATH
 from paths import get_distribution_download_dir
 from paths import get_catalog_scraping_sources_dir
 from helpers import get_logger, ensure_dir_exists, print_log_separator
 from helpers import download_with_config, get_catalog_download_config
+from download import DownloadException
 
 logger = get_logger(os.path.basename(__file__))
 
@@ -36,13 +36,13 @@ def download_scraping_sources(urls):
 
         ensure_dir_exists(catalog_scraping_sources_dir)
         url = urlparse.urlparse(scraping_url)
-        file = os.path.basename(url.path)
-        file_path = os.path.join(catalog_scraping_sources_dir, file)
+        file_path = os.path.join(catalog_scraping_sources_dir,
+                                 os.path.basename(url.path))
 
         try:
             download_with_config(scraping_url, file_path, config)
             logger.info("Archivo descargado")
-        except Exception as e:
+        except DownloadException as e:
             logger.error("Error al descargar el archivo")
             logger.error(e)
 
@@ -76,7 +76,7 @@ def download_distributions(urls):
         try:
             download_with_config(url, file_path, config)
             logger.info("Archivo descargado")
-        except Exception as e:
+        except DownloadException as e:
             logger.error("Error al descargar el archivo")
             logger.error(e)
 

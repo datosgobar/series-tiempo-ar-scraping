@@ -5,4 +5,4 @@ install:
   - pip install -r requirements.txt -r requirements_dev.txt
 script:
   - make test
-  - make code_style
+  - make code_checks

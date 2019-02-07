@@ -2,13 +2,12 @@
 
 import os
 from series_tiempo_ar import TimeSeriesDataJson
-
-from . import TestBase
-from . import MockDownloads
-from . import test_files_dir
 from scripts import extract_catalogs
 from scripts import paths
 from scripts import helpers
+from . import TestBase
+from . import MockDownloads
+from . import test_files_dir
 
 
 class TestExtractValidCatalogs(TestBase):
@@ -22,9 +21,9 @@ class TestExtractValidCatalogs(TestBase):
         self._mocker = MockDownloads()
         self._mocker.add_url_files([
             ("https://example.com/test1.json",
-                test_files_dir(self._name, "mock", "test1.json")),
+             test_files_dir(self._name, "mock", "test1.json")),
             ("https://example.com/test2.xlsx",
-                test_files_dir(self._name, "mock", "test2.xlsx"))
+             test_files_dir(self._name, "mock", "test2.xlsx"))
         ])
         self._mocker.start()
 
@@ -102,7 +101,7 @@ class TestExtractInvalidCatalogs(TestBase):
         self._mocker = MockDownloads()
         self._mocker.add_url_files([
             ("https://example.com/invalid_file",
-                test_files_dir(self._name, "mock", "test.txt"))
+             test_files_dir(self._name, "mock", "test.txt"))
         ])
         self._mocker.add_url_errors([
             ("https://example.com/invalid_url", 404)

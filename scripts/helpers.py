@@ -9,14 +9,11 @@ from __future__ import with_statement
 
 import os
 import shutil
-from openpyxl import load_workbook
-import zipfile
-import datetime
-import time
 import urlparse
-import yaml
 import logging
 import logging.config
+import re
+import yaml
 import download
 
 from paths import CONFIG_DOWNLOADS_PATH
@@ -33,55 +30,12 @@ FREQ_ISO_TO_HUMAN = {
 SEPARATOR_WIDTH = 60
 
 
-def safe_sheet_name(string):
-    invalid_chars = "[]:*?/\\"
-    for invalid_char in invalid_chars:
-        string = string.replace(invalid_char, "_")
-    return string
-
-
 def indicators_to_text(simple_dict):
     text = "\n" + "\n".join(
         "{}: {}".format(key.ljust(40), value)
         for key, value in sorted(simple_dict.items(), key=lambda x: x[0])
     )
     return text
-
-
-def timeit(method):
-
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-
-        print('{} ({}, {}) {%2.2f} sec'.format(
-            method.__name__, args, kw, te - ts)
-        )
-        return result
-
-    return timed
-
-
-def print_zipfile_info(path):
-    zf = zipfile.ZipFile(path)
-    for info in zf.infolist():
-        print(info.filename)
-        print('\tComment:\t', info.comment)
-        print('\tModified:\t', datetime.datetime(*info.date_time))
-        print('\tSystem:\t\t', info.create_system, '(0 = Windows, 3 = Unix)')
-        print('\tZIP version:\t', info.create_version)
-        print('\tCompressed:\t', info.compress_size, 'bytes')
-        print('\tUncompressed:\t', info.file_size, 'bytes')
-
-
-def compress_file(from_path, to_path):
-    zf = zipfile.ZipFile(to_path, 'w', zipfile.ZIP_DEFLATED)
-    try:
-        zf.write(from_path, os.path.basename(from_path))
-    finally:
-        zf.close()
-    # print_zipfile_info(to_path)
 
 
 def freq_iso_to_xlseries(freq_iso8601):
@@ -93,31 +47,6 @@ def freq_iso_to_xlseries(freq_iso8601):
         "R/P1D": "D"
     }
     return frequencies_map[freq_iso8601]
-
-
-def freq_iso_to_pandas(freq_iso8601, how="start"):
-    frequencies_map_start = {
-        "R/P1Y": "AS",
-        "R/P6M": "6MS",
-        "R/P3M": "QS",
-        "R/P1M": "MS",
-        "R/P1D": "DS"
-    }
-    frequencies_map_end = {
-        "R/P1Y": "A",
-        "R/P6M": "6M",
-        "R/P3M": "Q",
-        "R/P1M": "M",
-        "R/P1D": "D"
-    }
-    if how == "start":
-        return frequencies_map_start[freq_iso8601]
-    elif how == "end":
-        return frequencies_map_end[freq_iso8601]
-    else:
-        raise Exception(
-            "{} no se reconoce para 'how': debe ser 'start' o 'end'".format(
-                how))
 
 
 def remove_other_files(directory):
@@ -133,25 +62,12 @@ def ensure_dir_exists(directory):
         os.makedirs(directory)
 
 
-def get_ws_case_insensitive(wb, title):
-    """Devuelve una hoja en un workbook sin importar mayúsculas/minúsculas."""
-    return wb[find_ws_name(wb, title)]
-
-
-def find_ws_name(wb, name):
-    """Busca una hoja en un workbook sin importar mayúsculas/minúsculas."""
-    if type(wb) == str or type(wb) == unicode:
-        wb = load_workbook(wb, read_only=True, data_only=True)
-
-    for sheetname in wb.sheetnames:
-        if sheetname.lower() == name.lower():
-            return sheetname
-
-    return None
-
-
 def row_from_cell_coord(coord):
-    return int(filter(lambda x: x.isdigit(), coord))
+    match = re.match(r'^[A-Za-z]+(\d+)$', coord)
+    if not match:
+        raise ValueError('Invalid coordinate')
+
+    return int(match.group(1))
 
 
 def load_yaml(path):
@@ -173,7 +89,7 @@ def get_general_config():
     return load_yaml(CONFIG_GENERAL_PATH)
 
 
-def get_logger(name=__name__):
+def get_logger(name):
     levels = {
         'critical': logging.CRITICAL,
         'error': logging.ERROR,
@@ -182,16 +98,16 @@ def get_logger(name=__name__):
         'debug': logging.DEBUG
     }
 
-    logger = logging.getLogger(name)
+    new_logger = logging.getLogger(name)
 
     if 'TESTING' in os.environ:
-        logger.disabled = os.environ['TESTING'] != 'verbose'
+        new_logger.disabled = os.environ['TESTING'] != 'verbose'
         selected_level = logging.DEBUG
     else:
         config = get_general_config()
         selected_level = levels[config['logging']]
 
-    logger.setLevel(selected_level)
+    new_logger.setLevel(selected_level)
 
     ch = logging.StreamHandler()
     ch.setLevel(selected_level)
@@ -200,22 +116,22 @@ def get_logger(name=__name__):
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         '%Y-%m-%d %H:%M:%S')
     ch.setFormatter(logging_formatter)
-    logger.addHandler(ch)
+    new_logger.addHandler(ch)
 
-    return logger
+    return new_logger
 
 
 logger = get_logger(os.path.basename(__file__))
 
 
-def print_log_separator(logger, message):
-    logger.info("=" * SEPARATOR_WIDTH)
-    logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
+def print_log_separator(l, message):
+    l.info("=" * SEPARATOR_WIDTH)
+    l.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
 
-    logger.info("|" + message.center(SEPARATOR_WIDTH - 2) + "|")
+    l.info("|" + message.center(SEPARATOR_WIDTH - 2) + "|")
 
-    logger.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
-    logger.info("=" * SEPARATOR_WIDTH)
+    l.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
+    l.info("=" * SEPARATOR_WIDTH)
 
 
 def is_http_or_https(url):

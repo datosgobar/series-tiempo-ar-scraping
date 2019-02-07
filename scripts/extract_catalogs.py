@@ -12,8 +12,8 @@ import sys
 import shutil
 import StringIO
 import traceback
-import arrow
 import logging
+import arrow
 from series_tiempo_ar import TimeSeriesDataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
@@ -39,27 +39,18 @@ logger = get_logger(os.path.basename(__file__))
 logger.propagate = False
 
 
-def read_xlsx_catalog(catalog_xlsx_path, logger=None):
+def read_xlsx_catalog(catalog_xlsx_path):
     """Lee catálogo en excel."""
 
-    default_values = {
-        #     "catalog_modified": NOW,
-        #     "dataset_issued": NOW,
-        #     "distribution_issued": NOW,
-        #     "dataset_modified": NOW,
-        #     "distribution_modified": NOW
-    }
+    default_values = {}
+    catalog = readers.read_xlsx_catalog(catalog_xlsx_path, logger)
+    catalog = TimeSeriesDataJson(catalog, default_values=default_values)
+    clean_catalog(catalog)
 
-    catalogo = readers.read_xlsx_catalog(catalog_xlsx_path, logger)
-    catalogo = TimeSeriesDataJson(catalogo, default_values=default_values)
-
-    clean_catalog(catalogo)
-
-    return catalogo
+    return catalog
 
 
 def clean_catalog(catalog):
-
     for dataset in catalog["dataset"]:
         for distribution in dataset["distribution"]:
             if "field" in distribution:
@@ -163,7 +154,7 @@ def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
         warnings_str = repr(warnings_log).encode("utf8")
     else:
         warnings_str = warnings_log.getvalue()
-    if is_valid_catalog and len(warnings_str) == 0:
+    if is_valid_catalog and not warnings_str:
         message = "El catálogo '{}' no tiene errores.".format(catalog_id)
     else:
         message = "El catálogo '{}' tiene errores.".format(catalog_id)
@@ -172,6 +163,8 @@ def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
     return subject, message
 
 
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
 def process_catalog(catalog_id, catalog_format, catalog_url,
                     catalogs_dir=CATALOGS_DIR):
     """Descarga y procesa el catálogo.
@@ -221,7 +214,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
             if extension == 'xlsx':
                 logger.info('Transformación de XLSX a JSON')
                 catalog = TimeSeriesDataJson(
-                    read_xlsx_catalog(catalog_input_path, logger))
+                    read_xlsx_catalog(catalog_input_path))
             else:
                 catalog = TimeSeriesDataJson(catalog_input_path)
 
@@ -235,24 +228,22 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
                     extension))
 
         # filtra, valida y escribe el catálogo en JSON y XLSX
-        if catalog and len(catalog) > 0:
+        if catalog:
             logger.info("Valida y filtra el catálogo")
             catalog_filtered = validate_and_filter(catalog_id, catalog,
                                                    warnings_log)
 
             logger.info('Escritura de catálogo en JSON: {}'.format(
-                catalog_path_template.format("data.json"))
-            )
-            write_json_catalog(
-                catalog_id, catalog_filtered,
-                catalog_path_template.format("data.json"))
+                catalog_path_template.format("data.json")))
+
+            write_json_catalog(catalog_id, catalog_filtered,
+                               catalog_path_template.format("data.json"))
 
             logger.info('Escritura de catálogo en XLSX: {}'.format(
-                catalog_path_template.format("catalog.xlsx"))
-            )
-            catalog_filtered.to_xlsx(
-                catalog_path_template.format("catalog.xlsx")
-            )
+                catalog_path_template.format("catalog.xlsx")))
+
+            catalog_filtered.to_xlsx(catalog_path_template.format(
+                "catalog.xlsx"))
         else:
             raise Exception("El catálogo {} no se pudo generar".format(
                 catalog_id))
@@ -266,7 +257,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
         #     catalog_filtered,
         #     export_path=catalog_path_template.format('datasets.csv'))
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         logger.error('Error al procesar el catálogo: {}'.format(catalog_id))
         for line in traceback.format_exc().splitlines():
             logger.error(line.decode("utf8"))
@@ -303,5 +294,5 @@ def main(catalog_ids=None):
 
 if __name__ == '__main__':
     # opcionalmente se puede pasar un catalog_id para extraer un sólo catálogo
-    catalog_id = sys.argv[1] if len(sys.argv) > 1 else None
-    main(catalog_id)
+    catalog_id_arg = sys.argv[1] if len(sys.argv) > 1 else None
+    main(catalog_id_arg)

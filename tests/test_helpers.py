@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from . import TestBase
-
 from scripts import helpers
+from . import TestBase
 
 
 class TestHelpers(TestBase):

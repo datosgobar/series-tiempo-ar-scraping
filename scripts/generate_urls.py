@@ -8,12 +8,11 @@ from __future__ import with_statement
 import os
 import codecs
 import sys
-
+from pydatajson.helpers import title_to_name
+from series_tiempo_ar import TimeSeriesDataJson
 from paths import DIST_URLS_PATH, SCRAP_URLS_PATH
 from paths import get_catalog_path
 from helpers import get_logger, get_catalogs_index, print_log_separator
-from pydatajson.helpers import title_to_name
-from series_tiempo_ar import TimeSeriesDataJson
 
 logger = get_logger(os.path.basename(__file__))
 
@@ -22,10 +21,12 @@ def get_distribution_download_urls(distributions, catalog_id):
     # agrega las url que encuentra junto con su id de catalogo
     urls = []
 
-    for distribution in filter(
-        lambda dist: 'downloadURL' in dist and dist['downloadURL'],
-            distributions):
+    url_dists = [
+        dist for dist in distributions
+        if 'downloadURL' in dist and dist['downloadURL']
+    ]
 
+    for distribution in url_dists:
         if "fileName" in distribution:
             distribution_fileName = distribution["fileName"]
         else:
@@ -99,7 +100,7 @@ def main(sources_type):
                 urls.extend(get_distribution_download_urls(
                     distributions, catalog_id))
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             logger.error(
                 "No se pudo extraer URLs de fuentes del catalogo {}".format(
                     catalog_id))

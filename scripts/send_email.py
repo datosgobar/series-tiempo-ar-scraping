@@ -12,13 +12,13 @@ encontrado en scripts/config/config_email.example.yaml.
 from __future__ import unicode_literals
 import sys
 import os
-import smtplib
-import yaml
 import os.path
+import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+import yaml
 
 from helpers import get_logger, print_log_separator, get_catalogs_index
 from paths import CONFIG_EMAIL_PATH, REPORTES_DIR
@@ -78,7 +78,6 @@ def send_group_emails(group_name):
     print_log_separator(logger, "Envío de mails para: {}".format(group_name))
 
     try:
-        print(CONFIG_EMAIL_PATH)
         with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
             cfg = yaml.load(ymlfile)
     except (IOError, yaml.parser.ParserError):
@@ -96,10 +95,7 @@ def send_group_emails(group_name):
     # paths a archivos con componentes del mail
     mail_files = GROUP_CONFIGS[group_name]
 
-    # catálogos listados en index.yaml
-    catalogs_index = get_catalogs_index()
-
-    for catalog_id in catalogs_index:
+    for catalog_id in get_catalogs_index():
         if not catalogs_configs or catalog_id not in catalogs_configs:
             logger.warning(
                 "No hay configuración de mails para catálogo {}.".format(

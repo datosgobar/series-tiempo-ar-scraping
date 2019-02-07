@@ -134,8 +134,9 @@ test:
 test_verbose:
 	@TESTING=verbose nosetests -v
 
-code_style:
+code_checks:
 	$(SERIES_TIEMPO_PYTHON) -m flake8 tests/ scripts/
+	$(SERIES_TIEMPO_PYTHON) -m pylint tests/ scripts/
 
 # DOCUMENTACIÓN Y RELEASE
 release: clean ## package and upload a release

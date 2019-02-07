@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-
 from series_tiempo_ar import TimeSeriesDataJson
-
-from . import TestBase
-
 from scripts import scrape_datasets
 from scripts import paths
 from scripts import helpers
+from . import TestBase
 
 
 class TestScrapeDatasets(TestBase):

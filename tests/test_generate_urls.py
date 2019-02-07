@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from . import TestBase
-
 from scripts import generate_urls
 from scripts import paths
+from . import TestBase
 
 
 class TestGenerateUrls(TestBase):

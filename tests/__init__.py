@@ -14,6 +14,10 @@ def test_files_dir(*args):
 
 
 class TestBase(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestBase, self).__init__(*args, **kwargs)
+        self._name = None
+
     def setUp(self):
         if "TESTING" not in os.environ or paths.ROOT_DIR == paths.PROJECT_DIR:
             raise Exception("TESTING environent variable not set.")
@@ -50,10 +54,12 @@ class MockDownloads(object):
         for url, path in url_files:
             f = io.open(path, "rb")
             self._files.append(f)
+            # pylint: disable=no-member
             self._mocker.add(responses.GET, url, body=f)
 
     def add_url_errors(self, url_errors):
         for url, code in url_errors:
+            # pylint: disable=no-member
             self._mocker.add(responses.GET, url, status=code)
 
     def start(self):
@@ -70,6 +76,6 @@ class MockDownloads(object):
         self.start()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, value, traceback):
         self.stop()
         return False
