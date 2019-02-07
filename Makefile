@@ -1,7 +1,7 @@
 # Makefile para Ubuntu 16.04
 SHELL = bash
-SERIES_TIEMPO_PIP ?= pip
-SERIES_TIEMPO_PYTHON ?= python
+SERIES_TIEMPO_PIP ?= pip3
+SERIES_TIEMPO_PYTHON ?= python3
 VIRTUALENV = series-tiempo-ar-scraping
 CONDA_ENV = series-tiempo-ar-scraping
 
@@ -30,9 +30,9 @@ extraction: extract_catalogs send_extraction_report generate_urls download_sourc
 transformation: scrape_datasets send_transformation_report
 
 install_anaconda:
-	wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
-	bash Miniconda2-latest-Linux-x86_64.sh
-	rm Miniconda2-latest-Linux-x86_64.sh
+	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+	bash Miniconda3-latest-Linux-x86_64.sh
+	rm Miniconda3-latest-Linux-x86_64.sh
 
 install_nginx:
 	sudo apt-get update && sudo apt-get install nginx nginx-extras
@@ -46,8 +46,7 @@ start_python_server:
 	cd data/output && $(SERIES_TIEMPO_PYTHON) -m SimpleHTTPServer 8080
 
 setup_virtualenv: create_dir
-	$(SERIES_TIEMPO_PIP) install virtualenv --upgrade
-	test -d $(VIRTUALENV)/bin/activate || virtualenv $(VIRTUALENV)
+	test -d $(VIRTUALENV)/bin/activate || $(SERIES_TIEMPO_PYTHON) -m venv $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
 		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
