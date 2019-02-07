@@ -1,7 +1,6 @@
 """Genera un archivo de texto con las urls de archivos a descargar"""
 
 import os
-import codecs
 import sys
 from pydatajson.helpers import title_to_name
 from series_tiempo_ar import TimeSeriesDataJson
@@ -103,7 +102,7 @@ def main(sources_type):
 
     logger.info("{} URLs de {} en total".format(len(urls), sources_type))
 
-    with codecs.open(sources_urls_path, "wb", encoding="utf-8") as f:
+    with open(sources_urls_path, "w") as f:
         f.write("\n".join(urls))
         f.write("\n")
 

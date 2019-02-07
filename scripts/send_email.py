@@ -66,7 +66,8 @@ def send_email(mailer_config, subject, message, recipients, files=None):
     s.sendmail(mailer_config["user"], recipients, msg.as_string())
     s.close()
 
-    logger.info("Se envió exitosamente un reporte a " + ", ".join(recipients))
+    logger.info("Se envió exitosamente un reporte a {}".format(
+        ", ".join(recipients)))
 
 
 def send_group_emails(group_name):

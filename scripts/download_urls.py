@@ -1,5 +1,4 @@
 import os
-import codecs
 import sys
 import urllib.parse
 from paths import CATALOGS_DIR_INPUT, DIST_URLS_PATH, SCRAP_URLS_PATH
@@ -83,7 +82,7 @@ def main(sources_type):
         sources_urls_path = DIST_URLS_PATH
 
     try:
-        with codecs.open(sources_urls_path, "rb") as f:
+        with open(sources_urls_path) as f:
             urls = f.readlines()
     except IOError as e:
         logger.error("No se pudo abrir el archivo de URLS.")

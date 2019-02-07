@@ -117,11 +117,11 @@ def _write_extraction_mail_texts(catalog_id, subject, message):
     ensure_dir_exists(reportes_catalog_dir)
 
     with open(os.path.join(reportes_catalog_dir,
-                           EXTRACTION_MAIL_CONFIG["subject"]), "wb") as f:
-        f.write(subject.encode("utf-8"))
+                           EXTRACTION_MAIL_CONFIG["subject"]), "w") as f:
+        f.write(subject)
     with open(os.path.join(reportes_catalog_dir,
-                           EXTRACTION_MAIL_CONFIG["message"]), "wb") as f:
-        f.write(message.encode("utf-8"))
+                           EXTRACTION_MAIL_CONFIG["message"]), "w") as f:
+        f.write(message)
 
 
 def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
@@ -145,7 +145,7 @@ def generate_validation_message(catalog_id, is_valid_catalog, warnings_log):
 
     # mensaje del mail
     if isinstance(warnings_log, Exception):
-        warnings_str = repr(warnings_log).encode("utf8")
+        warnings_str = str(warnings_log)
     else:
         warnings_str = warnings_log.getvalue()
     if is_valid_catalog and not warnings_str:
@@ -190,6 +190,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
     catalog_input_path_template = os.path.join(catalog_input_dir, "{}")
 
     # procesa el catálogo dependiendo del formato
+    logger.info('')
     logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
     try:
         logger.info('Descarga y lectura de catálogo')
@@ -242,19 +243,10 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
             raise Exception("El catálogo {} no se pudo generar".format(
                 catalog_id))
 
-        # genera reportes del catálogo
-        # logger.info('Generación de reportes')
-        # catalog_filtered.generate_catalog_readme(
-        #     catalog_filtered,
-        #     export_path=catalog_path_template.format('README.md'))
-        # catalog_filtered.generate_datasets_summary(
-        #     catalog_filtered,
-        #     export_path=catalog_path_template.format('datasets.csv'))
-
     except Exception as e:  # pylint: disable=broad-except
         logger.error('Error al procesar el catálogo: {}'.format(catalog_id))
         for line in traceback.format_exc().splitlines():
-            logger.error(line.decode("utf8"))
+            logger.error(line)
         subject, message = generate_validation_message(catalog_id, False, e)
         _write_extraction_mail_texts(catalog_id, subject, message)
     finally:

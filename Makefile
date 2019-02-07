@@ -128,14 +128,14 @@ custom_steps:
 	fi;
 
 test:
-	@TESTING=quiet nosetests --with-coverage --cover-package=scripts
+	PYTHONPATH=scripts TESTING=quiet nosetests --with-coverage --cover-package=scripts
 
 test_verbose:
-	@TESTING=verbose nosetests -v  --with-coverage --cover-package=scripts
+	PYTHONPATH=scripts TESTING=verbose nosetests -v  --with-coverage --cover-package=scripts
 
 code_checks:
-	$(SERIES_TIEMPO_PYTHON) -m flake8 tests/ scripts/
-	$(SERIES_TIEMPO_PYTHON) -m pylint tests/ scripts/
+	PYTHONPATH=scripts flake8 tests/ scripts/
+	PYTHONPATH=scripts pylint tests/ scripts/
 
 # DOCUMENTACIÓN Y RELEASE
 release: clean ## package and upload a release

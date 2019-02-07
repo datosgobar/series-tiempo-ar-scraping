@@ -96,7 +96,7 @@ def gen_distribution_params(catalog, distribution_identifier):
 
     # nombres de las series
     params["series_names"] = [
-        f["title"].encode("utf-8") for f in fields
+        f["title"] for f in fields
         if not f.get("specialType")
     ]
 
@@ -259,13 +259,13 @@ def scrape_dataset(xl, catalog, dataset_identifier, datasets_dir,
             if isinstance(e, KeyboardInterrupt):
                 raise
 
-            res["distributions_error"].append(
-                (distribution_identifier, repr(e).encode("utf8")))
+            res["distributions_error"].append((distribution_identifier,
+                                               repr(e)))
 
             trace_string = traceback.format_exc()
             print(msg.format(
                 distribution_identifier, "ERROR",
-                repr(e).encode("utf8")
+                repr(e)
             ))
             print(trace_string)
             if debug_mode:
@@ -364,13 +364,13 @@ def analyze_dataset(catalog_id, catalog, dataset_identifier,
         except Exception as e:
             if isinstance(e, KeyboardInterrupt):
                 raise
-            res["distributions_error"].append(
-                (distribution_identifier, repr(e).encode("utf8")))
+            res["distributions_error"].append((distribution_identifier,
+                                               repr(e)))
 
             trace_string = traceback.format_exc()
             logger.error(msg.format(
                 distribution_identifier, "ERROR",
-                repr(e).encode("utf8")
+                repr(e)
             ))
             for line in trace_string.splitlines():
                 logger.error(line)
@@ -658,12 +658,11 @@ def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
                 report_files.append({
                     "file_name": scraping_xlsx_path,
                     "file_status": "ERROR",
-                    "file_notes": repr(e).encode("utf8")
+                    "file_notes": repr(e)
                 })
 
                 trace_string = traceback.format_exc()
-                logger.error(msg.format(scraping_xlsx_path, "ERROR",
-                                        repr(e).encode("utf8")))
+                logger.error(msg.format(scraping_xlsx_path, "ERROR", repr(e)))
                 for line in trace_string.splitlines():
                     logger.error(line)
                 if debug_mode:
@@ -719,10 +718,10 @@ def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
     subject, message = generate_summary_message(catalog_id, indicators)
 
     with open(os.path.join(REPORTES_DIR, catalog_id,
-                           SCRAPING_MAIL_CONFIG["subject"]), "wb") as f:
+                           SCRAPING_MAIL_CONFIG["subject"]), "w") as f:
         f.write(subject)
     with open(os.path.join(REPORTES_DIR, catalog_id,
-                           SCRAPING_MAIL_CONFIG["message"]), "wb") as f:
+                           SCRAPING_MAIL_CONFIG["message"]), "w") as f:
         f.write(message)
 
     logger.info("Escribiendo nueva version de {}".format(catalog_json_path))
@@ -740,6 +739,7 @@ def main(replace):
     logger.info("HAY {} CATALOGOS".format(len(catalogs_index)))
 
     for catalog_id in catalogs_index:
+        logger.info('')
         logger.info('=== Catálogo {} ==='.format(catalog_id.upper()))
         scrape_catalogs(catalog_id, replace=replace, debug_mode=False,
                         debug_distribution_ids=[])
