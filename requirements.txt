@@ -1,10 +1,7 @@
-series-tiempo-ar>=0.2.1
-pydatajson>=0.4.12
-xlseries>=0.1.25,<0.2
-pandas
-openpyxl>=2.5,<2.6
-xlrd
-requests
-pyyaml
-urllib3[secure]
-jsonschema==2.6.0
+series-tiempo-ar==0.2.1
+pydatajson==0.4.34
+xlseries==0.1.26
+pandas==0.24.1
+requests==2.21.0
+pyyaml==3.13
+urllib3[secure]==1.22
