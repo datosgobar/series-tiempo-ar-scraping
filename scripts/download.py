@@ -41,7 +41,7 @@ def download(url, tries=DEFAULT_TRIES, retry_delay=RETRY_DELAY,
             if i < tries - 1:
                 time.sleep(retry_delay)
 
-    raise DownloadException(download_exception)
+    raise DownloadException() from download_exception
 
 
 def download_to_file(url, file_path, **kwargs):
@@ -60,4 +60,4 @@ def download_to_file(url, file_path, **kwargs):
         try:
             f.write(content)
         except IOError as e:
-            raise DownloadException(e)
+            raise DownloadException() from e
