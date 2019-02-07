@@ -1,4 +1,4 @@
-series-tiempo-ar>=0.1.10
+series-tiempo-ar>=0.2.1
 pydatajson>=0.4.12
 xlseries>=0.1.25,<0.2
 pandas
