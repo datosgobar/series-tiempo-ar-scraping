@@ -1,5 +1,6 @@
 # series-tiempo-ar-scraping
 [![Build Status](https://travis-ci.org/datosgobar/series-tiempo-ar-scraping.svg?branch=master)](https://travis-ci.org/datosgobar/series-tiempo-ar-scraping)
+[![Coverage Status](https://coveralls.io/repos/github/datosgobar/series-tiempo-ar-scraping/badge.svg?branch=master)](https://coveralls.io/github/datosgobar/series-tiempo-ar-scraping?branch=master)
 ![license](https://img.shields.io/github/license/datosgobar/series-tiempo-ar-scraping.svg)
 ![python](https://img.shields.io/badge/python-2.X-blue.svg)
 

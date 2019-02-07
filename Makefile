@@ -129,10 +129,10 @@ custom_steps:
 	fi;
 
 test:
-	@TESTING=quiet nosetests
+	@TESTING=quiet nosetests --with-coverage --cover-package=scripts
 
 test_verbose:
-	@TESTING=verbose nosetests -v
+	@TESTING=verbose nosetests -v  --with-coverage --cover-package=scripts
 
 code_checks:
 	$(SERIES_TIEMPO_PYTHON) -m flake8 tests/ scripts/
