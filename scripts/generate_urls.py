@@ -1,10 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """Genera un archivo de texto con las urls de archivos a descargar"""
 
-from __future__ import unicode_literals
-from __future__ import with_statement
 import os
 import codecs
 import sys
@@ -32,7 +27,7 @@ def get_distribution_download_urls(distributions, catalog_id):
         else:
             distribution_fileName = "{}.{}".format(
                 title_to_name(distribution["title"]),
-                unicode(distribution["format"]).split("/")[-1].lower()
+                str(distribution["format"]).split("/")[-1].lower()
             )
 
         urls.append("{} {} {} {} {}".format(

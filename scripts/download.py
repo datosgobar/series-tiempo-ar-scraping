@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals, print_function, with_statement
-from __future__ import absolute_import
-
 import time
 import requests
 

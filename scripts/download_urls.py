@@ -1,12 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
-from __future__ import with_statement
 import os
 import codecs
 import sys
-import urlparse
+import urllib.parse
 from paths import CATALOGS_DIR_INPUT, DIST_URLS_PATH, SCRAP_URLS_PATH
 from paths import get_distribution_download_dir
 from paths import get_catalog_scraping_sources_dir
@@ -35,7 +30,7 @@ def download_scraping_sources(urls):
         )
 
         ensure_dir_exists(catalog_scraping_sources_dir)
-        url = urlparse.urlparse(scraping_url)
+        url = urllib.parse.urlparse(scraping_url)
         file_path = os.path.join(catalog_scraping_sources_dir,
                                  os.path.basename(url.path))
 

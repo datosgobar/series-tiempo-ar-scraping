@@ -1,15 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """Funciones auxiliares"""
-
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import with_statement
 
 import os
 import shutil
-import urlparse
+import urllib.parse
 import logging
 import logging.config
 import re
@@ -33,7 +26,7 @@ SEPARATOR_WIDTH = 60
 def indicators_to_text(simple_dict):
     text = "\n" + "\n".join(
         "{}: {}".format(key.ljust(40), value)
-        for key, value in sorted(simple_dict.items(), key=lambda x: x[0])
+        for key, value in sorted(list(simple_dict.items()), key=lambda x: x[0])
     )
     return text
 
@@ -135,7 +128,7 @@ def print_log_separator(l, message):
 
 
 def is_http_or_https(url):
-    return urlparse.urlparse(url).scheme in ["http", "https"]
+    return urllib.parse.urlparse(url).scheme in ["http", "https"]
 
 
 def get_catalog_download_config(catalog_id):
@@ -157,8 +150,8 @@ def get_catalog_download_config(catalog_id):
     if "sources" not in config:
         config["sources"] = {}
 
-    for key, value in default_config.items():
-        for subconfig in config.values():
+    for key, value in list(default_config.items()):
+        for subconfig in list(config.values()):
             if key not in subconfig:
                 subconfig[key] = value
 

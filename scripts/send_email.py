@@ -1,15 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-Envía un mail en texto plano desde un script de python. Usa un archivo de
+"""Envía un mail en texto plano desde un script de python. Usa un archivo de
 configuración para tomar un usuario, password, servidor SMTP y puerto.
 
 Debe crearse un config_email.yaml utilizando como plantilla el archivo
 encontrado en scripts/config/config_email.example.yaml.
 """
 
-from __future__ import unicode_literals
 import sys
 import os
 import os.path
@@ -129,7 +124,7 @@ def send_group_emails(group_name):
         # destinatarios y adjuntos
         recipients = catalogs_configs[catalog_id]["destinatarios"]
         files = []
-        for attachment in mail_files["attachments"].values():
+        for attachment in list(mail_files["attachments"].values()):
             files.append(report_file_path(catalog_id, attachment))
 
         logger.info("Enviando reporte al grupo {}...".format(catalog_id))

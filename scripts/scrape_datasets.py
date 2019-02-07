@@ -1,18 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""Scrapea datasets a partir de un catálogo y parámetros para XlSeries."""
 
-"""Scrapea datasets a partir de un catálogo y parámetros para XlSeries
-"""
-
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import with_statement
 import os
 import sys
 import shutil
 import traceback
 from copy import deepcopy
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 import pandas as pd
 import arrow
@@ -44,7 +37,7 @@ TODAY = arrow.now().format('YYYY-MM-DD')
 logger = helpers.get_logger(os.path.basename(__file__))
 
 XLSERIES_PARAMS = {
-    'alignment': u'vertical',
+    'alignment': 'vertical',
     'composed_headers_coord': None,
     'context': None,
     'continuity': True,
@@ -87,10 +80,10 @@ def gen_distribution_params(catalog, distribution_identifier):
                                if not field.get("specialType")]
 
     # fila donde empiezan los datos
-    params["data_starts"] = map(
+    params["data_starts"] = list(map(
         helpers.row_from_cell_coord,
         [field["scrapingDataStartCell"] for field in fields
-         if not field.get("specialType")])
+         if not field.get("specialType")]))
 
     # frecuencia de las series
     field = catalog.get_field(distribution_identifier=distribution_identifier,

@@ -1,16 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """Genera un data.json a partir de un catálogo en excel.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import with_statement
 import os
 import sys
 import shutil
-import StringIO
+import io
 import traceback
 import logging
 import arrow
@@ -180,7 +174,7 @@ def process_catalog(catalog_id, catalog_format, catalog_url,
     """
 
     # loggea warnings en un objeto para el mensaje de reporte
-    warnings_log = StringIO.StringIO()
+    warnings_log = io.StringIO()
     fh = logging.StreamHandler(warnings_log)
     fh.setLevel(logging.WARNING)
     logger.addHandler(fh)
