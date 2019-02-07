@@ -1,0 +1,7 @@
+test_json:
+  url: "https://example.com/test1.json"
+  formato: "json"
+
+test_xlsx:
+  url: "https://example.com/test2.xlsx"
+  formato: "xlsx"
