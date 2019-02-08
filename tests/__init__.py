@@ -6,10 +6,10 @@ import shutil
 import io
 import responses
 
+from scripts import paths
+
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-from scripts import paths
 
 
 def test_files_dir(*args):

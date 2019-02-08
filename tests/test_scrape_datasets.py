@@ -3,7 +3,6 @@
 import os
 from series_tiempo_ar import TimeSeriesDataJson
 from scripts import scrape_datasets
-from scripts import extract_catalogs
 from scripts import paths
 from scripts import helpers
 from . import TestBase
@@ -20,10 +19,10 @@ class TestScrapeDatasetsTextFiles(TestBase):
     def setUp(self):
         super().setUp()
         self._mocker = MockDownloads()
-        self._mocker.add_url_files([
-            ("http://www.bcra.gob.ar/Pdfs/PublicacionesEstadisticas/panser.txt",
-             test_files_dir(self._name, "mock", "panser.txt"))
-        ])
+        self._mocker.add_url_files([(
+            "http://www.bcra.gob.ar/Pdfs/PublicacionesEstadisticas/panser.txt",
+            test_files_dir(self._name, "mock", "panser.txt")
+        )])
         # self._mocker.start()
 
     def tearDown(self):
