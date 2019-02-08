@@ -1,0 +1,11 @@
+mailer:
+ user: foo
+ password: bar
+ smtp_server: smtp.example.com
+ port: 587
+ ssl: true
+scraping:
+ example_catalog1:
+   destinatarios:
+    - jane@example.com
+    - john@example.com
