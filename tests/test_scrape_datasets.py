@@ -3,12 +3,75 @@
 import os
 from series_tiempo_ar import TimeSeriesDataJson
 from scripts import scrape_datasets
+from scripts import extract_catalogs
 from scripts import paths
 from scripts import helpers
 from . import TestBase
+from . import MockDownloads
+from . import test_files_dir
+
+
+class TestScrapeDatasetsTextFiles(TestBase):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._name = "scrape_datasets_text_files"
+
+    def setUp(self):
+        super().setUp()
+        self._mocker = MockDownloads()
+        self._mocker.add_url_files([
+            ("http://www.bcra.gob.ar/Pdfs/PublicacionesEstadisticas/panser.txt",
+             test_files_dir(self._name, "mock", "panser.txt"))
+        ])
+        # self._mocker.start()
+
+    def tearDown(self):
+        super().tearDown()
+        # self._mocker.stop()
+
+    def test_distributions_created(self):
+        """
+        Probar que todas las distribuciones del catálogo se encuentran
+        descargadas, ya sea directamente o a través de scraping.
+        """
+        print(paths.get_catalog_path("bcra"))
+        catalog = TimeSeriesDataJson(
+            paths.get_catalog_path("bcra"))
+        distributions = catalog.get_distributions(only_time_series=True)
+        scrape_datasets.main(True)
+
+        found = []
+        for distribution in distributions:
+            filepath = paths.get_distribution_path(
+                catalog["identifier"],
+                distribution["dataset_identifier"],
+                distribution["identifier"]
+            )
+            print(filepath)
+            found.append(os.path.isfile(filepath))
+
+        self.assertTrue(all(found) and found)
+
+    def test_distributions_download_url(self):
+        """
+        Probar que todas las distribuciones del catálogo tienen downloadURL.
+        """
+        scrape_datasets.main(True)
+
+        catalog = TimeSeriesDataJson(
+            paths.get_catalog_path("bcra"))
+        distributions = catalog.get_distributions(only_time_series=True)
+
+        valid = []
+        for distribution in distributions:
+            valid.append("downloadURL" in distribution)
+
+        self.assertTrue(all(valid) and valid)
 
 
 class TestScrapeDatasets(TestBase):
+
     def __init__(self, *args, **kwargs):
         super(TestScrapeDatasets, self).__init__(*args, **kwargs)
         self._name = "scrape_datasets"
@@ -85,6 +148,7 @@ class TestScrapeDatasets(TestBase):
 
 
 class TestScrapeDatasetsMissingFiles(TestBase):
+
     def __init__(self, *args, **kwargs):
         super(TestScrapeDatasetsMissingFiles, self).__init__(*args, **kwargs)
         self._name = "scrape_datasets_missing_files"

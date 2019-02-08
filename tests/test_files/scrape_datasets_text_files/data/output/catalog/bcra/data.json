@@ -1,0 +1,1102 @@
+{
+    "identifier": "bcra",
+    "title": "Datos Abiertos del BCRA",
+    "spatial": "ARG",
+    "language": [
+        "SPA"
+    ],
+    "description": "Catálogo de datos abiertos del Banco Central de la República Argentina.",
+    "issued": "2019-01-18",
+    "modified": "2019-01-18",
+    "license": "Creative Commons Attribution 4.0",
+    "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+    "themeTaxonomy": [
+        {
+            "id": "actividad",
+            "description": "Series de actividad: cuentas nacionales, consumo, producción, etc.",
+            "label": "Actividad"
+        },
+        {
+            "id": "empleo",
+            "description": "Series de empleo e ingresos: mercado laboral, salarios, etc.",
+            "label": "Empleo e Ingresos"
+        },
+        {
+            "id": "externo",
+            "description": "Series externas: Balance de Pagos, Intercambio Comercial, etc.",
+            "label": "Sector Externo"
+        },
+        {
+            "id": "moneda",
+            "description": "Series monetarias y bancarias",
+            "label": "Dinero y Bancos"
+        },
+        {
+            "id": "precios",
+            "description": "Series de precios",
+            "label": "Precios"
+        },
+        {
+            "id": "internacional",
+            "description": "Series económicas mundiales",
+            "label": "Economía Internacional"
+        },
+        {
+            "id": "fiscal",
+            "description": "Series de recaudación, ingresos, gastos, etc.",
+            "label": "Finanzas Públicas"
+        },
+        {
+            "id": "finanzas",
+            "description": "Series financieras y de mercado de capitales",
+            "label": "Mercados Financieros"
+        }
+    ],
+    "dataset": [
+        {
+            "identifier": "1",
+            "title": "Panorama monetario y financiero",
+            "spatial": "ARG",
+            "language": [
+                "SPA"
+            ],
+            "superTheme": [
+                "ECON"
+            ],
+            "accessLevel": "ABIERTO",
+            "description": "Reservas internacionales del BCRA: oro, divisas, colocaciones a plazo y otros, saldos a fin de mes y promedio mensual de saldos diarios, en millones de dólares estadounidenses. Agregados monetarios, saldos a fin de mes, en miles de pesos. Principales pasivos del BCRA, promedio mensual de saldos diarios en millones de pesos. Dinero y crédito, saldos a fin de mes, en millones de pesos. Tasas de interés, promedio mensual en porcentaje nominal anual.",
+            "accrualPeriodicity": "R/P1D",
+            "contactPoint": {
+                "fn": "Banco Central de la República Argentina (BCRA)"
+            },
+            "issued": "2019-01-18",
+            "landingPage": "http://www.bcra.gov.ar/PublicacionesEstadisticas/Cuadros_estandarizados_series_estadisticas.asp",
+            "license": "Creative Commons Attribution 4.0",
+            "source": "Banco Central de la República Argentina (BCRA)",
+            "distribution": [
+                {
+                    "scrapingFileValuesField": 3,
+                    "identifier": "1.1",
+                    "scrapingFileURL": "http://www.bcra.gob.ar/Pdfs/PublicacionesEstadisticas/panser.txt",
+                    "field": [
+                        {
+                            "distribution_identifier": "1.1",
+                            "notes": "Sumatoria de las reservas internacionales del Banco Central de la República Argentina en oro, divisas y colocaciones a plazo",
+                            "dataset_identifier": "1",
+                            "id": "bcra-time-index-1.1",
+                            "specialType": "time_index",
+                            "type": "date",
+                            "specialTypeDetail": "R/P1M",
+                            "title": "indice_tiempo"
+                        },
+                        {
+                            "notes": "Sumatoria de las reservas internacionales del Banco Central de la República Argentina en oro, divisas y colocaciones a plazo",
+                            "units": "Millones de USD",
+                            "description": "Reservas internacionales del BCRA - oro, divisas, colocaciones a plazo y otros - Saldos a fin de mes, en millones de dólares estadounidenses",
+                            "id": "bcra-1",
+                            "title": "reservas_internacionales_saldo_fin_mes",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Sumatoria de la base monetaria y de los depósitos en moneda extranjera de entidades financieras en el Banco Central de la República Argentina",
+                            "units": "Millones de USD",
+                            "description": "Reservas internacionales del BCRA - oro, divisas, colocaciones a plazo y otros - Promedio mensual de saldos diarios, en millones de dólares estadounidenses",
+                            "id": "bcra-2",
+                            "title": "reservas_internacionales_promedio_saldo_diario",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Sumatoria de la circulación monetaria (billetes y monedas emitidos por el Banco Central de la República Argentina y puestos en circulación), del Fondo de Liquidez Bancaria (durante el período 28. 12. 2001  09. 05. 2002) y de los depósitos en pesos de las entidades financieras en esta Institución. Desde enero de 1995 hasta mayo de 2001, se dispuso la unificación de las cuentas corrientes en pesos y a la vista en dólares en una única cuenta corriente -en dólares- (es decir que, durante ese período, la base monetaria equivalía exclusivamente a la cuenta Circulación Monetaria). A partir de junio de 2001, se habilitaron nuevamente las cuentas corrientes en pesos",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Pasivos monetarios - Total",
+                            "id": "bcra-3",
+                            "title": "pasivos_monetarios_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Billetes y monedas emitidos y puestos en circulación por el Banco Central de la República Argentina",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Pasivos monetarios - Base monetaria - Total",
+                            "id": "bcra-4",
+                            "title": "base_monetaria_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Depósitos en pesos constituidos por las entidades financieras en cuentas corrientes abiertas en el Banco Central de la República Argentina",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Pasivos monetarios - Base monetaria - Circulación - monetaria",
+                            "id": "bcra-5",
+                            "title": "base_monetaria_circulacion_monetaria",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Depósitos en moneda extranjera constituidos por las entidades financieras en cuentas corrientes abiertas en el Banco Central de la República Argentina y para la integración del Fondo de Liquidez Bancaria, vigente desde el 28 de diciembre de 2001 hasta el 4 de marzo de 2002",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Pasivos monetarios - Base monetaria - Cuenta corriente en pesos en el BCRA",
+                            "id": "bcra-6",
+                            "title": "base_monetaria_cta_cte_en_bcra",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Saldo vigente correspondiente a los montos aceptados en las licitaciones de Letras y Notas del Banco Central (LEBAC y NOBAC, respectivamente), emitidas en moneda nacional",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Pasivos monetarios - Depósitos y otros pasivos monetarios en moneda extranjera",
+                            "id": "bcra-7",
+                            "title": "pasivos_monetarios_depositos_y_otros_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Saldo vigente correspondiente a los montos aceptados en las licitaciones de Letras y Notas del Banco Central (LEBAC y NOBAC, respectivamente), emitidas en dólares estadounidenses",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Letras y Notas del BCRA - En pesos",
+                            "id": "bcra-8",
+                            "title": "letras_y_notas_bcra_ars",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Saldo neto de las operaciones de pases concretadas con las entidades financieras del país",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Letras y Notas del BCRA - En dólares estadounidenses",
+                            "id": "bcra-9",
+                            "title": "letras_y_notas_bcra_usd",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Obligaciones emergentes de las compras a futuro de títulos valores, comprometidas por operaciones de pase pasivo (venta al contado y compra a futuro) concretadas por el Banco Central de la República Argentina con las entidades financieras del país",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Posición neta de pases - Total",
+                            "id": "bcra-10",
+                            "title": "posicion_neta_pases_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Derechos emergentes de las ventas a futuro de títulos valores, adquiridos por operaciones de pase activo (compra al contado y venta a futuro) concretadas por el Banco Central de la Repú-blica Argentina con las entidades financieras del país",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Posición neta de pases - Pases pasivos",
+                            "id": "bcra-11",
+                            "title": "posicion_neta_pases_pasivos",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Depósitos constituidos por el Gobierno Nacional en el Banco Central de la República Argentina",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Posición neta de pases - Pases activos",
+                            "id": "bcra-12",
+                            "title": "posicion_neta_pases_activos",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Saldos adeudados al Banco Central de la Republica Argentina, capitales y ajustes devengados (estos últimos a partir del mes de enero de 2003), provenientes del otorgamiento de redescuentos y adelantos en cuentas a las entidades financieras, por razones de iliquidez transitoria. También incluye desde el 20 de marzo de 2003, los adelantos para la compra de Bonos del Gobier-no Nacional (BODEN) y sus respectivos ajustes",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Depósitos del Gobierno",
+                            "id": "bcra-13",
+                            "title": "depositos_gobierno",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Sumatoria de la circulación monetaria (billetes y monedas emitidos por el Banco Central de la República Argentina y puestos en circulación), del Fondo de Liquidez Bancaria (vigente durante el período 28. 12. 2001  09. 05. 2002) y de los depósitos en pesos de las entidades financieras en esta Institución. Desde enero de 1995 hasta mayo de 2001, se dispuso la unificación de las cuentas corrientes en pesos y a la vista en dólares en una única cuenta corriente -en dólares- (es decir que, durante ese período, la base monetaria equivalía exclusivamente a la cuenta Circulación Monetaria). A partir de junio de 2001, se habilitaron nuevamente las cuentas corrientes en pesos.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Principales pasivos del BCRA, promedio mensual de saldos diarios en miles de pesos - Redescuentos y adelantos por iliquidez otorgados al sistema financiero",
+                            "id": "bcra-14",
+                            "title": "redescuentos_y_adelantos_liquidez_al_sistema_financiero",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Dinero - Base Monetaria",
+                            "id": "bcra-15",
+                            "title": "base_monetaria_total2",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "No incluye depósitos de residentes en el exterior.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Dinero - Billetes y monedas fuera del sistema financiero",
+                            "id": "bcra-16",
+                            "title": "billetes_y_monedas_fuera_del_sistema_financiero",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Total de depósitos en el país, de moneda nacional, de residentes pertenecientes al sector privado no financiero (capitales e intereses devengados a pagar) en el Banco Central y en las entidades financieras locales.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Dinero - Depósitos - Total",
+                            "id": "bcra-17",
+                            "title": "depositos_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Total de depósitos en el país, de moneda extranjera, de residentes pertenecientes al sector privado no financiero (capitales e intereses devengados a pagar) en el Banco Central y en las entidades financieras locales.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Dinero - Depósitos - Del sector privado no financiero - De moneda nacional",
+                            "id": "bcra-18",
+                            "title": "depositos_sector_privado_no_financiero_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Total de depósitos en el país, de moneda nacional, de residentes pertenecientes al sector público no financiero (capitales e intereses devengados a pagar) en el Banco Central y en las entidades financieras locales. A partir de abril de 2012 incluye un cambio de exposición en los estados contables de dos entidades financieras (hasta el mes anterior presentaban los depósitos en cuentas corrientes en moneda nacional del sector público no financiero, netos de la utilización de fondos unificados)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Dinero - Depósitos - Del sector privado no financiero - De moneda extranjera",
+                            "id": "bcra-19",
+                            "title": "depositos_sector_privado_no_financiero_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Total de depósitos en el país, de moneda extranjera, de residentes pertenecientes al sector público no financiero (capitales e intereses devengados a pagar) en el Banco Central y en las entidades financieras locales.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Dinero - Depósitos - Del sector público no financiero - De moneda nacional",
+                            "id": "bcra-20",
+                            "title": "depositos_sector_publico_no_financiero_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "No incluye los créditos otorgados a residentes en el exterior.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Dinero - Depósitos - Del sector público no financiero - De moneda extranjera",
+                            "id": "bcra-21",
+                            "title": "depositos_sector_publico_no_financiero_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Crédito al sector privado no financiero, de moneda nacional, otorgado por las entidades financieras locales.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Crédito - Total",
+                            "id": "bcra-22",
+                            "title": "credito_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Crédito al sector privado no financiero, de moneda extranjera, otorgado por las entidades financieras locales.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Crédito - Al sector privado no financiero - De moneda nacional",
+                            "id": "bcra-23",
+                            "title": "credito_sector_privado_no_financiero_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Crédito al sector público no financiero, de moneda nacional, otorgado por el Banco Central de la República Argentina y por las entidades financieras locales. A partir de abril de 2012 incluye un cambio de exposición en los estados contables de dos entidades financieras (hasta el mes anterior presentaban los depósitos en cuentas corrientes en moneda nacional del sector público no financiero, netos de la utilización de fondos unificados).",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Crédito - Al sector privado no financiero - De moneda extranjera",
+                            "id": "bcra-24",
+                            "title": "credito_sector_privado_no_financiero_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Crédito al sector público no financiero, de moneda extranjera, otorgado por el Banco Central de la República Argentina y por las entidades financieras locales.",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Crédito - Al sector público no financiero - De moneda nacional",
+                            "id": "bcra-25",
+                            "title": "credito_sector_publico_no_financiero_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Corresponde: hasta el 30 de diciembre de 2002 inclusive al tipo de cambio cierre vendedor del Banco de la Nación Argentina del día hábil anterior, para el 31 de diciembre de 2002 al tipo de cambio de referencia de ese día, a partir del 2 de enero de 2003 y hasta el 26 de marzo de 2004 inclusive al tipo de cambio de referencia del día hábil anterior y a partir del 29 de marzo 2004 inclusive al tipo de cambio de referencia del día. El tipo de cambio de referencia es obtenido por el BCRA a partir de las cotizaciones solicitadas a un conjunto de entidades, que refleja las condiciones predominantes en el mercado de cambios mayorista (referencia: Com. A 3500)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Crédito - Al sector público no financiero - De moneda extranjera",
+                            "id": "bcra-26",
+                            "title": "credito_sector_publico_no_financiero_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés pagadas por depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-. Comprende también cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002). No incluye cuentas de ahorro vinculado a préstamos, depósitos en cuentas especiales para círculos cerrados de ahorro, depósitos en la cuenta Fondo de desempleo para trabajadores de la industria de la construcción y cuentas abiertas mediante sistemas de incentivos o estímulos adicionales que impliquen una tasa de interés menor que la que se reconozca para cajas de ahorro abiertas fuera de esos sistemas",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito, saldos a fin de mes, en miles de pesos - Tipo de cambio de valuación (1 upesoss = )",
+                            "id": "bcra-27",
+                            "title": "tipo_cambio_valuacion",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés pagadas por depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- en moneda extranjera. Incluye también cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001). No contempla cuentas abiertas mediante sistemas de incentivos o estímulos adicionales que impliquen una tasa de interés menor que la que se reconozca para cajas de ahorro abiertas fuera de esos sistemas",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por depósitos en caja de ahorros - De moneda nacional",
+                            "id": "bcra-28",
+                            "title": "tasa_depositos_caja_ahorro_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés pagadas por depósitos a plazo fijo, de moneda nacional, de 30 a 59 días constituidos en el mes (durante el período 15. 4. 2002  31. 10. 2003 se incluyen los depósitos concertados de 7 a 29 días de plazo)",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por depósitos en caja de ahorros - De moneda extranjera",
+                            "id": "bcra-29",
+                            "title": "tasa_depositos_caja_ahorro_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés pagadas por depósitos a plazo fijo, de moneda extranjera, de 30 a 59 días constituidos en el mes (durante el período 15. 4. 2002  31. 10. 2003 se incluyen los depósitos concertados de 7 a 29 días de plazo)",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por depósitosa plazo fijo de 30 a 59 días de plazo - De moneda nacional",
+                            "id": "bcra-30",
+                            "title": "tasa_depositos_30_a_59_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés, fijas, pagadas por obligaciones contraídas, en el mes, por entidades financieras del país con entidades financieras del exterior no vinculadas (las cuales no están relacionadas institucionalmente con la entidad financiera local ni mantienen con ella acuerdos de corresponsalía). No se incluyen los préstamos de títulos valores ni de otros activos financieros, ni los préstamos con garantía de esos valores o con garantía real",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por depósitosa plazo fijo de 30 a 59 días de plazo - De moneda extranjera",
+                            "id": "bcra-31",
+                            "title": "tasa_depositos_30_a_59_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés, fijas, cobradas por las entidades financieras locales por el otorgamiento, en el mes, de préstamos de efectivo, hasta 15 días de plazo, en moneda nacional, a otras entidades financieras locales. No se incluyen los préstamos de títulos valores ni de otros activos financieros, ni los préstamos con garantía de esos valores o con garantía real.",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por obligaciones con entidades financieras del exterior",
+                            "id": "bcra-32",
+                            "title": "tasa_obligaciones_con_entidades_financieras_exterior",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés, fijas, cobradas por las entidades financieras locales por el otorgamiento, en el mes, de préstamos de efectivo, hasta 15 días de plazo, en moneda extranjera, a otras entidades financieras locales. No se incluyen los préstamos de títulos valores ni de otros activos financieros, ni los préstamos con garantía de esos valores o con garantía real.",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por préstamos interfinancieros hasta 15 días de plazo - De moneda nacional",
+                            "id": "bcra-33",
+                            "title": "tasa_prestamos_interfinancieros_hasta_15_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio aritmético de las tasas de interés establecidas para el otorgamiento de préstamos de efectivo de moneda nacional, a tasa de interés fija y a 30 días de plazo, a empresas de primera línea. No se incluyen los préstamos de títulos valores ni de otros activos financieros, ni los préstamos con garantía de esos valores o con garantía real. La categorización de una empresa como de primera línea presupone que pueda ser considerada como un deudor que demuestre que es capaz de atender holgadamente todos sus compromisos financieros (categoría 1. en situación normal de la clasificación de deudores comerciales establecida por el BCRA)",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por préstamos interfinancieros hasta 15 días de plazo - De moneda extranjera",
+                            "id": "bcra-34",
+                            "title": "tasa_prestamos_interfinancieros_hasta_15_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio aritmético de las tasas de interés establecidas para el otorgamiento de préstamos de efectivo de moneda extranjera a tasa de interés fija y a 30 días de plazo, a empresas de primera línea. No se incluyen los préstamos de títulos valores ni de otros activos financieros, ni los préstamos con garantía de esos valores o con garantía real. La categorización de una empresa como de primera línea presupone que pueda ser considerada como un deudor que demuestre que es capaz de atender holgadamente todos sus compromisos financieros (categoría 1. en situación normal de la clasificación de deudores comerciales establecida por el BCRA)",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por préstamos a empresas de primera línea a 30 días de plazo - De moneda nacional",
+                            "id": "bcra-35",
+                            "title": "tasa_prestamos_empresas_primera_linea_30_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés cobradas por sobregiros en moneda nacional, en el mes, sobre las cuentas corrientes abiertas en las entidades financieras por titulares del sector privado no financiero.",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por préstamos a empresas de primera línea a 30 días de plazo - De moneda extranjera",
+                            "id": "bcra-36",
+                            "title": "tasa_prestamos_empresas_primera_linea_30_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés cobradas por sobregiros en moneda extranjera, en el mes, sobre las cuentas corrientes abiertas en las entidades financieras por titulares del sector privado no financiero.",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por adelantos en cuenta corriente al sector privado no financiero - De moneda nacional",
+                            "id": "bcra-37",
+                            "title": "tasa_adelantos_cta_cte_sprnf_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés cobradas por préstamos en moneda nacional, a tasa de interés fija (pactada en el momento en que se acordaron por el período íntegro de vigencia del crédito) entre 5 y 10 años de plazo, otorgados en el mes e instrumentados directamente mediante hipoteca. No incluye préstamos con garantía hipotecaria accesoria ni créditos hipotecarios provenientes de la venta de inmuebles de la entidad.",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por adelantos en cuenta corriente al sector privado no financiero - De moneda extranjera",
+                            "id": "bcra-38",
+                            "title": "tasa_adelantos_cta_cte_sprnf_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Promedio ponderado por monto de las tasas de interés cobradas por préstamos en moneda extranjera, a tasa de interés fija (pactada en el momento en que se acordaron por el período íntegro de vigencia del crédito) entre 5 y 10 años de plazo, otorgados en el mes e instrumentados directamente mediante hipoteca. No incluye préstamos con garantía hipotecaria accesoria ni créditos hipotecarios provenientes de la venta de inmuebles de la entidad.",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por préstamos hipotecarios al sector privado no financiero (entre 5 y 10 años de plazo) - De moneda nacional (entre 5 y 10 años)",
+                            "id": "bcra-39",
+                            "title": "tasa_prestamos_hipotec_sprnf_5_a_10_anios_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país y las tenencias de billetes y monedas emitidos por el Banco Central de la República Argentina en cajas de las entidades financieras del país, en tránsito y en empresas transportadoras de caudales",
+                            "units": "Porcentaje",
+                            "description": "Tasas de interés, promedio mensual en porcentaje nominal anual - Por préstamos hipotecarios al sector privado no financiero (entre 5 y 10 años de plazo) - De moneda extranjera",
+                            "id": "bcra-40",
+                            "title": "tasa_prestamos_hipotec_sprnf_5_a_10_anios_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - Base monetaria (M0) - Circulación monetaria - Total",
+                            "id": "bcra-369",
+                            "title": "m0_circulacion_monetaria_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Tenencias de billetes y monedas emitidos por el Banco Central de la República Argentina en cajas de las entidades financieras del país, en tránsito y en empresas transportadoras de caudales",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - Base monetaria (M0) - Circulación monetaria - Fuera del sistema financiero",
+                            "id": "bcra-386",
+                            "title": "m0_circulacion_monetaria_fuera_del_sistema_financiero",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Hasta diciembre de 1994 y a partir de junio de 2001, corresponde a depósitos en pesos constituidos por las entidades financieras en cuentas corrientes abiertas en el Banco Central de la República Argentina. Durante el período 28. 12. 2001  09. 05. 2002, incluye los depósitos en pesos correspondientes al Fondo de Liquidez Bancaria, integrado por las entidades financieras a fin de brindar mayor liquidez al sistema bancario",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - Base monetaria (M0) - Circulación monetaria - En entidades financieras",
+                            "id": "bcra-404",
+                            "title": "m0_circulacion_monetaria_entidades_financieras",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Corresponde a los billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país y a los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional y en moneda extranjera, pertenecientes a titulares de los sectores privado y público no financieros, estos últimos, netos de la Utilización de Fondos Unificados (las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados -cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional- dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - Base monetaria (M0) - Depósitos de entidades financieras en cuenta corriente",
+                            "id": "bcra-421",
+                            "title": "m0_depositos_entidades_financieras_en_cta_cte",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el total de los depósitos constituidos bajo la forma de cuenta corriente bancaria y bajo el sistema de caja de ahorros y los depósitos a plazo fijo (incluye inversiones)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - Total",
+                            "id": "bcra-438",
+                            "title": "m1_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Corresponde a los billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Dinero y crédito - Información relacionada con la normativa de regulación de liquidez del BCRA (serie mensual) - Depósitos y otras obligaciones sujetas a la normativa de regulación de liquidez del BCRA, promedio mensual de saldos diarios, en miles de pesos - Depósitos en cuentas corrientes (netos), en caja de ahorros y a plazo fijo - Total",
+                            "id": "bcra-554",
+                            "title": "depositos_y_otros_regulacion_liquidez_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional, pertenecientes a titulares de los sectores privado y público no financieros, estos últimos, netos de la Utilización de Fondos Unificados ((las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados -cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional- dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda nacional - Billetes y monedas fuera del sistema financiero",
+                            "id": "bcra-868",
+                            "title": "m1_billetes_monedas_fuera_sistema_financiero_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional, pertenecientes a titulares del sector privado no financiero",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda nacional - Depósitos en cuentas corrientes - Total",
+                            "id": "bcra-2198",
+                            "title": "m1_depositos_cc_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional, pertenecientes a titulares del sector público no financiero, deducida la Utilización de Fondos Unificados ((las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados -cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional- dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda nacional - Depósitos en cuentas corrientes - Del sector privado",
+                            "id": "bcra-2251",
+                            "title": "m1_depositos_cc_sector_privado_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional, sin deducir la Utilización de Fondos Unificados (las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados -cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional- dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina), pertenecientes a titulares del sector público no financiero. A partir de abril de 2012 incluye un cambio de exposición en los estados contables de dos entidades financieras (hasta el mes anterior presentaban los depósitos en cuentas corrientes en moneda nacional del sector público no financiero, netos de la utilización de fondos unificados).",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda nacional - Depósitos en cuentas corrientes - Del sector público (netos) - Total",
+                            "id": "bcra-2299",
+                            "title": "m1_depositos_cc_sector_publico_moneda_nacional_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Corresponde a las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados (cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional) dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina. A partir de abril de 2012 incluye un cambio de exposición en los estados contables de dos entidades financieras (hasta el mes anterior presentaban los depósitos en cuentas corrientes en moneda nacional del sector público no financiero, netos de la utilización de fondos unificados).",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda nacional - Depósitos en cuentas corrientes - Del sector público (netos) - Depósitos en cuentas corrientes",
+                            "id": "bcra-3118",
+                            "title": "m1_depositos_cc_sector_publico_moneda_nacional_dep_cc",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los epósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda extranjera, pertenecientes a titulares de los sectores privado y público no financiero",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda nacional - Depósitos en cuentas corrientes - Del sector público (netos) - Utilización de Fondos Unificados (-)",
+                            "id": "bcra-3225",
+                            "title": "m1_depositos_cc_sector_publico_moneda_nacional_fondos_unif",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda extranjera, pertenecientes a titulares del sector privado no financiero",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda extranjera - Depósitos en cuentas corrientes y a la vista - Total",
+                            "id": "bcra-3309",
+                            "title": "m1_depositos_cc_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda extranjera, pertenecientes a titulares del sector público no financiero. A partir de abril de 2012 incluye un cambio de exposición en los estados contables de dos entidades financieras (hasta el mes anterior presentaban los depósitos en cuentas corrientes en moneda nacional del sector público no financiero, netos de la utilización de fondos unificados)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda extranjera - Depósitos en cuentas corrientes y a la vista - Del sector privado",
+                            "id": "bcra-3541",
+                            "title": "m1_depositos_cc_sector_privado_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Corresponde al M1 en moneda nacional y extranjera (billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país y depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional y extranjera, pertenecientes a titulares de los sectores privado y público no financieros, estos últimos, netos de la Utilización de Fondos Unificados -las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados, cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina-) y los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda nacional y extranjera, pertenecientes a titulares de los sectores privado y público no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M1 - En moneda extranjera - Depósitos en cuentas corrientes y a la vista - Del sector público",
+                            "id": "bcra-3542",
+                            "title": "m1_depositos_cc_sector_publico_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M1 en moneda nacional (billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país y depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional, pertenecientes a titulares de los sectores privado y público no financieros, estos últimos, netos de la Utilización de Fondos Unificados -las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados, cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina-) y los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda nacional, pertenecientes a titulares de los sectores privado y público no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - Total",
+                            "id": "bcra-3543",
+                            "title": "m2_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Corresponde a los billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país y a los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional, pertenecientes a titulares de los sectores privado y público no financieros, estos últimos, netos de la Utilización de Fondos Unificados ((las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados -cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional- dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - En moneda nacional - Total",
+                            "id": "bcra-3544",
+                            "title": "m2_moneda_nacional_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda nacional, pertenecientes a titulares de los sectores privado y público no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - En moneda nacional - M1",
+                            "id": "bcra-3545",
+                            "title": "m2_m1_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda nacional, pertenecientes a titulares del sector privado no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - En moneda nacional - Depósitos en caja de ahorros - Total",
+                            "id": "bcra-3546",
+                            "title": "m2_depositos_ca_moneda_nacional_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda nacional, pertenecientes a titulares del sector público no financiero. Incluye también cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - En moneda nacional - Depósitos en caja de ahorros - Del sector privado",
+                            "id": "bcra-3547",
+                            "title": "m2_depositos_ca_sector_privado_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M1 de moneda extranjera (depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda extranjera, pertenecientes a titulares de los sectores privado y público no financiero) y los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda extranjera pertenecientes a titulares de los sectores privado y público no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - En moneda nacional - Depósitos en caja de ahorros - Del sector público",
+                            "id": "bcra-3548",
+                            "title": "m2_depositos_ca_sector_publico_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda extranjera, pertenecientes a titulares de los sectores privado y público no financiero",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - Moneda extranjera - Total",
+                            "id": "bcra-3549",
+                            "title": "m2_moneda_extranjera_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda extranjera pertenecientes a titulares de los sectores privado y público no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - Moneda extranjera - M1",
+                            "id": "bcra-3550",
+                            "title": "m2_m1_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda extranjera pertenecientes a titulares del sector privado no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - Moneda extranjera - Depósitos en caja de ahorros - Total",
+                            "id": "bcra-3551",
+                            "title": "m2_depositos_ca_moneda_extranjera_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda extranjera pertenecientes a titulares del sector público no financiero. Incluye también cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - Moneda extranjera - Depósitos en caja de ahorros - Del sector privado",
+                            "id": "bcra-3552",
+                            "title": "m2_depositos_ca_sector_privado_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Corresponde al M2 en moneda nacional y extranjera (billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país más depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista y bajo el sistema de caja de ahorros, en moneda nacional y extranjera, pertenecientes a titulares de los sectores privado y público no financieros, este último, neto de la Utilización de Fondos Unificados -las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados, cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina-) y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional y extranjera pertenecientes a titulares de los sectores privado y público no financieros. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M2 - Moneda extranjera - Depósitos en caja de ahorros - Del sector público",
+                            "id": "bcra-3553",
+                            "title": "m2_depositos_ca_sector_publico_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M2 en moneda nacional (billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país más depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista y bajo el sistema de caja de ahorros, en moneda nacional, pertenecientes a titulares de los sectores privado y público no financieros, este último, neto de la Utilización de Fondos Unificados -las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados, cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina-) y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional pertenecientes a titulares de los sectores privado y público no financieros. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total",
+                            "id": "bcra-3554",
+                            "title": "m3_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional pertenecientes a titulares de los sectores privado y público no financieros. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Total",
+                            "id": "bcra-3555",
+                            "title": "m3_moneda_nacional_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional pertenecientes a titulares del sector privado no financiero. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Depósitos a plazo fijo - Total",
+                            "id": "bcra-3556",
+                            "title": "m3_depositos_plazo_fijo_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional pertenecientes a titulares del sector público no financiero. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Depósitos a plazo fijo - Del sector privado",
+                            "id": "bcra-3557",
+                            "title": "m3_depositos_plazo_fijo_sector_privado_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende las operaciones de intermediación en transacciones financieras entre terceros residentes en el país ( aceptaciones de documentos no ajustables emitidos en moneda nacional)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Depósitos a plazo fijo - Del sector público",
+                            "id": "bcra-3558",
+                            "title": "m3_depositos_plazo_fijo_sector_publico_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M2 de moneda extranjera (depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista y bajo el sistema de caja de ahorros, de moneda extranjera pertenecientes a titulares de los sectores privado y público no financiero) y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda extranjera pertenecientes a titulares de los sectores privado y público no financieros. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Aceptaciones",
+                            "id": "bcra-3559",
+                            "title": "m3_aceptaciones_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M1 de moneda extranjera (depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda extranjera, pertenecientes a titulares de los sectores privado y público no financiero) y los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda extranjera pertenecientes a titulares de los sectores privado y público no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - Total",
+                            "id": "bcra-3560",
+                            "title": "m3_moneda_extranjera_total",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda extranjera pertenecientes a titulares de los sectores privado y público no financieros. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - M2",
+                            "id": "bcra-3561",
+                            "title": "m3_m2_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda extranjera pertenecientes a titulares del sector privado no financiero. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - Depósitos a plazo fijo - Total",
+                            "id": "bcra-3562",
+                            "title": "m3_depositos_plazo_fijo_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda extranjera pertenecientes a titulares del sector público no financiero. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - Depósitos a plazo fijo - Del sector privado",
+                            "id": "bcra-3563",
+                            "title": "m3_depositos_plazo_fijo_sector_privado_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M3 de moneda nacional y extranjera (depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional y extranjera pertenecientes a titulares de los sectores privado y público no financieros) y los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y a plazo fijo, en moneda nacional y extranjera pertenecientes a titulares residentes en el exterior. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - Depósitos a plazo fijo - Del sector público",
+                            "id": "bcra-3564",
+                            "title": "m3_depositos_plazo_fijo_sector_publico_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M3 de moneda nacional (depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional pertenecientes a titulares de los sectores privado y público no financieros) y los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y a plazo fijo, en moneda nacional pertenecientes a titulares residentes en el exterior. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Total",
+                            "id": "bcra-3565",
+                            "title": "m3_total2",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M2 en moneda nacional (billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país más depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista y bajo el sistema de caja de ahorros, en moneda nacional, pertenecientes a titulares de los sectores privado y público no financieros, este último, neto de la Utilización de Fondos Unificados -las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados, cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina-) y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional pertenecientes a titulares de los sectores privado y público no financieros. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - En moneda nacional - Total",
+                            "id": "bcra-3566",
+                            "title": "m3_moneda_nacional_total2",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y a plazo fijo, en moneda nacional pertenecientes a titulares residentes en el exterior. Incluye también: cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - En moneda nacional - M3",
+                            "id": "bcra-3567",
+                            "title": "m3_m3_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional pertenecientes a titulares residentes en el exterior",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - En moneda nacional - Depósitos a la vista y a plazo de residentes en el exterior - Total",
+                            "id": "bcra-3568",
+                            "title": "m3_depositos_residentes_en_exterior_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda nacional pertenecientes a titulares residentes en el exterior. Incluye también cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - En moneda nacional - Depósitos a la vista y a plazo de residentes en el exterior - Depósitos en cuentas corrientes",
+                            "id": "bcra-3569",
+                            "title": "m3_depositos_cc_residentes_en_exterior_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda nacional pertenecientes a titulares residentes en el exterior. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - En moneda nacional - Depósitos a la vista y a plazo de residentes en el exterior - Depósitos en caja de ahorros",
+                            "id": "bcra-3570",
+                            "title": "m3_depositos_ca_residentes_en_exterior_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M3 de moneda extranjera (depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda extranjera pertenecientes a titulares de los sectores privado y público no financieros) y los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y a plazo fijo, en moneda extranjera, pertenecientes a titulares residentes en el exterior. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - En moneda nacional - Depósitos a la vista y a plazo de residentes en el exterior - Depósitos a plazo fijo",
+                            "id": "bcra-3571",
+                            "title": "m3_depositos_pf_residentes_en_exterior_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y los depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda extranjera pertenecientes a titulares de los sectores privado y público no financieros. También incluye: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004), depósitos ajustables con cláusula CER (a partir del mes de julio de 2002) y depósitos especiales vinculados al ingreso de fondos del exterior (decreto 616/05)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Moneda extranjera - Total",
+                            "id": "bcra-3572",
+                            "title": "m3_moneda_extranjera_total2",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de otras cuentas a la vista, bajo el sistema de caja de ahorros y a plazo fijo, en moneda extranjera, pertenecientes a titulares residentes en el exterior. Incluye también: cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001), cuentas especiales para depósitos en efectivo (vigentes durante el año 2002), depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Moneda extranjera - M3",
+                            "id": "bcra-3573",
+                            "title": "m3_m3_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda extranjera, pertenecientes a titulares residentes en el exterior",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Moneda extranjera - Depósitos a la vista y a plazo de residentes en el exterior - Total",
+                            "id": "bcra-3574",
+                            "title": "m3_depositos_residentes_en_exterior_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda extranjera pertenecientes a titulares residentes en el exterior. Incluye también cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Moneda extranjera - Depósitos a la vista y a plazo de residentes en el exterior - Depósitos en cuentas corrientes",
+                            "id": "bcra-3575",
+                            "title": "m3_depositos_cc_residentes_en_exterior_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende depósitos a plazo fijo (excepto de títulos valores) e inversiones a plazo constante, con opción de renovación por plazo determinado, con opción de cancelación anticipada y a plazo con retribución variable (transferibles e intransferibles) de moneda extranjera pertenecientes a titulares residentes en el exterior. También incluye: depósitos judiciales a plazo fijo- efectuados por la Justicia con fondos originados en las causas en que interviene, depósitos reprogramados CEDROS (excepto aquéllos sobre los cuales sus titulares hayan iniciado acciones judiciales que se encuentren pendientes de resolución y los depósitos a canjearse por títulos públicos), letras de plazo fijo, depósitos en dólares estadounidenses y euros liquidables en pesos (estos últimos vigentes hasta el 14 de mayo de 2004) y depósitos ajustables con cláusula CER (a partir del mes de julio de 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Moneda extranjera - Depósitos a la vista y a plazo de residentes en el exterior - Depósitos en caja de ahorros",
+                            "id": "bcra-3576",
+                            "title": "m3_depositos_ca_residentes_en_exterior_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "notes": "Comprende el M1 en moneda nacional (billetes y monedas emitidos por el Banco Central de la República Argentina que no forman parte de las existencias de efectivo de las entidades financieras del país y depósitos constituidos bajo la forma de cuenta corriente bancaria -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina- y de otras cuentas a la vista, en moneda nacional, pertenecientes a titulares de los sectores privado y público no financieros, estos últimos, netos de la Utilización de Fondos Unificados -las utilizaciones que la Tesorería General de la Nación efectúa de los saldos de cuentas bancarias a la orden de ministerios, secretarías y organismos descentralizados, cuyos presupuestos de gastos y cálculos de recursos integran el Presupuesto General de la Administración Nacional dependientes del Gobierno Nacional, cuentas que son subsidiarias de la denominada Fondo Unificado de las Cuentas del Gobierno Nacional abierta en el Banco de la Nación Argentina-) y los depósitos constituidos (más intereses acreditados en cuenta) bajo el sistema de caja de ahorros -de acuerdo con la tipificación efectuada por el Banco Central de la República Argentina-, de moneda nacional, pertenecientes a titulares de los sectores privado y público no financiero. Incluye también: cuentas de ahorro vinculado a préstamos, cuentas especiales para la acreditación de remuneraciones, jubilaciones y pensiones, cuentas corrientes especiales para personas jurídicas (a partir de abril de 2001) y cuentas especiales para depósitos en efectivo (vigentes durante el año 2002)",
+                            "units": "Miles de pesos corrientes",
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Moneda extranjera - Depósitos a la vista y a plazo de residentes en el exterior - Depósitos a plazo fijo",
+                            "id": "bcra-3577",
+                            "title": "m3_depositos_pf_residentes_en_exterior_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - M2",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3730",
+                            "title": "m3_m2_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Otros depósitos - Total",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3735",
+                            "title": "m3_otros_depositos_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Otros depósitos - Del sector privado",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3736",
+                            "title": "m3_otros_depositos_sector_privado_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - En moneda nacional - Otros depósitos - Del sector público",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3737",
+                            "title": "m3_otros_depositos_sector_publico_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - Otros depósitos - Total",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3738",
+                            "title": "m3_otros_depositos_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - Otros depósitos - Del sector privado",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3739",
+                            "title": "m3_otros_depositos_sector_privado_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Moneda extranjera - Otros depósitos - Del sector público",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3740",
+                            "title": "m3_otros_depositos_sector_publico_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - En moneda nacional - Depósitos a la vista y a plazo de residentes en el exterior - Otros depósitos",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3741",
+                            "title": "m3_otros_depositos_resdentes_en_exerior_moneda_nacional",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        },
+                        {
+                            "description": "Agregados monetarios, saldos afin de mes, en miles de pesos - M3 - Total - Moneda extranjera - Depósitos a la vista y a plazo de residentes en el exterior - Otros depósitos",
+                            "units": "Miles de pesos corrientes",
+                            "id": "bcra-3742",
+                            "title": "m3_otros_depositos_resdentes_en_exerior_moneda_extranjera",
+                            "type": "number",
+                            "dataset_identifier": "1",
+                            "distribution_identifier": "1.1"
+                        }
+                    ],
+                    "format": "CSV",
+                    "description": "Contiene las series mensuales del \"Panorama monetario y financiero\" del Banco Central de la República Argentina.",
+                    "scrapingFileTimeFormat": "%d/%m/%Y",
+                    "scrapingFileEncoding": "latin1",
+                    "issued": "2019-01-18",
+                    "scrapingFileSeparator": ";",
+                    "scrapingFileTimeField": 2,
+                    "scrapingFileIdsField": 1,
+                    "title": "Panorama monetario y financiero (series mensuales)",
+                    "downloadURL": "catalog/bcra/dataset/1/distribution/1.1/download/panorama-monetario-financiero-mensual.csv",
+                    "fileName": "panorama-monetario-financiero-mensual.csv",
+                    "dataset_identifier": "1",
+                    "accessURL": "http://www.bcra.gov.ar/PublicacionesEstadisticas/Cuadros_estandarizados_series_estadisticas.asp"
+                }
+            ],
+            "publisher": {
+                "name": "Banco Central de la República Argentina (BCRA)",
+                "mbox": "datos@bcra.gob.ar"
+            },
+            "theme": [
+                "moneda"
+            ]
+        }
+    ],
+    "publisher": {
+        "name": "Banco Central de la República Argentina (BCRA)",
+        "mbox": "datos@bcra.gob.ar"
+    }
+}

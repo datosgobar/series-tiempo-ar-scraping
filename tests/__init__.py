@@ -6,6 +6,9 @@ import shutil
 import io
 import responses
 
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 from scripts import paths
 
 
@@ -14,6 +17,7 @@ def test_files_dir(*args):
 
 
 class TestBase(unittest.TestCase):
+
     def __init__(self, *args, **kwargs):
         super(TestBase, self).__init__(*args, **kwargs)
         self._name = None
@@ -46,6 +50,7 @@ class TestBase(unittest.TestCase):
 
 
 class MockDownloads(object):
+
     def __init__(self):
         self._mocker = responses.RequestsMock()
         self._files = []
