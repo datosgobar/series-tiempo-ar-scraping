@@ -1,0 +1,15 @@
+extraction_test_json_url:
+  url: "https://example.com/test1.json"
+  formato: "json"
+
+extraction_test_json_local:
+  url: "tests/test_files/valid_extraction/mock/test1.json"
+  formato: "json"
+
+extraction_test_xlsx_url:
+  url: "https://example.com/test2.xlsx"
+  formato: "xlsx"
+
+extraction_test_xlsx_local:
+  url: "tests/test_files/valid_extraction/mock/test2.xlsx"
+  formato: "xlsx"

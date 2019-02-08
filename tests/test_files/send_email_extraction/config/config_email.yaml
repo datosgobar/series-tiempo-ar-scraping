@@ -1,0 +1,19 @@
+mailer:
+ user: foo
+ password: bar
+ smtp_server: smtp.example.com
+ port: 587
+ ssl: true
+extraccion:
+ extraction_test_json_url:
+   destinatarios:
+    - json-url@example.com
+ extraction_test_json_local:
+   destinatarios:
+    - json-local@example.com
+ extraction_test_xlsx_url:
+   destinatarios:
+    - xlsx-url@example.com
+ extraction_test_xlsx_local:
+   destinatarios:
+    - xlsx-local@example.com
