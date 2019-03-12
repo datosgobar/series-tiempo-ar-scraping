@@ -129,11 +129,9 @@ custom_steps:
 
 test:
 	PYTHONPATH=scripts TESTING=quiet nosetests --with-coverage --cover-package=scripts
-	# PYTHONPATH=scripts TESTING=quiet nosetests tests.test_scrape_datasets:TestScrapeDatasetsTextFiles --with-coverage --cover-package=scripts
 
 test_verbose:
-	PYTHONPATH=scripts TESTING=verbose nosetests -v  --with-coverage --cover-package=scripts
-	# PYTHONPATH=scripts TESTING=verbose nosetests -v tests.test_scrape_datasets:TestScrapeDatasetsTextFiles --with-coverage --cover-package=scripts
+	PYTHONPATH=scripts TESTING=verbose nosetests -v --with-coverage --cover-package=scripts
 
 code_checks:
 	PYTHONPATH=scripts flake8 tests/ scripts/

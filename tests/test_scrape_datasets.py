@@ -23,11 +23,6 @@ class TestScrapeDatasetsTextFiles(TestBase):
             "http://www.bcra.gob.ar/Pdfs/PublicacionesEstadisticas/panser.txt",
             test_files_dir(self._name, "mock", "panser.txt")
         )])
-        # self._mocker.start()
-
-    def tearDown(self):
-        super().tearDown()
-        # self._mocker.stop()
 
     def test_distributions_created(self):
         """
