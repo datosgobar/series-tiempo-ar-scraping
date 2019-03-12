@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 from series_tiempo_ar import TimeSeriesDataJson
 from scripts import scrape_datasets

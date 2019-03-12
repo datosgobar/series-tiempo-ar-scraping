@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 from scripts import download_urls
 from scripts import paths

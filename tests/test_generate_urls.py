@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from scripts import generate_urls
 from scripts import paths
 from . import TestBase
