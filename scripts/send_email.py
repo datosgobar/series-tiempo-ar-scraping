@@ -61,6 +61,7 @@ def send_email(mailer_config, subject, message, recipients, files=None):
         s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
         s.ehlo()
         s.starttls()
+        s.ehlo()
 
     s.login(mailer_config["user"], mailer_config["password"])
     s.sendmail(mailer_config["user"], recipients, msg.as_string())
