@@ -4,12 +4,12 @@
 ![license](https://img.shields.io/github/license/datosgobar/series-tiempo-ar-scraping.svg)
 ![python](https://img.shields.io/badge/python-3.X-blue.svg)
 
-ETL y servidor web que scrapea series de tiempo de archivos `.xlsx` semi-estructurados y los transforma en distribuciones de formato abierto. La aplicación está basada en una extensión experimental del Perfil de Metadatos del Paquete de Apertura de Datos.
+Aplicación escrita en Python 3 que scrapea series de tiempo de archivos `.xlsx` semi-estructurados y los transforma en distribuciones de formato abierto. La aplicación está basada en una extensión experimental del Perfil de Metadatos del Paquete de Apertura de Datos.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-## Indice
+## Índice
 
 - [Instalación](#instalacion)
 - [Uso](#uso)
@@ -26,7 +26,7 @@ Los siguientes pasos fueron probados en una instalación de Ubuntu 16.04.
 1. Instalar las dependencias necesarias para descargar y configurar el proyecto:
 
 ```bash
-$ sudo apt install python-pip git
+$ sudo apt install python3-pip git
 ```
 
 2. Clonar el repositorio y acceder al directorio creado:
