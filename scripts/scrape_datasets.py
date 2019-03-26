@@ -573,7 +573,7 @@ def scrape_catalogs(catalog_id, replace=True, debug_mode=False,
     catalog_sources_dir = get_catalog_scraping_sources_dir(catalog_id)
     catalog_datasets_dir = get_catalog_datasets_dir(catalog_id)
 
-    if server_environment == "prod":
+    if server_environment in ['prod', 'prod-new']:
         replace = True
 
     try:
