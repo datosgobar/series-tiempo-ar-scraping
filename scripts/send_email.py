@@ -9,6 +9,7 @@ import sys
 import os
 import os.path
 import smtplib
+import traceback
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -130,7 +131,11 @@ def send_group_emails(group_name):
             files.append(report_file_path(catalog_id, attachment))
 
         logger.info("Enviando reporte al grupo {}...".format(catalog_id))
-        send_email(mailer_config, subject, message, recipients, files)
+        try:
+            send_email(mailer_config, subject, message, recipients, files)
+        except Exception as e:
+            logger.info(e)
+            traceback.print_stack()
 
 
 if __name__ == '__main__':
