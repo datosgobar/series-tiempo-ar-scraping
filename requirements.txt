@@ -3,4 +3,4 @@ pydatajson==0.4.34
 xlseries==0.2.1
 pandas==0.24.1
 requests==2.21.0
-pyyaml==3.13
+pyyaml==4.2
