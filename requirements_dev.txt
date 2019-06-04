@@ -1,5 +1,4 @@
-responses==0.10.5
-flake8==3.7.5
-pylint==1.9.4
-coverage==4.5.2
-coveralls==1.5.1
+bumpversion==0.5.3
+flake8==2.6.0
+coverage==4.1
+pytest==2.9.2

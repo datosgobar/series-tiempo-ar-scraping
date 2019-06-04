@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.venv
 .Python
 env/
 build/
@@ -21,8 +22,10 @@ parts/
 sdist/
 var/
 *.egg-info/
+*.egg-info*
 .installed.cfg
 *.egg
+*.pyc
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -51,59 +54,13 @@ coverage.xml
 
 # Django stuff:
 *.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
 
 # Sphinx documentation
 docs/_build/
+docs/_templates/
 
 # PyBuilder
 target/
 
-# IPython Notebook
-.ipynb_checkpoints
-
-# pyenv
+# pyenv python configuration file
 .python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# dotenv
-.env
-
-# virtualenv
-venv/
-ENV/
-
-# Spyder project settings
-.spyderproject
-
-# Rope project settings
-.ropeproject
-
-*.DS_Store
-
-# series-tiempo-ar-scraping
-/data/*
-/config/*
-/series-tiempo-ar-scraping/
-/cover
-
-# Exceptions
-!/config/mime.types
-!/config/nginx.conf
-!/config/*example*
-!/config/cron_jobs
-bin
-pip-selfcheck.json
-sync_mirror_server.sh
-upload_config_files-dev.sh
-upload_config_files-prod.sh
-custom_steps.sh
