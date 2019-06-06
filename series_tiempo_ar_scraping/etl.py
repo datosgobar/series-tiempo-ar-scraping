@@ -1,6 +1,6 @@
 import click
 
-from series_tiempo_ar_scraping.etl_class import Etl
+from series_tiempo_ar_scraping.base import ETL
 
 
 @click.group()
@@ -10,7 +10,7 @@ def cli():
 
 @cli.command()
 def etl():
-    etl_class = Etl()
+    etl_class = ETL()
     etl_class.run()
 
 if __name__ == '__main__':

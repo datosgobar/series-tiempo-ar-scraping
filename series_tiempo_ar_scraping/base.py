@@ -5,21 +5,15 @@ import yaml
 logging.basicConfig(level=logging.DEBUG)
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CATALOGS_INDEX_PATH = os.path.join(ROOT_DIR, "config.yaml")
+CATALOGS_INDEX_PATH = os.path.join(ROOT_DIR, "config.yaml.sample")
 
 
-class Etl():
+class ETL():
 
     def __init__(self, *args, **kwargs):
         self.catalogs = []
 
         super().__init__()
-
-        catalogs = self.get_catalogs_index()
-        for catalog in catalogs.keys():
-            logging.debug('Catálogo: {}'.format(catalog))
-            logging.debug('URL: {}'.format(catalogs.get(catalog).get('url')))
-            logging.debug('Formato: {}'.format(catalogs.get(catalog).get('formato')))
 
     def preprocess(self):
         logging.debug('>>> PREPROCESO ETL <<<')
@@ -27,8 +21,11 @@ class Etl():
     def process(self):
         self.preprocess()
 
-        for catalog in self.catalogs:
-            catalog.process()
+        catalogs = self.get_catalogs_index()
+        for catalog in catalogs.keys():
+            logging.debug('Catálogo: {}'.format(catalog))
+            logging.debug('URL: {}'.format(catalogs.get(catalog).get('url')))
+            logging.debug('Formato: {}'.format(catalogs.get(catalog).get('formato')))
 
         self.postprocess()
 
