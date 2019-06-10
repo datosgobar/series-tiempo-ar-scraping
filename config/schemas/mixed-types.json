@@ -1,0 +1,42 @@
+{
+    "nonEmptyStringOrNull": {
+        "anyOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+        ]
+    },
+    "nonEmptyString": { "type": "string", "minLength": 1},
+    "arrayOrNull": {
+        "anyOf": [
+            { "type": "array" },
+            { "type": "null" }
+        ]
+    },
+    "dateOrDatetimeString": {
+        "anyOf": [
+            { "type": "string", "format": "date" },
+            { "type": "string", "format": "date-time" }
+        ]
+    },
+    "dateOrDatetimeStringOrNull": {
+        "anyOf": [
+            { "type": "string", "format": "date" },
+            { "type": "string", "format": "date-time" },
+            { "type": "null" },
+            { "type": "string", "maxLength": 0 }
+        ]
+    },
+    "stringOrNull": {
+        "anyOf": [
+            { "type": "string" },
+            { "type": "null" }
+        ]
+    },
+    "temporalOrNull": {
+        "anyOf": [
+            { "type": "string", "pattern": "^(\\d{4}-\\d\\d-\\d\\d(T\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?)?(([+-]\\d\\d:\\d\\d)|Z)?)\\/(\\d{4}-\\d\\d-\\d\\d(T\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?)?(([+-]\\d\\d:\\d\\d)|Z)?)$" },
+            { "type": "null" },
+            { "type": "string", "maxLength": 0 }
+        ]
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "required": [
+        "title",
+        "issued"
+    ],
+    "properties": {
+        "accessURL": {
+            "type": "string",
+            "format": "uri"
+        },
+        "downloadURL": {
+            "type": "string",
+            "format": "uri"
+        },
+        "title": { "$ref": "mixed-types.json#nonEmptyString" },
+        "issued": { "$ref": "mixed-types.json#dateOrDatetimeString" },
+        "description": { "$ref": "mixed-types.json#stringOrNull" },
+        "format": { "$ref": "mixed-types.json#stringOrNull" },
+        "mediaType": { "$ref": "mixed-types.json#stringOrNull" },
+        "license": { "$ref": "mixed-types.json#stringOrNull" },
+        "byteSize": {
+            "anyOf": [
+                { "type": "integer" },
+                { "type": "null" },
+                { "type": "string", "maxLength": 0 }
+            ]
+         },
+        "modified": { "$ref": "mixed-types.json#dateOrDatetimeStringOrNull" },
+        "rights": { "$ref": "mixed-types.json#stringOrNull" },
+        "field": {
+            "type": "array",
+            "items": { "$ref": "field.json" }
+        }
+    }
+}
