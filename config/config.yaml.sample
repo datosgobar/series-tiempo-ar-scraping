@@ -2,8 +2,3 @@ example_catalog1:
   id: "Catalogo 1"
   url: "https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/catalogs/example_catalog1.xlsx"
   formato: "xlsx"
-
-example_catalog2:
-  id: "Catalogo 2"
-  url: "https://example.com/catalog2.json"
-  formato: "json"
