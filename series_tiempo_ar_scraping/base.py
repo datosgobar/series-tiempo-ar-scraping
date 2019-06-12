@@ -1,5 +1,4 @@
 import logging
-import io
 import os
 import yaml
 
@@ -17,22 +16,50 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "config.yaml.sample")
-CONFIG_DOWNLOADS_PATH = os.path.join(CONFIG_DIR, "config_downloads.yaml")
 CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
-REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 
-class Dataset():
+class Distribution():
 
-    def __init__(self):
+    def __init__(self, context, *args, **kwargs):
+        self.context = context
+        self.processor_class = None
 
         super().__init__()
 
     def process(self):
         self.preprocess()
 
+        logging.debug('>>> PROCESS DISTRIBUTION <<<')
+
+        self.postprocess()
+
+    def preprocess(self):
+        logging.debug('>>> PREPROCESS DISTRIBUTION <<<')
+
+    def postprocess(self):
+        logging.debug('>>> POSTPROCESS DISTRIBUTION <<<')
+
+class Dataset():
+
+    def __init__(self, context, *args, **kwargs):
+        self.distributions = []
+        self.context = context
+        super().__init__()
+
+    def process(self):
+        self.preprocess()
+
         logging.debug('>>> PROCESS DATASET <<<')
+        for distribution_metadata in self.context['meta'].get('distribution'):
+            context = {
+                "meta": distribution_metadata
+            }
+            distribution = Distribution(context=context)
+            self.distributions.append(distribution)
+
+            distribution.process()
 
         self.postprocess()
 
@@ -47,10 +74,12 @@ class Catalog():
     def __init__(self, id_catalog, url, format_catalog, context):
         super().__init__()
 
+        logging.info('')
+        logging.info('=== Catálogo: {} ==='.format(id_catalog.upper()))
+
         self.id_catalog = id_catalog
         self.url = url
         self.format = format_catalog
-        self.datasets = []
 
         self.catalog_input_dir = os.path.join(CATALOGS_DIR_INPUT, id_catalog)
         self.catalog_input_path_template = os.path.join(self.catalog_input_dir, "{}")
@@ -58,11 +87,7 @@ class Catalog():
         self.catalog_dir = os.path.join(context.get('catalogs_dir'), id_catalog)
         self.catalog_path_template = os.path.join(self.catalog_dir, "{}")
 
-        logging.info('')
-        logging.info('=== Catálogo: {} ==='.format(self.id_catalog.upper()))
-
-    def get_datasets_index(self):
-        return {"b026cef2-d1cb-4081-a545-2691bfe2c835"}
+        self.datasets = []
 
     def get_general_config(self):
         return ETL().load_yaml(CONFIG_GENERAL_PATH)
@@ -73,15 +98,17 @@ class Catalog():
         logging.debug('ID: {}'.format(self.id_catalog))
         logging.debug('URL: {}'.format(self.url))
         logging.debug('Formato: {}'.format(self.format))
+        for dataset_metadata in self.meta.get('dataset'):
+            context = {
+                "meta": dataset_metadata
+            }
+            dataset = Dataset(context=context)
+            self.datasets.append(dataset)
 
-        for dataset in self.datasets:
             dataset.process()
-
-        self.postprocess()
 
     def preprocess(self):
         logging.debug('>>> PREPROCESS CATALOG <<<')
-        warnings_log = io.StringIO()
         self.ensure_dir_exists(self.catalog_input_dir)
         self.ensure_dir_exists(self.catalog_dir)
 
@@ -105,14 +132,16 @@ class Catalog():
 
             if catalog:
                 logging.info("Valida y filtra el catálogo")
-                catalog_filtered = self.validate_and_filter(self.id_catalog, catalog, warnings_log)
+                catalog_filtered = self.validate_and_filter(catalog)
 
                 logging.info('Escritura de catálogo en JSON: {}'.format(self.catalog_path_template.format("data.json")))
 
-                self.write_json_catalog(self.id_catalog, catalog_filtered, self.catalog_path_template.format("data.json"))
+                self.write_json_catalog(catalog_filtered, self.catalog_path_template.format("data.json"))
 
                 logging.info('Escritura de catálogo en XLSX: {}'.format(self.catalog_path_template.format("catalog.xlsx")))
                 catalog.to_xlsx(self.catalog_path_template.format("catalog.xlsx"))
+
+                self.meta = catalog
         except:
             pass
 
@@ -142,10 +171,7 @@ class Catalog():
                         if "id" in field:
                             field["id"] = field["id"].replace(" ", "")
 
-    def write_json_catalog(self, catalog_id, catalog, catalog_json_path):
-
-        # crea los directorios necesarios
-        self.ensure_dir_exists(os.path.dirname(catalog_json_path))
+    def write_json_catalog(self, catalog, catalog_json_path):
         writers.write_json_catalog(catalog, catalog_json_path)
 
     def ensure_dir_exists(self, directory):
@@ -153,7 +179,6 @@ class Catalog():
             os.makedirs(directory)
 
     def get_catalog_download_config(self, id_catalog):
-
         configs = {
             "defaults": {}
         }
@@ -173,30 +198,20 @@ class Catalog():
 
         return config
 
-    def validate_and_filter(self, catalog_id, catalog, warnings_log):
+    def validate_and_filter(self, catalog):
         """Valida y filtra un catálogo en data.json."""
         dj = TimeSeriesDataJson(
             catalog, schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
-
         # valida todo el catálogo para saber si está ok
         is_valid_catalog = dj.is_valid_catalog()
         logging.info(
             "Metadata a nivel de catálogo es válida? {}".format(is_valid_catalog))
-
-        # genera directorio de reportes para el catálogo
-        reportes_catalog_dir = os.path.join(REPORTES_DIR, catalog_id)
-        self.ensure_dir_exists(reportes_catalog_dir)
 
         # genera catálogo filtrado por los datasets que no tienen error
         catalog_filtered = dj.generate_harvestable_catalogs(
             catalog, harvest='valid')[0]
 
         return catalog_filtered
-
-    def _write_extraction_mail_texts(self, id_catalog, subject, message):
-
-        reportes_catalog_dir = os.path.join(REPORTES_DIR, id_catalog)
-        self.ensure_dir_exists(reportes_catalog_dir)
 
 
 class ETL():
