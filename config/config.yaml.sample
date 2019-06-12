@@ -1,4 +1,9 @@
-example_catalog1:
-  id: "Catalogo 1"
-  url: "https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/catalogs/example_catalog1.xlsx"
-  formato: "xlsx"
+defensa:
+  id: "defensa"
+  url: "http://datos.mindef.gov.ar/data.json"
+  formato: "json"
+
+salud:
+  id: "salud"
+  url: "http://datos.salud.gob.ar/data.json"
+  formato: "json"
