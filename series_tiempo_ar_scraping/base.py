@@ -7,6 +7,7 @@ import pydatajson.readers as readers
 import pydatajson.writers as writers
 
 from series_tiempo_ar_scraping import download
+from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -24,14 +25,34 @@ class Distribution():
 
     def __init__(self, context, *args, **kwargs):
         self.context = context
-        self.processor_class = None
+        self.processor = None
+
+        self.processor = self.get_processor()
 
         super().__init__()
+
+    def get_processor(self):
+        processor = None
+
+        meta = self.context.get("meta")
+        if meta.get("downloadURL"):
+            processor = DirectDownloadProcessor(
+                download_url=meta.get("downloadURL"),
+                distribution_dir=self.context.get("distribution_dir"),
+                distribution_path=self.context.get("distribution_path"),
+            )
+
+        return processor
+
 
     def process(self):
         self.preprocess()
 
         logging.debug('>>> PROCESS DISTRIBUTION <<<')
+        if self.processor:
+            self.processor.run()
+        else:
+            logging.debug('>>> No hay procesador para la distribución <<<')
 
         self.postprocess()
 
@@ -48,6 +69,20 @@ class Dataset():
         self.context = context
         super().__init__()
 
+    def get_distribution_dir(self, distribution_identifier):
+        return os.path.join(
+            self.context.get("dataset_path"),
+            "distribution",
+            distribution_identifier,
+            "download"
+        )
+
+    def get_distribution_path(self, distribution_identifier, distribution_name):
+        return os.path.join(
+            self.get_distribution_dir(distribution_identifier),
+            distribution_name
+        )
+
     def process(self):
         self.preprocess()
 
@@ -56,6 +91,14 @@ class Dataset():
             context = {
                 "meta": distribution_metadata
             }
+            context["distribution_dir"] = self.get_distribution_dir(
+                self.context.get("meta").get("identifier")
+            )
+            context["distribution_path"] = self.get_distribution_path(
+                self.context.get("meta").get("identifier"),
+                "{}.csv".format(distribution_metadata.get("identifier"))
+            )
+
             distribution = Distribution(context=context)
             self.distributions.append(distribution)
 
@@ -102,10 +145,21 @@ class Catalog():
             context = {
                 "meta": dataset_metadata
             }
+            context["dataset_path"] = self.get_dataset_dir(
+                dataset_metadata.get("identifier")
+            )
             dataset = Dataset(context=context)
             self.datasets.append(dataset)
 
             dataset.process()
+
+    def get_dataset_dir(self, catalog_id):
+        return os.path.join(
+            CATALOGS_DIR,
+            self.id_catalog,
+            catalog_id,
+            "dataset"
+        )
 
     def preprocess(self):
         logging.debug('>>> PREPROCESS CATALOG <<<')
