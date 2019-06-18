@@ -1,6 +1,5 @@
 import logging
 import os
-import yaml
 
 import pydatajson.readers as readers
 import pydatajson.writers as writers
@@ -9,6 +8,8 @@ from series_tiempo_ar import TimeSeriesDataJson
 
 from series_tiempo_ar_scraping import download
 from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
+from series_tiempo_ar.readers import get_ts_distributions_by_method
+from series_tiempo_ar.readers import get_distribution_generation_method
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -18,14 +19,14 @@ DATOS_DIR = os.path.join(ROOT_DIR, "data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
-CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "config.yaml.sample")
-CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
+CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
+# CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 
 class Distribution():
 
-    def __init__(self, context, distribution_identifier, *args, **kwargs):
+    def __init__(self, context, distribution_identifier):
         self.context = context
         self.processor = None
         self.distribution_identifier = distribution_identifier
@@ -67,7 +68,7 @@ class Distribution():
 
 class Dataset():
 
-    def __init__(self, context, *args, **kwargs):
+    def __init__(self, context):
         self.distributions = []
         self.context = context
         super().__init__()
@@ -76,7 +77,8 @@ class Dataset():
         return os.path.join(
             self.context.get("dataset_path"),
             "distribution",
-            distribution_identifier
+            distribution_identifier,
+            "download"
         )
 
     def get_distribution_path(self, distribution_identifier, distribution_name):
@@ -134,8 +136,8 @@ class Catalog():
 
         self.datasets = []
 
-    def get_general_config(self):
-        return ETL().load_yaml(CONFIG_GENERAL_PATH)
+    # def get_general_config(self):
+    #     return ETL().load_yaml(CONFIG_GENERAL_PATH)
 
     def process(self):
         self.preprocess()
@@ -279,11 +281,10 @@ class Catalog():
 
 class ETL():
 
-    def __init__(self):
+    def __init__(self, config):
         self.catalogs = []
 
-        catalogs_from_config = self.get_catalogs_index()
-
+        catalogs_from_config = config
         context = {
             "meta": {},
             "catalogs_dir": CATALOGS_DIR
@@ -313,13 +314,6 @@ class ETL():
 
     def postprocess(self):
         logging.debug('>>> POSTPROCESO ETL <<<')
-
-    def load_yaml(self, path):
-        with open(path) as config_file:
-            return yaml.load(config_file)
-
-    def get_catalogs_index(self):
-        return self.load_yaml(CATALOGS_INDEX_PATH)
 
     def run(self):
         self.process()

@@ -1,9 +1,7 @@
 defensa:
-  id: 'defensa'
   url: "http://datos.mindef.gov.ar/data.json"
   formato: "json"
 
 salud:
-  id: 'salud'
   url: "http://datos.salud.gob.ar/data.json"
   formato: "json"

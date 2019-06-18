@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class DirectDownloadProcessor():
 
-    def __init__(self, download_url, distribution_dir, distribution_path, *args, **kwargs):
+    def __init__(self, download_url, distribution_dir, distribution_path):
         self.download_url = download_url
         self.distribution_dir = distribution_dir
         self.distribution_path = distribution_path
