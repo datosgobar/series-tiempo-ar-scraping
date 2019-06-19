@@ -18,7 +18,6 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
-# CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 
