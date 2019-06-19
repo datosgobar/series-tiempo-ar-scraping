@@ -121,103 +121,113 @@ class Dataset():
 
 class Catalog():
 
-    def __init__(self, id_catalog, url, format_catalog, context):
-        super().__init__()
+    def __init__(self, identifier, url, extension, context):
 
         logging.info('')
-        logging.info('=== Catálogo: {} ==='.format(id_catalog.upper()))
+        logging.info('=== Catálogo: {} ==='.format(identifier.upper()))
 
-        self.id_catalog = id_catalog
+        self.identifier = identifier
         self.url = url
-        self.format = format_catalog
-
-        self.catalog_input_dir = os.path.join(CATALOGS_DIR_INPUT, id_catalog)
-        self.catalog_input_path_template = os.path.join(
-            self.catalog_input_dir, "{}"
-        )
-
-        self.catalog_dir = os.path.join(
-            context.get('catalogs_dir'), id_catalog
-        )
-        self.catalog_path_template = os.path.join(self.catalog_dir, "{}")
-
+        self.extension = extension
+        self.context = context
         self.datasets = []
+
+        self.init_paths(self.context, self.identifier)
+        self.fetch_metadata(self.context, self.extension)
+        self.validate_metadata(self.context)
+
+        if self.context['is_valid']:
+            self.filter_metadata(self.context)
+
+    def init_paths(self, context, identifier):
+
+        self.context['catalog_input_dir'] = os.path.join(CATALOGS_DIR_INPUT, identifier)
+        self.context['catalog_input_path_template'] = os.path.join(
+            self.context['catalog_input_dir'], "{}"
+        )
+        self.context['catalog_dir'] = os.path.join(
+            context.get('catalogs_dir'), identifier
+        )
+        self.context['catalog_path_template'] = os.path.join(self.context['catalog_dir'], "{}")
+        self.ensure_dir_exists(self.context['catalog_input_dir'])
+        self.ensure_dir_exists(self.context['catalog_dir'])
+
+    def fetch_metadata(self, context, extension):
+
+        if extension in ['xlsx', 'json']:
+            config = self.get_catalog_download_config(
+                self.identifier)["catalog"]
+            catalog_input_path = self.context['catalog_input_path_template'].format(
+                "data." + extension)
+
+            self.download_with_config(self.url, catalog_input_path, config)
+            if extension == 'xlsx':
+                logging.info('Transformación de XLSX a JSON')
+                context['metadata'] = TimeSeriesDataJson(
+                    self.read_xlsx_catalog(catalog_input_path)
+                )
+            else:
+                context['metadata'] = TimeSeriesDataJson(catalog_input_path)
+
+        else:
+            raise ValueError()
+
+    def validate_metadata(self, context):
+        is_valid_catalog = context['metadata'].is_valid_catalog()
+
+        logging.info(
+            "Metadata a nivel de catálogo es válida? {}".format(
+                is_valid_catalog
+            )
+        )
+        context['is_valid'] = is_valid_catalog
+
+    def filter_metadata(self, context):
+
+        context_filtered = context['metadata'].generate_harvestable_catalogs(
+            context['metadata'], harvest='valid')[0]
+
+        self.write_json_catalog(
+            context_filtered,
+            self.context['catalog_path_template'].format("data.json")
+        )
+
+        context['metadata'].to_xlsx(
+            self.context['catalog_path_template'].format("catalog.xlsx")
+        )
+        return context_filtered
 
     def process(self):
         self.preprocess()
 
-        logging.debug('ID: {}'.format(self.id_catalog))
+        logging.debug('ID: {}'.format(self.identifier))
         logging.debug('URL: {}'.format(self.url))
-        logging.debug('Formato: {}'.format(self.format))
-        for dataset_metadata in self.meta.get('dataset'):
+        logging.debug('Formato: {}'.format(self.extension))
+
+        for dataset in self.datasets:
             context = {
-                "meta": dataset_metadata
+                "meta": dataset
             }
             context["dataset_path"] = self.get_dataset_dir(
-                dataset_metadata.get("identifier")
+                dataset.get("identifier")
             )
             dataset = Dataset(context=context)
             self.datasets.append(dataset)
 
             dataset.process()
 
+        self.postprocess()
+
     def get_dataset_dir(self, dataset_identifier):
         return os.path.join(
             CATALOGS_DIR,
-            self.id_catalog,
+            self.identifier,
             "dataset",
             dataset_identifier,
         )
 
     def preprocess(self):
         logging.debug('>>> PREPROCESS CATALOG <<<')
-        self.ensure_dir_exists(self.catalog_input_dir)
-        self.ensure_dir_exists(self.catalog_dir)
-
-        try:
-            extension = self.format.lower()
-            if extension in ['xlsx', 'json']:
-                config = self.get_catalog_download_config(
-                    self.id_catalog)["catalog"]
-                catalog_input_path = self.catalog_input_path_template.format(
-                    "data." + extension)
-
-                self.download_with_config(self.url, catalog_input_path, config)
-
-                if extension == 'xlsx':
-                    logging.info('Transformación de XLSX a JSON')
-                    catalog = TimeSeriesDataJson(
-                        self.read_xlsx_catalog(catalog_input_path)
-                    )
-                else:
-                    catalog = TimeSeriesDataJson(catalog_input_path)
-
-            else:
-                raise ValueError()
-
-            if catalog:
-                logging.info("Valida y filtra el catálogo")
-                catalog_filtered = self.validate_and_filter(catalog)
-
-                logging.info('Escritura de catálogo en JSON: {}'.format(
-                    self.catalog_path_template.format("data.json")
-                    ))
-
-                self.write_json_catalog(
-                    catalog_filtered,
-                    self.catalog_path_template.format("data.json")
-                )
-
-                logging.info('Escritura de catálogo en XLSX: {}'.format(
-                    self.catalog_path_template.format("catalog.xlsx")
-                    ))
-                catalog.to_xlsx(
-                    self.catalog_path_template.format("catalog.xlsx")
-                )
-
-                self.meta = catalog_filtered
-        except:
-            pass
 
     def postprocess(self):
         logging.debug('>>> POSTPROCESS CATALOG <<<')
@@ -252,14 +262,14 @@ class Catalog():
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-    def get_catalog_download_config(self, id_catalog):
+    def get_catalog_download_config(self, identifier):
         configs = {
             "defaults": {}
         }
 
         default_config = configs["defaults"]
 
-        config = configs[id_catalog] if id_catalog in configs else {}
+        config = configs[identifier] if identifier in configs else {}
         if "catalog" not in config:
             config["catalog"] = {}
         if "sources" not in config:
@@ -272,24 +282,6 @@ class Catalog():
 
         return config
 
-    def validate_and_filter(self, catalog):
-        """Valida y filtra un catálogo en data.json."""
-        dj = TimeSeriesDataJson(
-            catalog, schema_filename="catalog.json", schema_dir=SCHEMAS_DIR)
-        # valida todo el catálogo para saber si está ok
-        is_valid_catalog = dj.is_valid_catalog()
-        logging.info(
-            "Metadata a nivel de catálogo es válida? {}".format(
-                is_valid_catalog
-            )
-        )
-
-        # genera catálogo filtrado por los datasets que no tienen error
-        catalog_filtered = dj.generate_harvestable_catalogs(
-            catalog, harvest='valid')[0]
-
-        return catalog_filtered
-
 
 class ETL():
 
@@ -297,23 +289,26 @@ class ETL():
         self.catalogs = []
 
         catalogs_from_config = config
-        context = {
-            "meta": {},
-            "catalogs_dir": CATALOGS_DIR
-        }
+
         for catalog in catalogs_from_config.keys():
             self.catalogs.append(
                 Catalog(
-                    id_catalog=catalog,
+                    identifier=catalog,
                     url=catalogs_from_config.get(catalog).get('url'),
-                    format_catalog=catalogs_from_config.get(catalog).get(
+                    extension=catalogs_from_config.get(catalog).get(
                         'formato'
                     ),
-                    context=context,
+                    context=self._get_default_context(),
                 )
             )
 
         super().__init__()
+
+    def _get_default_context(self):
+        return {
+            "metadata": {},
+            "catalogs_dir": CATALOGS_DIR
+        }
 
     def preprocess(self):
         logging.debug('>>> PREPROCESO ETL <<<')

@@ -23,7 +23,7 @@ def cli():
 @cli.command()
 @click.option(
     '--config',
-    default=lambda: os.path.join(CONFIG_DIR, 'index.yaml'),
+    default=lambda: os.path.join(CONFIG_DIR, 'index.example.yaml'),
     type=click.Path(exists=True),
 )
 def etl(config):
