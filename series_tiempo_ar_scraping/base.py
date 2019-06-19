@@ -1,13 +1,14 @@
 import logging
 import os
-import yaml
 
-from series_tiempo_ar import TimeSeriesDataJson
 import pydatajson.readers as readers
 import pydatajson.writers as writers
 
+from series_tiempo_ar import TimeSeriesDataJson
+
 from series_tiempo_ar_scraping import download
 from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -16,16 +17,17 @@ DATOS_DIR = os.path.join(ROOT_DIR, "data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
-CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "config.yaml.sample")
-CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
+CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
+# CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 
 class Distribution():
 
-    def __init__(self, context, *args, **kwargs):
+    def __init__(self, context, distribution_identifier):
         self.context = context
         self.processor = None
+        self.distribution_identifier = distribution_identifier
 
         self.processor = self.get_processor()
 
@@ -44,7 +46,6 @@ class Distribution():
 
         return processor
 
-
     def process(self):
         self.preprocess()
 
@@ -62,9 +63,10 @@ class Distribution():
     def postprocess(self):
         logging.debug('>>> POSTPROCESS DISTRIBUTION <<<')
 
+
 class Dataset():
 
-    def __init__(self, context, *args, **kwargs):
+    def __init__(self, context):
         self.distributions = []
         self.context = context
         super().__init__()
@@ -77,7 +79,9 @@ class Dataset():
             "download"
         )
 
-    def get_distribution_path(self, distribution_identifier, distribution_name):
+    def get_distribution_path(
+            self, distribution_identifier, distribution_name):
+
         return os.path.join(
             self.get_distribution_dir(distribution_identifier),
             distribution_name
@@ -92,25 +96,29 @@ class Dataset():
                 "meta": distribution_metadata
             }
             context["distribution_dir"] = self.get_distribution_dir(
-                self.context.get("meta").get("identifier")
+                distribution_metadata.get("identifier")
             )
             context["distribution_path"] = self.get_distribution_path(
-                self.context.get("meta").get("identifier"),
+                distribution_metadata.get("identifier"),
                 "{}.csv".format(distribution_metadata.get("identifier"))
             )
 
-            distribution = Distribution(context=context)
+            distribution = Distribution(
+                context=context,
+                distribution_identifier=distribution_metadata.get("identifier")
+            )
             self.distributions.append(distribution)
 
             distribution.process()
 
-        self.postprocess()
+            self.postprocess()
 
     def preprocess(self):
         logging.debug('>>> PREPROCESS DATASET <<<')
 
     def postprocess(self):
         logging.debug('>>> POSTPROCESS DATASET <<<')
+
 
 class Catalog():
 
@@ -125,15 +133,16 @@ class Catalog():
         self.format = format_catalog
 
         self.catalog_input_dir = os.path.join(CATALOGS_DIR_INPUT, id_catalog)
-        self.catalog_input_path_template = os.path.join(self.catalog_input_dir, "{}")
+        self.catalog_input_path_template = os.path.join(
+            self.catalog_input_dir, "{}"
+        )
 
-        self.catalog_dir = os.path.join(context.get('catalogs_dir'), id_catalog)
+        self.catalog_dir = os.path.join(
+            context.get('catalogs_dir'), id_catalog
+        )
         self.catalog_path_template = os.path.join(self.catalog_dir, "{}")
 
         self.datasets = []
-
-    def get_general_config(self):
-        return ETL().load_yaml(CONFIG_GENERAL_PATH)
 
     def process(self):
         self.preprocess()
@@ -153,12 +162,12 @@ class Catalog():
 
             dataset.process()
 
-    def get_dataset_dir(self, catalog_id):
+    def get_dataset_dir(self, dataset_identifier):
         return os.path.join(
             CATALOGS_DIR,
             self.id_catalog,
-            catalog_id,
-            "dataset"
+            "dataset",
+            dataset_identifier,
         )
 
     def preprocess(self):
@@ -169,15 +178,18 @@ class Catalog():
         try:
             extension = self.format.lower()
             if extension in ['xlsx', 'json']:
-                config = self.get_catalog_download_config(self.id_catalog)["catalog"]
+                config = self.get_catalog_download_config(
+                    self.id_catalog)["catalog"]
                 catalog_input_path = self.catalog_input_path_template.format(
-                    "catalog." + extension)
+                    "data." + extension)
 
                 self.download_with_config(self.url, catalog_input_path, config)
 
                 if extension == 'xlsx':
                     logging.info('Transformación de XLSX a JSON')
-                    catalog = TimeSeriesDataJson(self.read_xlsx_catalog(catalog_input_path))
+                    catalog = TimeSeriesDataJson(
+                        self.read_xlsx_catalog(catalog_input_path)
+                    )
                 else:
                     catalog = TimeSeriesDataJson(catalog_input_path)
 
@@ -188,14 +200,23 @@ class Catalog():
                 logging.info("Valida y filtra el catálogo")
                 catalog_filtered = self.validate_and_filter(catalog)
 
-                logging.info('Escritura de catálogo en JSON: {}'.format(self.catalog_path_template.format("data.json")))
+                logging.info('Escritura de catálogo en JSON: {}'.format(
+                    self.catalog_path_template.format("data.json")
+                    ))
 
-                self.write_json_catalog(catalog_filtered, self.catalog_path_template.format("data.json"))
+                self.write_json_catalog(
+                    catalog_filtered,
+                    self.catalog_path_template.format("data.json")
+                )
 
-                logging.info('Escritura de catálogo en XLSX: {}'.format(self.catalog_path_template.format("catalog.xlsx")))
-                catalog.to_xlsx(self.catalog_path_template.format("catalog.xlsx"))
+                logging.info('Escritura de catálogo en XLSX: {}'.format(
+                    self.catalog_path_template.format("catalog.xlsx")
+                    ))
+                catalog.to_xlsx(
+                    self.catalog_path_template.format("catalog.xlsx")
+                )
 
-                self.meta = catalog
+                self.meta = catalog_filtered
         except:
             pass
 
@@ -259,7 +280,10 @@ class Catalog():
         # valida todo el catálogo para saber si está ok
         is_valid_catalog = dj.is_valid_catalog()
         logging.info(
-            "Metadata a nivel de catálogo es válida? {}".format(is_valid_catalog))
+            "Metadata a nivel de catálogo es válida? {}".format(
+                is_valid_catalog
+            )
+        )
 
         # genera catálogo filtrado por los datasets que no tienen error
         catalog_filtered = dj.generate_harvestable_catalogs(
@@ -270,11 +294,10 @@ class Catalog():
 
 class ETL():
 
-    def __init__(self):
+    def __init__(self, config):
         self.catalogs = []
 
-        catalogs_from_config = self.get_catalogs_index()
-
+        catalogs_from_config = config
         context = {
             "meta": {},
             "catalogs_dir": CATALOGS_DIR
@@ -284,7 +307,9 @@ class ETL():
                 Catalog(
                     id_catalog=catalog,
                     url=catalogs_from_config.get(catalog).get('url'),
-                    format_catalog=catalogs_from_config.get(catalog).get('formato'),
+                    format_catalog=catalogs_from_config.get(catalog).get(
+                        'formato'
+                    ),
                     context=context,
                 )
             )
@@ -304,13 +329,6 @@ class ETL():
 
     def postprocess(self):
         logging.debug('>>> POSTPROCESO ETL <<<')
-
-    def load_yaml(self, path):
-        with open(path) as config_file:
-            return yaml.load(config_file)
-
-    def get_catalogs_index(self):
-        return self.load_yaml(CATALOGS_INDEX_PATH)
 
     def run(self):
         self.process()
