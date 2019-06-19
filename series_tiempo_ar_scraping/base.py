@@ -8,8 +8,6 @@ from series_tiempo_ar import TimeSeriesDataJson
 
 from series_tiempo_ar_scraping import download
 from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
-from series_tiempo_ar.readers import get_ts_distributions_by_method
-from series_tiempo_ar.readers import get_distribution_generation_method
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -20,7 +18,6 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
-# CONFIG_GENERAL_PATH = os.path.join(CONFIG_DIR, "config_general.yaml")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 
@@ -135,9 +132,6 @@ class Catalog():
         self.catalog_path_template = os.path.join(self.catalog_dir, "{}")
 
         self.datasets = []
-
-    # def get_general_config(self):
-    #     return ETL().load_yaml(CONFIG_GENERAL_PATH)
 
     def process(self):
         self.preprocess()
