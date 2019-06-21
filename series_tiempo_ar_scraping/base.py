@@ -35,7 +35,7 @@ class Distribution():
     def get_processor(self):
         processor = None
 
-        meta = self.context.get("meta")
+        meta = self.context.get("metadata")
         if meta.get("downloadURL"):
             processor = DirectDownloadProcessor(
                 download_url=meta.get("downloadURL"),
@@ -65,10 +65,20 @@ class Distribution():
 
 class Dataset():
 
-    def __init__(self, context):
-        self.distributions = []
+    def __init__(self, identifier, context):
+        self.identifier = identifier
         self.context = context
-        super().__init__()
+        self.distributions = []
+        self.init_distribution()
+
+    def init_distribution(self):
+        time_series_ids = [distribution["identifier"]
+                           for distribution
+                           in self.context.get_distributions(only_time_series=True)]
+
+        distribution_identifiers = [distribution["identifier"]
+                                    for distribution in self.context
+                                    if distribution["identifier"] in time_series_ids]
 
     def get_distribution_dir(self, distribution_identifier):
         return os.path.join(
@@ -90,9 +100,9 @@ class Dataset():
         self.preprocess()
 
         logging.debug('>>> PROCESS DATASET <<<')
-        for distribution_metadata in self.context['meta'].get('distribution'):
+        for distribution_metadata in self.context['metadata'].get('distribution'):
             context = {
-                "meta": distribution_metadata
+                "metadata": distribution_metadata
             }
             context["distribution_dir"] = self.get_distribution_dir(
                 distribution_metadata.get("identifier")
@@ -134,10 +144,11 @@ class Catalog():
 
         self.init_paths(self.context, self.identifier)
         self.fetch_metadata(self.context, self.extension)
-        self.validate_metadata(self.context)
 
-        if self.context['is_valid']:
-            self.filter_metadata(self.context)
+        self.validate_metadata(self.context)
+        self.filter_metadata(self.context)
+
+        self.init_datasets()
 
     def init_paths(self, context, identifier):
 
@@ -153,7 +164,6 @@ class Catalog():
         self.ensure_dir_exists(self.context['catalog_dir'])
 
     def fetch_metadata(self, context, extension):
-
         if extension in ['xlsx', 'json']:
             config = self.get_catalog_download_config(
                 self.identifier)["catalog"]
@@ -175,27 +185,36 @@ class Catalog():
     def validate_metadata(self, context):
         is_valid_catalog = context['metadata'].is_valid_catalog()
 
-        logging.info(
-            "Metadata a nivel de catálogo es válida? {}".format(
-                is_valid_catalog
-            )
-        )
         context['is_valid'] = is_valid_catalog
 
     def filter_metadata(self, context):
-
-        context_filtered = context['metadata'].generate_harvestable_catalogs(
+        filtered_context = context['metadata'].generate_harvestable_catalogs(
             context['metadata'], harvest='valid')[0]
 
         self.write_json_catalog(
-            context_filtered,
+            filtered_context,
             self.context['catalog_path_template'].format("data.json")
         )
 
-        context['metadata'].to_xlsx(
+        filtered_context.to_xlsx(
             self.context['catalog_path_template'].format("catalog.xlsx")
         )
-        return context_filtered
+
+        self.context['metadata'] = filtered_context
+
+    def init_datasets(self):
+        metadata = self.context['metadata']
+
+        datasets_identifiers = set([
+            distribution['dataset_identifier']
+            for distribution
+            in metadata.get_distributions(only_time_series=True)
+        ])
+
+        self.datasets = [
+            Dataset(identifier=dataset_identifier, context=metadata)
+            for dataset_identifier in datasets_identifiers
+        ]
 
     def process(self):
         self.preprocess()
@@ -205,15 +224,6 @@ class Catalog():
         logging.debug('Formato: {}'.format(self.extension))
 
         for dataset in self.datasets:
-            context = {
-                "meta": dataset
-            }
-            context["dataset_path"] = self.get_dataset_dir(
-                dataset.get("identifier")
-            )
-            dataset = Dataset(context=context)
-            self.datasets.append(dataset)
-
             dataset.process()
 
         self.postprocess()
