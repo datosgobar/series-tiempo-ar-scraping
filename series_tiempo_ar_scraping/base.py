@@ -23,24 +23,27 @@ SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 class Distribution():
 
-    def __init__(self, context, distribution_identifier):
+    def __init__(self, context, identifier):
         self.context = context
         self.processor = None
-        self.distribution_identifier = distribution_identifier
+        self.identifier = identifier
 
-        self.processor = self.get_processor()
+        self.init_metadata()
+        self.processor = self.init_processor()
 
-        super().__init__()
+    def init_metadata(self):
+        self.metadata = self.context['metadata'].get_distribution(
+            self.identifier
+        )
 
-    def get_processor(self):
+    def init_processor(self):
         processor = None
 
-        meta = self.context.get("metadata")
-        if meta.get("downloadURL"):
+        if self.metadata.get('downloadURL'):
             processor = DirectDownloadProcessor(
-                download_url=meta.get("downloadURL"),
-                distribution_dir=self.context.get("distribution_dir"),
-                distribution_path=self.context.get("distribution_path"),
+                download_url=self.metadata.get('downloadURL'),
+                distribution_dir=self.context.get('distribution_dir'),
+                distribution_path=self.context.get('distribution_path'),
             )
 
         return processor
@@ -48,19 +51,17 @@ class Distribution():
     def process(self):
         self.preprocess()
 
-        logging.debug('>>> PROCESS DISTRIBUTION <<<')
         if self.processor:
+            logging.debug(f'Processing distribution {self.identifier}')
             self.processor.run()
-        else:
-            logging.debug('>>> No hay procesador para la distribución <<<')
 
         self.postprocess()
 
     def preprocess(self):
-        logging.debug('>>> PREPROCESS DISTRIBUTION <<<')
+        pass
 
     def postprocess(self):
-        logging.debug('>>> POSTPROCESS DISTRIBUTION <<<')
+        pass
 
 
 class Dataset():
@@ -69,23 +70,44 @@ class Dataset():
         self.identifier = identifier
         self.context = context
         self.distributions = []
-        self.init_distribution()
 
-    def init_distribution(self):
-        time_series_ids = [distribution["identifier"]
-                           for distribution
-                           in self.context.get_distributions(only_time_series=True)]
+        self.init_metadata()
+        self.init_distributions()
 
-        distribution_identifiers = [distribution["identifier"]
-                                    for distribution in self.context
-                                    if distribution["identifier"] in time_series_ids]
+    def init_metadata(self):
+        self.metadata = self.context['metadata'].get_dataset(self.identifier)
+
+    def init_distributions(self):
+        dataset_distributions_identifiers = [
+            distribution["identifier"]
+            for distribution in self.metadata.get('distribution')
+            if distribution["identifier"]
+            in self.context['time_series_distributions_identifiers']
+        ]
+
+        for distribution_identifier in dataset_distributions_identifiers:
+            # breakpoint()
+            self.context["distribution_dir"] = self.get_distribution_dir(
+                distribution_identifier,
+            )
+            self.context["distribution_path"] = self.get_distribution_path(
+                distribution_identifier,
+                "{}.csv".format(distribution_identifier)
+            )
+
+            distribution = Distribution(
+                identifier=distribution_identifier,
+                context=self.context,
+            )
+
+            self.distributions.append(distribution)
 
     def get_distribution_dir(self, distribution_identifier):
         return os.path.join(
-            self.context.get("dataset_path"),
-            "distribution",
+            self.context.get('dataset_dir'),
+            'distribution',
             distribution_identifier,
-            "download"
+            'download'
         )
 
     def get_distribution_path(
@@ -100,32 +122,16 @@ class Dataset():
         self.preprocess()
 
         logging.debug('>>> PROCESS DATASET <<<')
-        for distribution_metadata in self.context['metadata'].get('distribution'):
-            context = {
-                "metadata": distribution_metadata
-            }
-            context["distribution_dir"] = self.get_distribution_dir(
-                distribution_metadata.get("identifier")
-            )
-            context["distribution_path"] = self.get_distribution_path(
-                distribution_metadata.get("identifier"),
-                "{}.csv".format(distribution_metadata.get("identifier"))
-            )
 
-            distribution = Distribution(
-                context=context,
-                distribution_identifier=distribution_metadata.get("identifier")
-            )
-            self.distributions.append(distribution)
-
+        for distribution in self.distributions:
             distribution.process()
-
-            self.postprocess()
 
     def preprocess(self):
         logging.debug('>>> PREPROCESS DATASET <<<')
 
     def postprocess(self):
+        # TODO: unset distribution_dir in context
+        # TODO: unset distribution_path in context
         logging.debug('>>> POSTPROCESS DATASET <<<')
 
 
@@ -140,81 +146,105 @@ class Catalog():
         self.url = url
         self.extension = extension
         self.context = context
+        self.metadata = {}
         self.datasets = []
 
-        self.init_paths(self.context, self.identifier)
-        self.fetch_metadata(self.context, self.extension)
-
-        self.validate_metadata(self.context)
-        self.filter_metadata(self.context)
+        self.init_context()
 
         self.init_datasets()
 
-    def init_paths(self, context, identifier):
+    def init_context(self):
+        self.init_paths(self.context, self.identifier)
 
-        self.context['catalog_input_dir'] = os.path.join(CATALOGS_DIR_INPUT, identifier)
+        self.metadata = self.fetch_metadata(self.extension)
+        self.context['metadata'] = self.metadata
+        self.context['is_valid'] = self.validate_metadata()
+        self.metadata = self.filter_metadata()
+
+        self.context['time_series_distributions_identifiers'] = [
+            distribution['identifier']
+            for distribution
+            in self.metadata.get_distributions(only_time_series=True)
+        ]
+
+        self.write_catalog_metadata()
+
+    def init_paths(self, context, identifier):
+        self.context['catalog_input_dir'] = os.path.join(
+            CATALOGS_DIR_INPUT, identifier
+        )
         self.context['catalog_input_path_template'] = os.path.join(
             self.context['catalog_input_dir'], "{}"
         )
         self.context['catalog_dir'] = os.path.join(
             context.get('catalogs_dir'), identifier
         )
-        self.context['catalog_path_template'] = os.path.join(self.context['catalog_dir'], "{}")
+        self.context['catalog_path_template'] = os.path.join(
+            self.context['catalog_dir'], "{}"
+        )
+
+        # TODO
         self.ensure_dir_exists(self.context['catalog_input_dir'])
         self.ensure_dir_exists(self.context['catalog_dir'])
 
-    def fetch_metadata(self, context, extension):
+    def fetch_metadata(self, extension):
         if extension in ['xlsx', 'json']:
             config = self.get_catalog_download_config(
                 self.identifier)["catalog"]
-            catalog_input_path = self.context['catalog_input_path_template'].format(
-                "data." + extension)
+            catalog_input_path = self.context[
+                'catalog_input_path_template'].format("data." + extension)
 
             self.download_with_config(self.url, catalog_input_path, config)
             if extension == 'xlsx':
                 logging.info('Transformación de XLSX a JSON')
-                context['metadata'] = TimeSeriesDataJson(
+                metadata = TimeSeriesDataJson(
                     self.read_xlsx_catalog(catalog_input_path)
                 )
             else:
-                context['metadata'] = TimeSeriesDataJson(catalog_input_path)
+                metadata = TimeSeriesDataJson(catalog_input_path)
 
         else:
             raise ValueError()
 
-    def validate_metadata(self, context):
-        is_valid_catalog = context['metadata'].is_valid_catalog()
+        return metadata
 
-        context['is_valid'] = is_valid_catalog
+    def validate_metadata(self):
+        return self.metadata.is_valid_catalog()
 
-    def filter_metadata(self, context):
-        filtered_context = context['metadata'].generate_harvestable_catalogs(
-            context['metadata'], harvest='valid')[0]
+    def filter_metadata(self):
+        filtered_metadata = self.metadata.generate_harvestable_catalogs(
+            self.metadata, harvest='valid')[0]
 
+        return filtered_metadata
+
+    def write_catalog_metadata(self):
         self.write_json_catalog(
-            filtered_context,
+            self.metadata,
             self.context['catalog_path_template'].format("data.json")
         )
 
-        filtered_context.to_xlsx(
+        self.metadata.to_xlsx(
             self.context['catalog_path_template'].format("catalog.xlsx")
         )
 
-        self.context['metadata'] = filtered_context
-
     def init_datasets(self):
-        metadata = self.context['metadata']
-
         datasets_identifiers = set([
             distribution['dataset_identifier']
             for distribution
-            in metadata.get_distributions(only_time_series=True)
+            in self.metadata.get_distributions(only_time_series=True)
         ])
 
-        self.datasets = [
-            Dataset(identifier=dataset_identifier, context=metadata)
-            for dataset_identifier in datasets_identifiers
-        ]
+        for dataset_identifier in datasets_identifiers:
+            self.context['dataset_dir'] = self.get_dataset_dir(
+                dataset_identifier,
+            )
+
+            dataset = Dataset(
+                identifier=dataset_identifier,
+                context=self.context
+            )
+
+            self.datasets.append(dataset)
 
     def process(self):
         self.preprocess()
@@ -240,6 +270,7 @@ class Catalog():
         logging.debug('>>> PREPROCESS CATALOG <<<')
 
     def postprocess(self):
+        # TODO: unset dataset_path
         logging.debug('>>> POSTPROCESS CATALOG <<<')
 
     def download_with_config(self, url, file_path, config):
@@ -316,7 +347,6 @@ class ETL():
 
     def _get_default_context(self):
         return {
-            "metadata": {},
             "catalogs_dir": CATALOGS_DIR
         }
 
