@@ -64,3 +64,7 @@ target/
 
 # pyenv python configuration file
 .python-version
+config.yaml
+config_downloads.yaml
+config_email.yaml
+config_general.yaml
