@@ -1,6 +1,8 @@
 import logging
 import os
 
+import pandas as pd
+
 import pydatajson.readers as readers
 import pydatajson.writers as writers
 
@@ -19,6 +21,7 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
+REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 
@@ -30,6 +33,13 @@ class Distribution():
         self.context = context
 
         self.processor = None
+
+        self.report = {
+            'dataset_identifier': self.dataset.identifier,
+            'distribution_identifier': self.identifier,
+            'distribution_status': 'OK',
+            'distribution_notes': None,
+        }
 
         self.init_metadata()
         self.init_context()
@@ -64,10 +74,14 @@ class Distribution():
                 self._df_is_valid, self._df = self.processor.run()
                 self.validate()
                 self.write_distribution_dataframe()
-            except Exception:
+
+            except Exception as e:
                 logging.debug(
                     f'Falló la distribución {self.identifier}'
                 )
+
+                self.report['distribution_status'] = 'ERROR'
+                self.report['distribution_notes'] = repr(e)
 
         self.post_process()
 
@@ -116,6 +130,10 @@ class Distribution():
 
     def post_process(self):
         logging.debug('>>> POSTPROCESO DISTRIBUTION <<<')
+
+        self.context['catalog_distributions_reports'].append(self.report)
+
+        logging.debug(self.report)
         # TODO: unset distribution_output_path in context
         # TODO: unset distribution_output_download_path in context
 
@@ -129,13 +147,23 @@ class Dataset():
         self.context = context
         self.distributions = []
 
+
+        self.report = {
+            'dataset_identifier': self.identifier,
+            'dataset_status': 'OK',
+        }
+
         self.init_metadata()
         self.init_context()
         self.init_distributions()
 
     def init_metadata(self):
-        logging.debug('>>> INIT DATASET METADATA <<<')
-        self.metadata = self.context['metadata'].get_dataset(self.identifier)
+        try:
+            logging.debug('>>> INIT DATASET METADATA <<<')
+            self.metadata = self.context['metadata'].get_dataset(self.identifier)
+        except Exception as e:
+            logging.debug('>>> INIT DATASET METADATA ERROR <<<')
+            self.report['dataset_status'] = 'ERROR: metadata'
 
     def init_context(self):
         logging.debug('>>> INIT DATASET CONTEXT <<<')
@@ -180,6 +208,12 @@ class Dataset():
 
         self.init_context_paths()
 
+        self.context['dataset_result'] = {
+            'status': [],
+            'distributions_ok': [],
+            'distributions_error': [],
+        }
+
     def init_context_paths(self):
         logging.debug('>>> INIT CONTEXT PATHS <<<')
         self.context['dataset_output_path'] = self.get_output_path()
@@ -187,6 +221,7 @@ class Dataset():
     def post_process(self):
         # TODO: unset dataset_output_path in context
         logging.debug('>>> POSTPROCESO DATASET <<<')
+        self.context['catalog_datasets_reports'].append(self.report)
 
 
 class Catalog():
@@ -194,7 +229,7 @@ class Catalog():
     def __init__(self, identifier, url, extension, context):
 
         logging.info('')
-        logging.info('=== Catálogo: {} ==='.format(identifier.upper()))
+        logging.info(f'=== Catálogo: {identifier.upper()} ===')
 
         self.identifier = identifier
         self.url = url
@@ -229,7 +264,6 @@ class Catalog():
                 self.get_original_metadata_path(),
                 config,
             )
-
         else:
             raise ValueError()
 
@@ -263,9 +297,11 @@ class Catalog():
 
         return filtered_metadata
 
-    def init_context(self, write=True):
+    def init_context(self):
         self.context['catalog_time_series_distributions_identifiers'] = \
             self.get_time_series_distributions_identifiers()
+        self.context['catalog_datasets_reports'] = []
+        self.context['catalog_distributions_reports'] = []
 
     def get_time_series_distributions_identifiers(self):
         return [
@@ -323,7 +359,6 @@ class Catalog():
         for dataset in self.datasets:
             logging.debug('>>> PROCESO DATASETS <<<')
             dataset.process()
-
         self.post_process()
 
     def pre_process(self):
@@ -370,6 +405,64 @@ class Catalog():
     def post_process(self):
         # TODO: unset dataset_path
         logging.debug('>>> POSTPROCESO CATALOG <<<')
+
+        datasets_report = self.get_datasets_report()
+
+        distributions_report = self.get_distributions_report()
+
+        self.ensure_dir_exists(
+            os.path.join(
+                REPORTES_DIR,
+                self.identifier,
+            ),
+        )
+
+        datasets_report.to_excel(
+            os.path.join(
+                REPORTES_DIR,
+                self.identifier,
+                'reporte-datasets.xlsx'
+            ),
+            encoding="utf-8",
+            index=False
+        )
+
+        distributions_report.to_excel(
+            os.path.join(
+                REPORTES_DIR,
+                self.identifier,
+                'reporte-distributions.xlsx'
+            ),
+            encoding="utf-8",
+            index=False
+        )
+
+    def get_datasets_report(self):
+        columns = (
+            'dataset_identifier', 'dataset_status'
+        )
+
+        datasets_report = pd.DataFrame(
+            self.context['catalog_datasets_reports'],
+            columns=columns,
+        )
+
+        return datasets_report
+
+    def get_distributions_report(self):
+        columns = (
+            'dataset_identifier',
+            'distribution_identifier',
+            'distribution_status',
+            'distribution_notes',
+        )
+
+        distributions_report = pd.DataFrame(
+            self.context['catalog_distributions_reports'],
+            columns=columns,
+        )
+
+        return distributions_report
 
     def download_with_config(self, url, file_path, config):
         self.ensure_dir_exists(
@@ -447,16 +540,14 @@ class ETL():
 
     def _get_default_context(self):
         return {
-            "catalogs_dir": CATALOGS_DIR
+            'catalogs_dir': CATALOGS_DIR,
         }
 
     def process(self):
         self.pre_process()
-
         logging.debug('>>> PROCESO ETL <<<')
         for catalog in self.catalogs:
             catalog.process()
-
         self.post_process()
 
     def pre_process(self):

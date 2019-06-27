@@ -22,4 +22,3 @@ class DirectDownloadProcessor():
             logging.debug('>>> Falló la descarga de la distribución <<<')
 
         return valid_df, distribution_df
-
