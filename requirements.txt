@@ -1,3 +1,4 @@
 PyYaml
 requests
 click
+series-tiempo-ar
