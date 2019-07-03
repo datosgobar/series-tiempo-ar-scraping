@@ -25,33 +25,50 @@ REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 
-class Distribution():
+class ETLObject:
 
-    def __init__(self, identifier, dataset, context):
+    def __init__(self, identifier, parent, context):
         self.identifier = identifier
-        self.dataset = dataset
+        self.parent = parent
         self.context = context
+        self.childs = []
 
+        self.init_metadata()
+        self.init_context()
+        self.init_childs()
+
+    def init_metadata(self):
+        pass
+
+    def init_context(self):
+        pass
+
+    def init_childs(self):
+        pass
+
+    def ensure_dir_exists(self, directory):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+class Distribution(ETLObject):
+
+    def __init__(self, identifier, parent, context):
+        super().__init__(identifier, parent, context)
         self.processor = None
 
         self.report = {
-            'dataset_identifier': self.dataset.identifier,
+            'dataset_identifier': self.parent.identifier,
             'distribution_identifier': self.identifier,
             'distribution_status': 'OK',
             'distribution_notes': None,
         }
 
-        self.init_metadata()
-        self.init_context()
         self.processor = self.init_processor()
 
     def init_metadata(self):
         self.metadata = self.context['metadata'].get_distribution(
             self.identifier
         )
-
-    def init_context(self):
-        pass
 
     def init_processor(self):
         processor = None
@@ -69,16 +86,12 @@ class Distribution():
         logging.debug('>>> PROCESO DISTRIBUTION <<<')
         if self.processor:
             try:
-                logging.debug(f'Procesando distribución {self.identifier}')
 
                 self._df_is_valid, self._df = self.processor.run()
                 self.validate()
                 self.write_distribution_dataframe()
 
             except Exception as e:
-                logging.debug(
-                    f'Falló la distribución {self.identifier}'
-                )
 
                 self.report['distribution_status'] = 'ERROR'
                 self.report['distribution_notes'] = repr(e)
@@ -110,18 +123,11 @@ class Distribution():
             distrib_meta=self.metadata,
         )
 
-    def ensure_dir_exists(self, directory):
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
     def write_distribution_dataframe(self):
         self.ensure_dir_exists(
             os.path.dirname(self.context['distribution_output_path'])
         )
 
-        logging.debug(
-            f"Escribiendo {self.context['distribution_output_path']}"
-        )
         self._df.to_csv(
             self.context['distribution_output_path'],
             encoding="utf-8",
@@ -138,24 +144,16 @@ class Distribution():
         # TODO: unset distribution_output_download_path in context
 
 
-class Dataset():
+class Dataset(ETLObject):
 
-    def __init__(self, identifier, catalog, context):
+    def __init__(self, identifier, parent, context):
         logging.debug('>>> INIT DATASET <<<')
-        self.identifier = identifier
-        self.catalog = catalog
-        self.context = context
-        self.distributions = []
-
+        super().__init__(identifier, parent, context)
 
         self.report = {
             'dataset_identifier': self.identifier,
             'dataset_status': 'OK',
         }
-
-        self.init_metadata()
-        self.init_context()
-        self.init_distributions()
 
     def init_metadata(self):
         try:
@@ -165,10 +163,7 @@ class Dataset():
             logging.debug('>>> INIT DATASET METADATA ERROR <<<')
             self.report['dataset_status'] = 'ERROR: metadata'
 
-    def init_context(self):
-        logging.debug('>>> INIT DATASET CONTEXT <<<')
-
-    def init_distributions(self):
+    def init_childs(self):
         logging.debug('>>> INIT DISTRIBUTIONS <<<')
         dataset_distributions_identifiers = [
             distribution['identifier']
@@ -177,10 +172,10 @@ class Dataset():
             in self.context['catalog_time_series_distributions_identifiers']
         ]
 
-        self.distributions = [
+        self.childs = [
             Distribution(
                 identifier=identifier,
-                dataset=self,
+                parent=self,
                 context=self.context,
             )
             for identifier in dataset_distributions_identifiers
@@ -198,8 +193,8 @@ class Dataset():
 
         logging.debug('>>> PROCESS DATASET <<<')
 
-        for distribution in self.distributions:
-            distribution.process()
+        for child in self.childs:
+            child.process()
 
         self.post_process()
 
@@ -207,12 +202,6 @@ class Dataset():
         logging.debug('>>> PREPROCESS DATASET <<<')
 
         self.init_context_paths()
-
-        self.context['dataset_result'] = {
-            'status': [],
-            'distributions_ok': [],
-            'distributions_error': [],
-        }
 
     def init_context_paths(self):
         logging.debug('>>> INIT CONTEXT PATHS <<<')
@@ -224,23 +213,13 @@ class Dataset():
         self.context['catalog_datasets_reports'].append(self.report)
 
 
-class Catalog():
+class Catalog(ETLObject):
 
-    def __init__(self, identifier, url, extension, context):
+    def __init__(self, identifier, parent, context, **kwargs):
+        self.url = kwargs.get('url')
+        self.extension = kwargs.get('extension')
 
-        logging.info('')
-        logging.info(f'=== Catálogo: {identifier.upper()} ===')
-
-        self.identifier = identifier
-        self.url = url
-        self.extension = extension
-        self.context = context
-        self.metadata = {}
-        self.datasets = []
-
-        self.init_metadata()
-        self.init_context()
-        self.init_datasets()
+        super().__init__(identifier, parent, context)
 
     def init_metadata(self, write=True):
         self.fetch_metadata_file()
@@ -269,7 +248,6 @@ class Catalog():
 
     def get_metadata_from_file(self):
         metadata = None
-
         if self.extension == 'xlsx':
             logging.info('Transformación de XLSX a JSON')
 
@@ -327,15 +305,15 @@ class Catalog():
         self.ensure_dir_exists(os.path.dirname(file_path))
         self.metadata.to_xlsx(file_path)
 
-    def init_datasets(self):
+    def init_childs(self):
         logging.debug('>>> INIT DATASETS <<<')
         datasets_identifiers = \
             self.get_time_series_distributions_datasets_ids()
 
-        self.datasets = [
+        self.childs = [
             Dataset(
                 identifier=dataset_identifier,
-                catalog=self,
+                parent=self,
                 context=self.context
             )
             for dataset_identifier in datasets_identifiers
@@ -352,13 +330,10 @@ class Catalog():
         self.pre_process()
 
         logging.debug('>>> PROCESO CATALOG <<<')
-        logging.debug(f'ID: {self.identifier}')
-        logging.debug(f'URL: {self.url}')
-        logging.debug(f'Formato: {self.extension}')
 
-        for dataset in self.datasets:
+        for child in self.childs:
             logging.debug('>>> PROCESO DATASETS <<<')
-            dataset.process()
+            child.process()
         self.post_process()
 
     def pre_process(self):
@@ -473,7 +448,6 @@ class Catalog():
 
     def read_xlsx_catalog(self, catalog_xlsx_path):
         """Lee catálogo en excel."""
-
         default_values = {}
         catalog = readers.read_xlsx_catalog(catalog_xlsx_path, logging)
         catalog = TimeSeriesDataJson(catalog, default_values=default_values)
@@ -490,10 +464,6 @@ class Catalog():
                             field["title"] = field["title"].replace(" ", "")
                         if "id" in field:
                             field["id"] = field["id"].replace(" ", "")
-
-    def ensure_dir_exists(self, directory):
-        if not os.path.exists(directory):
-            os.makedirs(directory)
 
     def get_catalog_download_config(self, identifier):
         configs = {
@@ -516,27 +486,26 @@ class Catalog():
         return config
 
 
-class ETL():
+class ETL(ETLObject):
 
-    def __init__(self, config):
+    def __init__(self, identifier, parent=None, context=None, **kwargs):
+        self.catalogs_from_config = kwargs.get('config')
+        super().__init__(identifier, parent, context)
         logging.debug('>>> INIT ETL <<<')
-        self.catalogs = []
 
-        catalogs_from_config = config
-
-        for catalog in catalogs_from_config.keys():
-            self.catalogs.append(
-                Catalog(
-                    identifier=catalog,
-                    url=catalogs_from_config.get(catalog).get('url'),
-                    extension=catalogs_from_config.get(catalog).get(
-                        'formato'
-                    ),
-                    context=self._get_default_context(),
-                )
+    def init_childs(self):
+        self.childs = [
+            Catalog(
+                identifier=catalog,
+                context=self._get_default_context(),
+                parent=self,
+                url=self.catalogs_from_config.get(catalog).get('url'),
+                extension=self.catalogs_from_config.get(catalog).get(
+                    'formato'
+                ),
             )
-
-        super().__init__()
+            for catalog in self.catalogs_from_config.keys()
+        ]
 
     def _get_default_context(self):
         return {
@@ -546,8 +515,8 @@ class ETL():
     def process(self):
         self.pre_process()
         logging.debug('>>> PROCESO ETL <<<')
-        for catalog in self.catalogs:
-            catalog.process()
+        for child in self.childs:
+            child.process()
         self.post_process()
 
     def pre_process(self):
@@ -559,4 +528,3 @@ class ETL():
     def run(self):
         logging.debug('>>> RUN ETL <<<')
         self.process()
-

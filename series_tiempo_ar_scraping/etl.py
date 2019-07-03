@@ -11,7 +11,7 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 def read_config(file_path):
     try:
         with open(file_path) as config_data:
-            return yaml.load(config_data)
+            return yaml.load(config_data, Loader=yaml.FullLoader)
     except:
         raise "El formato del archivo de configuración es inválido"
 
@@ -28,7 +28,15 @@ def cli():
 )
 def etl(config):
     config = read_config(file_path=config)
-    etl_class = ETL(config)
+    etl_class = ETL(
+                identifier=None,
+                parent=None,
+                context=None,
+                url=None,
+                extension=None,
+                config=config
+                )
+    # etl_class = ETL(config)
     etl_class.run()
 
 if __name__ == '__main__':
