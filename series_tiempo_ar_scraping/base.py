@@ -498,7 +498,7 @@ class ETL(ETLObject):
             Catalog(
                 identifier=catalog,
                 context=self._get_default_context(),
-                parent=None,
+                parent=self,
                 url=self.catalogs_from_config.get(catalog).get('url'),
                 extension=self.catalogs_from_config.get(catalog).get(
                     'formato'
