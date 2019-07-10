@@ -352,6 +352,7 @@ class Catalog(ETLObject):
         )
 
     def get_output_path(self):
+        logging.debug('  Obtiene el path del output')
         return os.path.join(
             CATALOGS_DIR,
             self.identifier,
@@ -392,6 +393,7 @@ class Catalog(ETLObject):
         )
 
     def get_datasets_report(self):
+        logging.debug('  Obtiene los reportes de los datasets')
         columns = (
             'dataset_identifier', 'dataset_status'
         )
@@ -404,6 +406,7 @@ class Catalog(ETLObject):
         return datasets_report
 
     def get_distributions_report(self):
+        logging.debug('  Obtiene los reportes de las distribuciones')
         columns = (
             'dataset_identifier',
             'distribution_identifier',
@@ -426,7 +429,7 @@ class Catalog(ETLObject):
         download.download_to_file(url, file_path, **config)
 
     def read_xlsx_catalog(self, catalog_xlsx_path):
-        """Lee catálogo en excel."""
+        logging.debug('  Lectura del catálogo en excel')
         default_values = {}
         catalog = readers.read_xlsx_catalog(catalog_xlsx_path, logging)
         catalog = TimeSeriesDataJson(catalog, default_values=default_values)
@@ -472,6 +475,7 @@ class ETL(ETLObject):
         super().__init__(identifier, parent, context)
 
     def init_childs(self):
+        logging.debug('  Se inicializan los catálogos')
         self.childs = [
             Catalog(
                 identifier=catalog,
@@ -498,11 +502,11 @@ class ETL(ETLObject):
         self.post_process()
 
     def pre_process(self):
-        # logging.debug('>>> PREPROCESO ETL <<<')
+        logging.debug('>>> PREPROCESO ETL <<<')
         pass
 
     def post_process(self):
-        # logging.debug('>>> POSTPROCESO ETL <<<')
+        logging.debug('>>> POSTPROCESO ETL <<<')
         pass
 
     def run(self):
