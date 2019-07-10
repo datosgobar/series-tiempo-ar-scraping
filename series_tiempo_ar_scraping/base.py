@@ -13,8 +13,6 @@ from series_tiempo_ar_scraping import download
 from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
 
 
-logging.basicConfig(level=logging.DEBUG)
-
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATOS_DIR = os.path.join(ROOT_DIR, "data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
@@ -83,7 +81,6 @@ class Distribution(ETLObject):
     def process(self):
         self.pre_process()
 
-        logging.debug('>>> PROCESO DISTRIBUTION <<<')
         if self.processor:
             try:
 
@@ -99,7 +96,7 @@ class Distribution(ETLObject):
         self.post_process()
 
     def pre_process(self):
-        logging.debug('>>> PREPROCESO DISTRIBUTION <<<')
+        logging.debug(f'  Distribution {self.identifier}')
         self.init_context_paths()
 
     def init_context_paths(self):
@@ -133,12 +130,10 @@ class Distribution(ETLObject):
             encoding="utf-8",
             index_label="indice_tiempo"
         )
+        logging.info(f'  CSV de Distribución {self.identifier} escrito')
 
     def post_process(self):
-        logging.debug('>>> POSTPROCESO DISTRIBUTION <<<')
-
         self.context['catalog_distributions_reports'].append(self.report)
-
         logging.debug(self.report)
         # TODO: unset distribution_output_path in context
         # TODO: unset distribution_output_download_path in context
@@ -147,7 +142,6 @@ class Distribution(ETLObject):
 class Dataset(ETLObject):
 
     def __init__(self, identifier, parent, context):
-        logging.debug('>>> INIT DATASET <<<')
         super().__init__(identifier, parent, context)
 
         self.report = {
@@ -157,14 +151,11 @@ class Dataset(ETLObject):
 
     def init_metadata(self):
         try:
-            logging.debug('>>> INIT DATASET METADATA <<<')
             self.metadata = self.context['metadata'].get_dataset(self.identifier)
         except Exception as e:
-            logging.debug('>>> INIT DATASET METADATA ERROR <<<')
             self.report['dataset_status'] = 'ERROR: metadata'
 
     def init_childs(self):
-        logging.debug('>>> INIT DISTRIBUTIONS <<<')
         dataset_distributions_identifiers = [
             distribution['identifier']
             for distribution in self.metadata.get('distribution')
@@ -190,26 +181,22 @@ class Dataset(ETLObject):
 
     def process(self):
         self.pre_process()
-
-        logging.debug('>>> PROCESS DATASET <<<')
-
+        logging.info(f'  Distributions:  {len(self.childs)}')
         for child in self.childs:
             child.process()
 
         self.post_process()
 
     def pre_process(self):
-        logging.debug('>>> PREPROCESS DATASET <<<')
-
+        logging.info(f'  Datasets: {len(self.childs)}')
         self.init_context_paths()
 
     def init_context_paths(self):
-        logging.debug('>>> INIT CONTEXT PATHS <<<')
         self.context['dataset_output_path'] = self.get_output_path()
+        logging.debug(f'  Se crea path del dataset {self.identifier}')
 
     def post_process(self):
         # TODO: unset dataset_output_path in context
-        logging.debug('>>> POSTPROCESO DATASET <<<')
         self.context['catalog_datasets_reports'].append(self.report)
 
 
@@ -249,8 +236,6 @@ class Catalog(ETLObject):
     def get_metadata_from_file(self):
         metadata = None
         if self.extension == 'xlsx':
-            logging.info('Transformación de XLSX a JSON')
-
             metadata = TimeSeriesDataJson(
                 self.read_xlsx_catalog(
                     self.get_original_metadata_path()
@@ -278,6 +263,7 @@ class Catalog(ETLObject):
     def init_context(self):
         self.context['catalog_time_series_distributions_identifiers'] = \
             self.get_time_series_distributions_identifiers()
+        # logging.info(f"  Distributions (OK): {len(self.context['catalog_time_series_distributions_identifiers'])}")
         self.context['catalog_datasets_reports'] = []
         self.context['catalog_distributions_reports'] = []
 
@@ -289,7 +275,6 @@ class Catalog(ETLObject):
         ]
 
     def write_metadata(self):
-        logging.debug('>>> WRITE CATALOG METADATA <<<')
         self.write_json_metadata()
         self.write_xlsx_metadata()
 
@@ -306,7 +291,6 @@ class Catalog(ETLObject):
         self.metadata.to_xlsx(file_path)
 
     def init_childs(self):
-        logging.debug('>>> INIT DATASETS <<<')
         datasets_identifiers = \
             self.get_time_series_distributions_datasets_ids()
 
@@ -328,17 +312,13 @@ class Catalog(ETLObject):
 
     def process(self):
         self.pre_process()
-
-        logging.debug('>>> PROCESO CATALOG <<<')
+        logging.info(f'  Catálogo: {self.identifier}')
 
         for child in self.childs:
-            logging.debug('>>> PROCESO DATASETS <<<')
             child.process()
         self.post_process()
 
     def pre_process(self):
-        logging.debug('>>> PREPROCESO CATALOG <<<')
-
         self.init_context_paths()
 
     def init_context_paths(self):
@@ -379,7 +359,6 @@ class Catalog(ETLObject):
 
     def post_process(self):
         # TODO: unset dataset_path
-        logging.debug('>>> POSTPROCESO CATALOG <<<')
 
         datasets_report = self.get_datasets_report()
 
@@ -491,7 +470,6 @@ class ETL(ETLObject):
     def __init__(self, identifier, parent=None, context=None, **kwargs):
         self.catalogs_from_config = kwargs.get('config')
         super().__init__(identifier, parent, context)
-        logging.debug('>>> INIT ETL <<<')
 
     def init_childs(self):
         self.childs = [
@@ -506,6 +484,7 @@ class ETL(ETLObject):
             )
             for catalog in self.catalogs_from_config.keys()
         ]
+        logging.info(f'  Hay {len(self.childs)} catálogos')
 
     def _get_default_context(self):
         return {
@@ -514,17 +493,17 @@ class ETL(ETLObject):
 
     def process(self):
         self.pre_process()
-        logging.debug('>>> PROCESO ETL <<<')
         for child in self.childs:
             child.process()
         self.post_process()
 
     def pre_process(self):
-        logging.debug('>>> PREPROCESO ETL <<<')
+        # logging.debug('>>> PREPROCESO ETL <<<')
+        pass
 
     def post_process(self):
-        logging.debug('>>> POSTPROCESO ETL <<<')
+        # logging.debug('>>> POSTPROCESO ETL <<<')
+        pass
 
     def run(self):
-        logging.debug('>>> RUN ETL <<<')
         self.process()
