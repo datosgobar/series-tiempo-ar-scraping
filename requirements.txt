@@ -1,3 +1,6 @@
+series-tiempo-ar
+pydatajson
+pandas==0.24.1
+requests==2.21.0
 PyYaml
-requests
 click
