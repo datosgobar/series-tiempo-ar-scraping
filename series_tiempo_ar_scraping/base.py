@@ -279,6 +279,7 @@ class Catalog(ETLObject):
             self.get_time_series_distributions_identifiers()
         logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
         logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
+        logging.info('')
         self.context['catalog_datasets_reports'] = []
         self.context['catalog_distributions_reports'] = []
 
@@ -405,6 +406,8 @@ class Catalog(ETLObject):
             index=False
         )
 
+        self.log_indicators()
+
     def get_datasets_report(self):
         columns = (
             'dataset_identifier', 'dataset_status'
@@ -477,6 +480,17 @@ class Catalog(ETLObject):
 
         return config
 
+    def log_indicators(self):
+        logging.info(f'=== Catálogo: {self.identifier} ===')
+        logging.info(f'Indicadores')
+        logging.info('')
+        logging.info(f'Datasets: {len(self.childs)}')
+        logging.info(f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}')
+        logging.info(f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}')
+        logging.info(f'Distribuciones: {len(self.context["catalog_distributions_reports"])}')
+        logging.info(f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])}')
+        logging.info(f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}')
+        logging.info('')
 
 class ETL(ETLObject):
 
