@@ -106,7 +106,6 @@ class Distribution(ETLObject):
         self.post_process()
 
     def pre_process(self):
-        # logging.info(f'Distribution {self.identifier}')
         self.init_context_paths()
 
     def init_context_paths(self):
@@ -123,7 +122,7 @@ class Distribution(ETLObject):
         )
 
     def validate(self):
-        # logging.info('Valida la distribución')
+        logging.debug('Valida la distribución')
         validate_distribution(
             df=self._df,
             catalog=self.context['metadata'],
@@ -132,7 +131,7 @@ class Distribution(ETLObject):
         )
 
     def write_distribution_dataframe(self):
-        # logging.info('Escribe el dataframe de la distribución')
+        logging.debug('Escribe el dataframe de la distribución')
         self.ensure_dir_exists(
             os.path.dirname(self.context['distribution_output_path'])
         )
@@ -142,11 +141,11 @@ class Distribution(ETLObject):
             encoding="utf-8",
             index_label="indice_tiempo"
         )
-        # logging.info(f'  CSV de Distribución {self.identifier} escrito')
+        logging.debug(f'CSV de Distribución {self.identifier} escrito')
 
     def post_process(self):
         self.context['catalog_distributions_reports'].append(self.report)
-        # logging.info(self.report)
+        logging.debug(self.report)
         # TODO: unset distribution_output_path in context
         # TODO: unset distribution_output_download_path in context
 
@@ -174,7 +173,6 @@ class Dataset(ETLObject):
             if distribution['identifier']
             in self.context['catalog_time_series_distributions_identifiers']
         ]
-        logging.info(f'Distribuciones: {len(dataset_distributions_identifiers)}')
 
         self.childs = [
             Distribution(
@@ -195,19 +193,17 @@ class Dataset(ETLObject):
     def process(self):
         self.pre_process()
 
-        # logging.info(f'  Distributions:  {len(self.childs)}')
         for child in self.childs:
             child.process()
 
         self.post_process()
 
     def pre_process(self):
-        # logging.info(f'  Datasets: {len(self.childs)}')
         self.init_context_paths()
 
     def init_context_paths(self):
         self.context['dataset_output_path'] = self.get_output_path()
-        # logging.info(f'Se crea path del dataset {self.identifier}')
+        logging.debug(f'Se crea path del dataset {self.identifier}')
 
     def post_process(self):
         # TODO: unset dataset_output_path in context
@@ -281,7 +277,8 @@ class Catalog(ETLObject):
     def init_context(self):
         self.context['catalog_time_series_distributions_identifiers'] = \
             self.get_time_series_distributions_identifiers()
-        # logging.info(f"  Distributions (OK): {len(self.context['catalog_time_series_distributions_identifiers'])}")
+        logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
+        logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
         self.context['catalog_datasets_reports'] = []
         self.context['catalog_distributions_reports'] = []
 
@@ -312,7 +309,6 @@ class Catalog(ETLObject):
     def init_childs(self):
         datasets_identifiers = \
             self.get_time_series_distributions_datasets_ids()
-        logging.info(f'Datasets: {len(datasets_identifiers)}')
         self.childs = [
             Dataset(
                 identifier=dataset_identifier,
@@ -444,7 +440,6 @@ class Catalog(ETLObject):
         download.download_to_file(url, file_path, **config)
 
     def read_xlsx_catalog(self, catalog_xlsx_path):
-        # logging.info('Lectura del catálogo en excel')
         default_values = {}
         catalog = readers.read_xlsx_catalog(catalog_xlsx_path, logging)
         catalog = TimeSeriesDataJson(catalog, default_values=default_values)
@@ -492,7 +487,6 @@ class ETL(ETLObject):
     def init_childs(self):
         self.print_log_separator(logging, "Scraping de catálogos")
         logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
-        # logging.info('Se inicializan los catálogos')
         self.childs = [
             Catalog(
                 identifier=catalog,
@@ -505,7 +499,6 @@ class ETL(ETLObject):
             )
             for catalog in self.catalogs_from_config.keys()
         ]
-        # logging.info(f'  Hay {len(self.childs)} catálogos')
 
     def _get_default_context(self):
         return {
@@ -519,11 +512,9 @@ class ETL(ETLObject):
         self.post_process()
 
     def pre_process(self):
-        # logging.debug('>>> PREPROCESO ETL <<<')
         pass
 
     def post_process(self):
-        # logging.debug('>>> POSTPROCESO ETL <<<')
         pass
 
     def run(self):

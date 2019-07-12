@@ -19,6 +19,22 @@ def read_config(file_path):
     except:
         raise "El formato del archivo de configuración es inválido"
 
+def get_logger(log_level):
+    new_logger = logging.getLogger()
+
+    new_logger.setLevel(log_level)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(log_level)
+
+    logging_formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s',
+        '%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(logging_formatter)
+    new_logger.addHandler(ch)
+
+    return new_logger
+
 @click.group()
 def cli():
     pass
@@ -37,7 +53,7 @@ def cli():
 )
 def etl(config, log_level):
     config = read_config(file_path=config)
-    logging.basicConfig(level=log_level)
+    logger = get_logger(log_level)
     etl_class = ETL(
                 identifier=None,
                 parent=None,
