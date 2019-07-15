@@ -1,8 +1,12 @@
+import logging
 import os
 import click
 import yaml
 
 from series_tiempo_ar_scraping.base import ETL
+
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
@@ -15,6 +19,22 @@ def read_config(file_path):
     except:
         raise "El formato del archivo de configuración es inválido"
 
+def get_logger(log_level):
+    new_logger = logging.getLogger()
+
+    new_logger.setLevel(log_level)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(log_level)
+
+    logging_formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s',
+        '%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(logging_formatter)
+    new_logger.addHandler(ch)
+
+    return new_logger
+
 @click.group()
 def cli():
     pass
@@ -26,8 +46,14 @@ def cli():
     default=lambda: os.path.join(CONFIG_DIR, 'index.example.yaml'),
     type=click.Path(exists=True),
 )
-def etl(config):
+@click.option(
+    '--log_level',
+    default=lambda: read_config(os.path.join(CONFIG_DIR, 'config_general.yaml'))['logging'],
+    type=str,
+)
+def etl(config, log_level):
     config = read_config(file_path=config)
+    logger = get_logger(log_level)
     etl_class = ETL(
                 identifier=None,
                 parent=None,
@@ -36,7 +62,6 @@ def etl(config):
                 extension=None,
                 config=config
                 )
-    # etl_class = ETL(config)
     etl_class.run()
 
 if __name__ == '__main__':
