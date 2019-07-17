@@ -294,6 +294,14 @@ class Catalog(ETLObject):
 
     def validate_metadata(self):
         logging.info('Valida metadata')
+
+        self.ensure_dir_exists(
+            os.path.join(
+                REPORTES_DIR,
+                self.identifier,
+            ),
+        )
+
         self.context['metadata'].validate_catalog(
             only_errors=True, fmt="list",
             export_path=os.path.join(
@@ -301,6 +309,7 @@ class Catalog(ETLObject):
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["errors_report"])
         )
+
         self.context['metadata'].generate_datasets_report(
             self.context['metadata'], harvest='valid',
             export_path=os.path.join(
@@ -424,13 +433,6 @@ class Catalog(ETLObject):
         datasets_report = self.get_datasets_report()
 
         distributions_report = self.get_distributions_report()
-
-        self.ensure_dir_exists(
-            os.path.join(
-                REPORTES_DIR,
-                self.identifier,
-            ),
-        )
 
         datasets_report.to_excel(
             os.path.join(
