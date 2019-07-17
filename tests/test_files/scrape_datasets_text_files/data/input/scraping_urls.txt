@@ -1,1 +1,0 @@
-bcra http://www.bcra.gob.ar/Pdfs/PublicacionesEstadisticas/panser.txt

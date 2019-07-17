@@ -1,0 +1,3 @@
+host: http://example.com:3030
+environment: prod
+logging: info

@@ -1,6 +1,6 @@
-series-tiempo-ar==0.2.3
-pydatajson==0.4.34
-xlseries==0.2.1
+series-tiempo-ar
+pydatajson
 pandas==0.24.1
 requests==2.21.0
-pyyaml==4.2b1
+PyYaml
+click
