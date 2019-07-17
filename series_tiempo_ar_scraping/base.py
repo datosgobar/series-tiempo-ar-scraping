@@ -18,7 +18,10 @@ from series_tiempo_ar import TimeSeriesDataJson
 from series_tiempo_ar.validations import validate_distribution
 
 from series_tiempo_ar_scraping import download
-from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
+from series_tiempo_ar_scraping.processors import (
+    DirectDownloadProcessor,
+    TXTProcessor,
+)
 
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -90,6 +93,7 @@ class ETLObject:
         l.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
         l.info("=" * SEPARATOR_WIDTH)
 
+
 class Distribution(ETLObject):
 
     def __init__(self, identifier, parent, context):
@@ -117,6 +121,16 @@ class Distribution(ETLObject):
             processor = DirectDownloadProcessor(
                 distribution_metadata=self.metadata,
             )
+
+        if not self.metadata.get("downloadURL"):
+            path_or_url = self.metadata.get("scrapingFileURL")
+            extension = path_or_url.split(".")[-1].lower()
+
+            if extension == 'txt':
+                processor = TXTProcessor(
+                    distribution_metadata=self.metadata,
+                    catalog_metadata=self.parent.parent.metadata
+                )
 
         return processor
 
@@ -317,6 +331,7 @@ class Catalog(ETLObject):
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["datasets_report"])
         )
+
         return self.context['metadata'].is_valid_catalog()
 
     def filter_metadata(self):
