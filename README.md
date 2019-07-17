@@ -1,7 +1,6 @@
-_ETL
+# series-tiempo-ar-scraping
 
-
-Descripción corta del proyecto.
+Aplicación escrita en Python 3 que scrapea series de tiempo de archivos `.xlsx` semi-estructurados y los transforma en distribuciones de formato abierto. La aplicación está basada en una extensión experimental del Perfil de Metadatos del Paquete de Apertura de Datos.
 
 
 * Versión python: 3.7
@@ -30,20 +29,16 @@ Usar https://github.com/pyenv/pyenv-installer
 
 ### Usando pyenv
 
-    $ pyenv install 3.6.6
+    $ pyenv install 3.7
 
-### Instalación de bcra-scraper
+### Instalación de series-tiempo-ar-scraping
 
-    $ git clone https://github.com/datosgobar/series-tiempo-ar-bcra-scraping.git
-    $ cd series-tiempo-ar-bcra-scraping
+    $ git clone https://github.com/datosgobar/series-tiempo-ar-scraping.git
+    $ cd series-tiempo-ar-scraping
     $ pip install -e .
 
-### Dependencias
-
-* Para ejecutar el scraper es necesario tener chromedriver en el PATH, de manera que el script pueda ejecutarlo.
-
-    brew cask install chromedriver
 
 ## Uso
 ### Básico
-* python3 series_tiempo_ar_scraping/etl.py etl (Copiar archivo de configuración)
+* etl (Copiar archivo de configuración)
+* etl --config config/path.yaml (Con archivo de configuración personalizado)
