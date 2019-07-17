@@ -1,5 +1,13 @@
 import logging
+import sys
 import os
+import yaml
+import smtplib
+import arrow
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formatdate
 
 import pandas as pd
 
@@ -19,10 +27,34 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
+CONFIG_EMAIL_PATH = os.path.join(CONFIG_DIR, "config_email.yaml")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 
 SEPARATOR_WIDTH = 60
+
+EXTRACTION_MAIL_CONFIG = {
+    "subject": "extraction_mail_subject.txt",
+    "message": "extraction_mail_message.txt",
+    "attachments": {
+        "errors_report": "reporte-catalogo-errores.xlsx",
+        "datasets_report": "reporte-datasets-completos.xlsx"
+    }
+}
+
+SCRAPING_MAIL_CONFIG = {
+    "subject": "scraping_mail_subject.txt",
+    "message": "scraping_mail_message.txt",
+    "attachments": {
+        "datasets_report": "reporte-datasets.xlsx",
+        "distributions_report": "reporte-distributions.xlsx"
+    }
+}
+
+GROUP_CONFIGS = {
+    "extraccion": EXTRACTION_MAIL_CONFIG,
+    "scraping": SCRAPING_MAIL_CONFIG
+}
 
 class ETLObject:
 
@@ -262,6 +294,20 @@ class Catalog(ETLObject):
 
     def validate_metadata(self):
         logging.info('Valida metadata')
+        self.context['metadata'].validate_catalog(
+            only_errors=True, fmt="list",
+            export_path=os.path.join(
+                REPORTES_DIR,
+                self.identifier,
+                EXTRACTION_MAIL_CONFIG["attachments"]["errors_report"])
+        )
+        self.context['metadata'].generate_datasets_report(
+            self.context['metadata'], harvest='valid',
+            export_path=os.path.join(
+                REPORTES_DIR,
+                self.identifier,
+                EXTRACTION_MAIL_CONFIG["attachments"]["datasets_report"])
+        )
         return self.context['metadata'].is_valid_catalog()
 
     def filter_metadata(self):
@@ -408,6 +454,144 @@ class Catalog(ETLObject):
 
         self.log_indicators()
 
+        self.generate_validation_message(self.context['catalog_is_valid'])
+        self.send_group_emails(group_name='extraccion')
+        self.generate_scraping_message()
+        self.send_group_emails(group_name='scraping')
+
+    def send_email(self, mailer_config, subject, message, recipients, files=None):
+        msg = MIMEMultipart()
+        msg["Subject"] = subject
+        msg["From"] = mailer_config["user"]
+        msg["To"] = ",".join(recipients)
+        msg["Date"] = formatdate(localtime=True)
+
+        msg.attach(MIMEText(message))
+
+        if files:
+            for f in files:
+                if os.path.isfile(f):
+                    with open(f, "rb") as fil:
+                        part = MIMEApplication(
+                            fil.read(), Name=os.path.basename(f))
+                        part['Content-Disposition'] = (
+                            'attachment; filename="%s"' % os.path.basename(f)
+                        )
+                        msg.attach(part)
+                else:
+                    logging.warning(f"El archivo {f} no existe")
+
+        if mailer_config["ssl"]:
+            s = smtplib.SMTP_SSL(
+                mailer_config["smtp_server"], mailer_config["port"])
+        else:
+            s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
+            s.ehlo()
+            s.starttls()
+            s.ehlo()
+
+        s.login(mailer_config["user"], mailer_config["password"])
+        s.sendmail(mailer_config["user"], recipients, msg.as_string())
+        s.close()
+
+        logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
+
+    def send_group_emails(self, group_name):
+        self.print_log_separator(logging, f"Envío de mails para: {group_name}")
+
+        try:
+            with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
+                cfg = yaml.load(ymlfile)
+        except (IOError, yaml.parser.ParserError):
+            logging.warning(
+                "No se pudo cargar archivo de configuración 'config_email.yaml'.")
+            logging.warning("Salteando envío de mails...")
+            return
+
+        mailer_config = cfg["mailer"]
+        catalogs_configs = cfg[group_name]
+
+        mail_files = GROUP_CONFIGS[group_name]
+
+        if not catalogs_configs or self.identifier not in catalogs_configs:
+            logging.warning(
+                f"No hay configuración de mails para catálogo {self.identifier}."
+            )
+            logging.warning("Salteando catalogo...")
+
+        # asunto y mensaje
+        subject_file_path = self.report_file_path(self.identifier, mail_files["subject"])
+        if os.path.isfile(subject_file_path):
+            with open(subject_file_path, "r") as f:
+                subject = f.read()
+        else:
+            logging.warning(
+                f"Catálogo {self.identifier}: no hay archivo de asunto")
+            logging.warning("Salteando catalogo...")
+
+        message_file_path = self.report_file_path(self.identifier, mail_files["message"])
+        if os.path.isfile(message_file_path):
+            with open(message_file_path, "r") as f:
+                message = f.read()
+        else:
+            logging.warning(
+                f"Catálogo {self.identifier}: no hay archivo de mensaje")
+            logging.warning("Salteando catalogo...")
+
+        # destinatarios y adjuntos
+        recipients = catalogs_configs[self.identifier]["destinatarios"]
+        files = []
+        for attachment in list(mail_files["attachments"].values()):
+            files.append(self.report_file_path(self.identifier, attachment))
+
+        logging.info(f"Enviando reporte al grupo {self.identifier}...")
+        self.send_email(mailer_config, subject, message, recipients, files)
+
+    def report_file_path(self, catalog_id, filename):
+        return os.path.join(REPORTES_DIR, catalog_id, filename)
+
+    def _write_extraction_mail_texts(self, subject, message):
+        # genera directorio de reportes para el catálogo
+        reportes_catalog_dir = os.path.join(REPORTES_DIR, self.identifier)
+        self.ensure_dir_exists(reportes_catalog_dir)
+
+        with open(os.path.join(reportes_catalog_dir,
+                               EXTRACTION_MAIL_CONFIG["subject"]), "w") as f:
+            f.write(subject)
+        with open(os.path.join(reportes_catalog_dir,
+                               EXTRACTION_MAIL_CONFIG["message"]), "w") as f:
+            f.write(message)
+
+    def _write_scraping_mail_texts(self, subject, message):
+        # genera directorio de reportes para el catálogo
+        reportes_catalog_dir = os.path.join(REPORTES_DIR, self.identifier)
+        self.ensure_dir_exists(reportes_catalog_dir)
+
+        with open(os.path.join(reportes_catalog_dir,
+                               SCRAPING_MAIL_CONFIG["subject"]), "w") as f:
+            f.write(subject)
+        with open(os.path.join(reportes_catalog_dir,
+                               SCRAPING_MAIL_CONFIG["message"]), "w") as f:
+            f.write(message)
+
+
+    def generate_validation_message(self, is_valid_catalog):
+        # asunto del mail
+        subject = f"Validación de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+
+        # mensaje del mail
+        if is_valid_catalog:
+            message = f"El catálogo '{self.identifier}' no tiene errores."
+        else:
+            message = f"El catálogo '{self.identifier}' tiene errores."
+
+        self._write_extraction_mail_texts(subject, message)
+
+    def generate_scraping_message(self):
+        subject = f"Scraping de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+        message = self.indicators()
+        self._write_scraping_mail_texts(subject, message)
+
     def get_datasets_report(self):
         columns = (
             'dataset_identifier', 'dataset_status'
@@ -479,6 +663,18 @@ class Catalog(ETLObject):
                     subconfig[key] = value
 
         return config
+
+    def indicators(self):
+        return(
+            f'=== Catálogo: {self.identifier} === \n' +
+            f'Indicadores \n' +
+            f'Datasets: {len(self.childs)} ' +
+            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])} \n' +
+            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])} \n' +
+            f'Distribuciones: {len(self.context["catalog_distributions_reports"])} \n' +
+            f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])} \n' +
+            f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}'
+        )
 
     def log_indicators(self):
         logging.info(f'=== Catálogo: {self.identifier} ===')
