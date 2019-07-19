@@ -139,15 +139,15 @@ class Distribution(ETLObject):
 
         if self.processor:
             try:
-
                 self._df_is_valid, self._df = self.processor.run()
                 self.validate()
                 self.write_distribution_dataframe()
+                logging.info(f'Distribución {self.identifier}: OK')
 
             except Exception as e:
-
                 self.report['distribution_status'] = 'ERROR'
                 self.report['distribution_notes'] = repr(e)
+                logging.info(f"Distribución {self.identifier}: ERROR {repr(e)}")
 
         self.post_process()
 
@@ -181,12 +181,14 @@ class Distribution(ETLObject):
         self.ensure_dir_exists(
             os.path.dirname(self.context['distribution_output_path'])
         )
-
-        self._df.to_csv(
-            self.context['distribution_output_path'],
-            encoding="utf-8",
-            index_label="indice_tiempo"
-        )
+        try:
+            self._df.to_csv(
+                self.context['distribution_output_path'],
+                encoding="utf-8",
+                index_label="indice_tiempo"
+            )
+        except Exception as e:
+            logging.info(f'ERROR {repr(e)}')
         logging.debug(f'CSV de Distribución {self.identifier} escrito')
 
     def post_process(self):
@@ -497,22 +499,23 @@ class Catalog(ETLObject):
                         msg.attach(part)
                 else:
                     logging.warning(f"El archivo {f} no existe")
+        try:
+            if mailer_config["ssl"]:
+                s = smtplib.SMTP_SSL(
+                    mailer_config["smtp_server"], mailer_config["port"])
+            else:
+                s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
+                s.ehlo()
+                s.starttls()
+                s.ehlo()
+            s.login(mailer_config["user"], mailer_config["password"])
+            s.sendmail(mailer_config["user"], recipients, msg.as_string())
+            s.close()
+            logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
+        except Exception as e:
+            logging.info(f'Error al enviar mail: {repr(e)}')
 
-        if mailer_config["ssl"]:
-            s = smtplib.SMTP_SSL(
-                mailer_config["smtp_server"], mailer_config["port"])
-        else:
-            s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
-            s.ehlo()
-            s.starttls()
-            s.ehlo()
-
-        s.login(mailer_config["user"], mailer_config["password"])
-        s.sendmail(mailer_config["user"], recipients, msg.as_string())
-        s.close()
-
-        logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
-
+        
     def send_group_emails(self, group_name):
         self.print_log_separator(logging, f"Envío de mails para: {group_name}")
 
@@ -536,33 +539,34 @@ class Catalog(ETLObject):
             )
             logging.warning("Salteando catalogo...")
 
-        # asunto y mensaje
-        subject_file_path = self.report_file_path(self.identifier, mail_files["subject"])
-        if os.path.isfile(subject_file_path):
-            with open(subject_file_path, "r") as f:
-                subject = f.read()
         else:
-            logging.warning(
-                f"Catálogo {self.identifier}: no hay archivo de asunto")
-            logging.warning("Salteando catalogo...")
+            # asunto y mensaje
+            subject_file_path = self.report_file_path(self.identifier, mail_files["subject"])
+            if os.path.isfile(subject_file_path):
+                with open(subject_file_path, "r") as f:
+                    subject = f.read()
+            else:
+                logging.warning(
+                    f"Catálogo {self.identifier}: no hay archivo de asunto")
+                logging.warning("Salteando catalogo...")
 
-        message_file_path = self.report_file_path(self.identifier, mail_files["message"])
-        if os.path.isfile(message_file_path):
-            with open(message_file_path, "r") as f:
-                message = f.read()
-        else:
-            logging.warning(
-                f"Catálogo {self.identifier}: no hay archivo de mensaje")
-            logging.warning("Salteando catalogo...")
+            message_file_path = self.report_file_path(self.identifier, mail_files["message"])
+            if os.path.isfile(message_file_path):
+                with open(message_file_path, "r") as f:
+                    message = f.read()
+            else:
+                logging.warning(
+                    f"Catálogo {self.identifier}: no hay archivo de mensaje")
+                logging.warning("Salteando catalogo...")
 
-        # destinatarios y adjuntos
-        recipients = catalogs_configs[self.identifier]["destinatarios"]
-        files = []
-        for attachment in list(mail_files["attachments"].values()):
-            files.append(self.report_file_path(self.identifier, attachment))
+            # destinatarios y adjuntos
+            recipients = catalogs_configs[self.identifier]["destinatarios"]
+            files = []
+            for attachment in list(mail_files["attachments"].values()):
+                files.append(self.report_file_path(self.identifier, attachment))
 
-        logging.info(f"Enviando reporte al grupo {self.identifier}...")
-        self.send_email(mailer_config, subject, message, recipients, files)
+            logging.info(f"Enviando reporte al grupo {self.identifier}...")
+            self.send_email(mailer_config, subject, message, recipients, files)
 
     def report_file_path(self, catalog_id, filename):
         return os.path.join(REPORTES_DIR, catalog_id, filename)
@@ -606,7 +610,7 @@ class Catalog(ETLObject):
 
     def generate_scraping_message(self):
         subject = f"Scraping de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
-        message = self.indicators()
+        message = self.indicators_message()
         self._write_scraping_mail_texts(subject, message)
 
     def get_datasets_report(self):
@@ -682,28 +686,29 @@ class Catalog(ETLObject):
         return config
 
     def indicators(self):
-        return(
-            f'=== Catálogo: {self.identifier} === \n' +
-            f'Indicadores \n' +
-            f'Datasets: {len(self.childs)} ' +
-            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])} \n' +
-            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])} \n' +
-            f'Distribuciones: {len(self.context["catalog_distributions_reports"])} \n' +
-            f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])} \n' +
-            f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}'
-        )
+        distributions = self.context["catalog_distributions_reports"]
+        distributions_ok = len([r for r in distributions if r.get("distribution_status") == "OK"])
+        distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
+        distributions_prtg = float(distributions_ok / len(distributions))
+        indicators = [
+            f'=== Catálogo: {self.identifier} ===',
+            f'Indicadores',
+            f'Datasets: {len(self.childs)}',
+            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}',
+            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}',
+            f'Distribuciones: {len(distributions)}',
+            f'Distribuciones (ERROR): {distributions_error}',
+            f'Distribuciones (OK): {distributions_ok}',
+            f'Distribuciones (OK %): {round(distributions_prtg, 3) * 100}'
+        ]
+        return indicators
+
+    def indicators_message(self):
+        return '\n'.join(self.indicators())
 
     def log_indicators(self):
-        logging.info(f'=== Catálogo: {self.identifier} ===')
-        logging.info(f'Indicadores')
-        logging.info('')
-        logging.info(f'Datasets: {len(self.childs)}')
-        logging.info(f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}')
-        logging.info(f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}')
-        logging.info(f'Distribuciones: {len(self.context["catalog_distributions_reports"])}')
-        logging.info(f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])}')
-        logging.info(f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}')
-        logging.info('')
+        for indicator in self.indicators():
+            logging.info(indicator)
 
 class ETL(ETLObject):
 

@@ -1,30 +1,22 @@
 mailer:
- user: mail@bitson.group
- password: Vx8iPg5d87bRD5PnWhM2
- smtp_server: smtp.gmail.com
- port: 465
- ssl: true
+ user: foo
+ password: bar
+ smtp_server: smtp.example.com
+ port: 587
+ ssl: false
 extraccion:
  example_catalog1:
    destinatarios:
-    - alan.sosa@datalytics.com
-    - asosa@bitson.group
- defensa:
+    - john@example.com
+    - jane@example.com
+ example_catalog2:
    destinatarios:
-    - alan.sosa@datalytics.com
-    - asosa@bitson.group
- salud:
-   destinatarios:
-    - alan.sosa@datalytics.com
-    - asosa@bitson.group
+    - john@example.com
+    - jane@example.com
 scraping:
  example_catalog1:
    destinatarios:
-    - alan.sosa@datalytics.com
-    - asosa@bitson.group
- defensa:
+    - jane@example.com
+ example_catalog2:
    destinatarios:
-    - asosa@bitson.group
- salud:
-   destinatarios:
-    - asosa@bitson.group
+    - mike@example.com

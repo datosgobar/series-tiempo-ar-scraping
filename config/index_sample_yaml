@@ -5,3 +5,11 @@ defensa:
 salud:
   url: "http://datos.salud.gob.ar/data.json"
   formato: "json"
+
+example_catalog1:
+  url: "https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/catalogs/example_catalog1.xlsx"
+  formato: "xlsx"
+
+bcra:
+  url: "https://www.dropbox.com/s/vyv3uew9crt1q13/catalog-bcra.xlsx?dl=1"
+  formato: "xlsx"

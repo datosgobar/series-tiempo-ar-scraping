@@ -43,8 +43,8 @@ class TXTProcessor(BaseProcessor):
                 self.catalog_metadata.get('identifier'),
                 file_source=self.distribution_metadata.get('scrapingFileURL')
             )
-
             logging.debug('  Descargó la distribución')
+
         except Exception:
             logging.debug('  Falló la descarga de la distribución')
 
