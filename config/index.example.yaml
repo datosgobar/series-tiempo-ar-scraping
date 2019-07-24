@@ -1,0 +1,9 @@
+# Catálogos con URL y formato de archivo
+
+example_catalog1:
+  url: "https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/catalogs/example_catalog1.xlsx"
+  formato: "xlsx"
+
+# example_catalog2:
+#   url: "https://example.com/catalog2.json"
+#   formato: "json"

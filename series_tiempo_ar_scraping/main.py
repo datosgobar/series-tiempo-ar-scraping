@@ -48,6 +48,9 @@ def get_logger(log_level):
     default=lambda: read_config(os.path.join(CONFIG_DIR, 'config_general.yaml'))['logging'],
     type=str,
 )
+def cli(config, log_level):
+    main(config, log_level)
+
 
 def main(config, log_level):
     config = read_config(file_path=config)
@@ -61,8 +64,5 @@ def main(config, log_level):
         extension=None,
         config=config
     )
+
     etl.run()
-
-
-if __name__ == '__main__':
-    main()
