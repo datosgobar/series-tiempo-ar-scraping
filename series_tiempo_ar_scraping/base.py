@@ -140,7 +140,7 @@ class Distribution(ETLObject):
         if self.processor:
             try:
 
-                self._df_is_valid, self._df = self.processor.run()
+                self._df = self.processor.run()
                 self.validate()
                 self.write_distribution_dataframe()
 
@@ -171,8 +171,8 @@ class Distribution(ETLObject):
         logging.debug('Valida la distribución')
         validate_distribution(
             df=self._df,
-            catalog=self.context['metadata'],
-            _dataset_meta=None,
+            catalog=self.parent.parent.metadata,
+            dataset_meta=self.parent.metadata,
             distrib_meta=self.metadata,
         )
 

@@ -1,6 +1,7 @@
 import logging
 
-from series_tiempo_ar.readers.csv_reader import CSVReader
+import series_tiempo_ar.readers as readers
+
 
 class BaseProcessor():
 
@@ -18,13 +19,16 @@ class DirectDownloadProcessor(BaseProcessor):
         valid_df, distribution_df = False, None
 
         try:
-            reader = CSVReader(self.distribution_metadata)
-            valid_df, distribution_df = True, reader.read()
+            distribution_df = self.catalog_metadata.load_ts_distribution(
+                self.distribution_metadata.get('identifier'),
+                self.catalog_metadata.get('identifier'),
+                file_source=self.distribution_metadata.get('downloadURL')
+            )
             logging.debug('  Descargó la distribución')
         except Exception:
             logging.debug('  Falló la descarga de la distribución')
 
-        return valid_df, distribution_df
+        return distribution_df
 
 
 class TXTProcessor(BaseProcessor):
@@ -35,17 +39,16 @@ class TXTProcessor(BaseProcessor):
         self.catalog_metadata = catalog_metadata
 
     def run(self):
-        valid_df, distribution_df = False, None
+        distribution_df = None
 
         try:
-            distribution_df = self.distribution_metadata.load_ts_distribution(
+            distribution_df = readers.load_ts_distribution(
+                self.catalog_metadata,
                 self.distribution_metadata.get('identifier'),
-                self.catalog_metadata.get('identifier'),
-                file_source=self.distribution_metadata.get('scrapingFileURL')
             )
 
-            logging.debug('  Descargó la distribución')
+            logging.debug('Descargó la distribución')
         except Exception:
-            logging.debug('  Falló la descarga de la distribución')
+            logging.debug('Falló la descarga de la distribución')
 
-        return True, distribution_df
+        return distribution_df
