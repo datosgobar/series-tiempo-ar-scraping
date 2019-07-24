@@ -48,6 +48,7 @@ class TXTProcessor(BaseProcessor):
             )
 
             logging.debug('Descargó la distribución')
+
         except Exception:
             logging.debug('Falló la descarga de la distribución')
 

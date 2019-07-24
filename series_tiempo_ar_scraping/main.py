@@ -40,7 +40,7 @@ def get_logger(log_level):
 @click.command()
 @click.option(
     '--config',
-    default=lambda: os.path.join(CONFIG_DIR, 'index.example.yaml'),
+    default=lambda: os.path.join(CONFIG_DIR, 'index.yaml'),
     type=click.Path(exists=True),
 )
 @click.option(
@@ -48,9 +48,6 @@ def get_logger(log_level):
     default=lambda: read_config(os.path.join(CONFIG_DIR, 'config_general.yaml'))['logging'],
     type=str,
 )
-def cli(config, log_level):
-    main(config, log_level)
-
 
 def main(config, log_level):
     config = read_config(file_path=config)
