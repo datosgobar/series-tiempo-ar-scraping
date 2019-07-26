@@ -1,4 +1,10 @@
 --- 
+mailer: 
+  password: bar
+  port: 587
+  smtp_server: smtp.example.com
+  ssl: false
+  user: foo
 extraccion: 
   example_catalog1: 
     destinatarios: 
@@ -8,12 +14,6 @@ extraccion:
     destinatarios: 
       - john@example.com
       - jane@example.com
-mailer: 
-  password: bar
-  port: 587
-  smtp_server: smtp.example.com
-  ssl: false
-  user: foo
 scraping: 
   example_catalog1: 
     destinatarios: 
