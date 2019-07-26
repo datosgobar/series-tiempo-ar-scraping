@@ -15,6 +15,11 @@ class BaseProcessor():
 
 class DirectDownloadProcessor(BaseProcessor):
 
+    def __init__(self, distribution_metadata, catalog_metadata):
+        super().__init__(distribution_metadata)
+
+        self.catalog_metadata = catalog_metadata
+
     def run(self):
         valid_df, distribution_df = False, None
 

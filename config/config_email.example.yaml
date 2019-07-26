@@ -1,22 +1,23 @@
-mailer:
-  user: foo
+--- 
+extraccion: 
+  example_catalog1: 
+    destinatarios: 
+      - john@example.com
+      - jane@example.com
+  example_catalog2: 
+    destinatarios: 
+      - john@example.com
+      - jane@example.com
+mailer: 
   password: bar
-  smtp_server: smtp.example.com
   port: 587
+  smtp_server: smtp.example.com
   ssl: false
-extraccion:
-  example_catalog1:
-    destinatarios:
-      - john@example.com
+  user: foo
+scraping: 
+  example_catalog1: 
+    destinatarios: 
       - jane@example.com
- example_catalog2:
-    destinatarios:
-      - john@example.com
-      - jane@example.com
-scraping:
-  example_catalog1:
-    destinatarios:
-      - jane@example.com
-  example_catalog2:
-    destinatarios:
+  example_catalog2: 
+    destinatarios: 
       - mike@example.com

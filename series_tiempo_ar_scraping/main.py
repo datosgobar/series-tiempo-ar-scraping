@@ -44,17 +44,17 @@ def get_logger(log_level):
     type=click.Path(exists=True),
 )
 @click.option(
-    '--log_level',
+    '--log-level',
     default=lambda: read_config(os.path.join(CONFIG_DIR, 'config_general.yaml'))['logging'],
     type=str,
 )
 def cli(config, log_level):
-    main(config, log_level)
+    main(config, log_level.upper())
 
 
 def main(config, log_level):
     config = read_config(file_path=config)
-    logger = get_logger(log_level)
+    get_logger(log_level)
 
     etl = ETL(
         identifier=None,

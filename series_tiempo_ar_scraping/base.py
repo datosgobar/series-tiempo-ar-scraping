@@ -16,6 +16,7 @@ import pydatajson.writers as writers
 
 from series_tiempo_ar import TimeSeriesDataJson
 from series_tiempo_ar.validations import validate_distribution
+from series_tiempo_ar.readers import get_ts_distributions_by_method
 
 from series_tiempo_ar_scraping import download
 from series_tiempo_ar_scraping.processors import (
@@ -120,6 +121,7 @@ class Distribution(ETLObject):
         if self.metadata.get('downloadURL'):
             processor = DirectDownloadProcessor(
                 distribution_metadata=self.metadata,
+                catalog_metadata=self.parent.parent.metadata
             )
 
         if not self.metadata.get("downloadURL"):
@@ -142,12 +144,11 @@ class Distribution(ETLObject):
                 self._df = self.processor.run()
                 self.validate()
                 self.write_distribution_dataframe()
-                logging.info(f'Distribución {self.identifier}: OK')
 
             except Exception as e:
                 self.report['distribution_status'] = 'ERROR'
                 self.report['distribution_notes'] = repr(e)
-                logging.info(f"Distribución {self.identifier}: ERROR {repr(e)}")
+                logging.debug(e, exc_info=True)
 
         self.post_process()
 
@@ -187,11 +188,15 @@ class Distribution(ETLObject):
                 encoding="utf-8",
                 index_label="indice_tiempo"
             )
+            logging.debug(f'CSV de Distribución {self.identifier} escrito')
         except Exception as e:
             logging.info(f'ERROR {repr(e)}')
-        logging.debug(f'CSV de Distribución {self.identifier} escrito')
 
     def post_process(self):
+        if self.report['distribution_status'] == 'ERROR':
+            logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_notes']}")
+        else:
+            logging.info(f'Distribución {self.identifier}: OK')
         self.context['catalog_distributions_reports'].append(self.report)
         logging.debug(self.report)
         # TODO: unset distribution_output_path in context
@@ -406,6 +411,9 @@ class Catalog(ETLObject):
         self.post_process()
 
     def pre_process(self):
+        logging.info(f'=== Catálogo: {self.identifier} ===')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "csv_file"))} distribuciones para descarga directa')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
         self.init_context_paths()
 
     def init_context_paths(self):
@@ -473,11 +481,6 @@ class Catalog(ETLObject):
 
         self.log_indicators()
 
-        self.generate_validation_message(self.context['catalog_is_valid'])
-        self.send_group_emails(group_name='extraccion')
-        self.generate_scraping_message()
-        self.send_group_emails(group_name='scraping')
-
     def send_email(self, mailer_config, subject, message, recipients, files=None):
         msg = MIMEMultipart()
         msg["Subject"] = subject
@@ -517,8 +520,6 @@ class Catalog(ETLObject):
 
 
     def send_group_emails(self, group_name):
-        self.print_log_separator(logging, f"Envío de mails para: {group_name}")
-
         try:
             with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
                 cfg = yaml.load(ymlfile)
@@ -691,7 +692,7 @@ class Catalog(ETLObject):
         distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
         distributions_prtg = float(distributions_ok / len(distributions))
         indicators = [
-            f'=== Catálogo: {self.identifier} ===',
+            '',
             f'Indicadores',
             f'Datasets: {len(self.childs)}',
             f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}',
@@ -699,7 +700,8 @@ class Catalog(ETLObject):
             f'Distribuciones: {len(distributions)}',
             f'Distribuciones (ERROR): {distributions_error}',
             f'Distribuciones (OK): {distributions_ok}',
-            f'Distribuciones (OK %): {round(distributions_prtg, 3) * 100}'
+            f'Distribuciones (OK %): {round(distributions_prtg, 3) * 100}',
+            ''
         ]
         return indicators
 
@@ -714,11 +716,17 @@ class ETL(ETLObject):
 
     def __init__(self, identifier, parent=None, context=None, **kwargs):
         self.catalogs_from_config = kwargs.get('config')
+        self.print_log_separator(logging, "Extracción de catálogos")
+        logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         super().__init__(identifier, parent, context)
 
+        self.print_log_separator(logging, "Envío de mails para: extracción")
+
+        for child in self.childs:
+            child.generate_validation_message(child.context['catalog_is_valid'])
+            child.send_group_emails(group_name='extraccion')
+
     def init_childs(self):
-        self.print_log_separator(logging, "Scraping de catálogos")
-        logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         self.childs = [
             Catalog(
                 identifier=catalog,
@@ -739,15 +747,20 @@ class ETL(ETLObject):
 
     def process(self):
         self.pre_process()
+
         for child in self.childs:
             child.process()
         self.post_process()
 
     def pre_process(self):
-        pass
+        self.print_log_separator(logging, "Scraping de catálogos")
 
     def post_process(self):
-        pass
+        self.print_log_separator(logging, "Envío de mails para: scraping")
+
+        for child in self.childs:
+            child.generate_scraping_message()
+            child.send_group_emails(group_name='scraping')
 
     def run(self):
         self.process()
