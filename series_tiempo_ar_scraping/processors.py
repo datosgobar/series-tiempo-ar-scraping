@@ -1,4 +1,5 @@
 import logging
+import os
 
 import series_tiempo_ar.readers as readers
 
@@ -29,9 +30,10 @@ class DirectDownloadProcessor(BaseProcessor):
                 self.catalog_metadata.get('identifier'),
                 file_source=self.distribution_metadata.get('downloadURL')
             )
-            logging.debug('  Descargó la distribución')
+            logging.debug('Descargó la distribución')
         except Exception:
-            logging.debug('  Falló la descarga de la distribución')
+            logging.debug('Falló la descarga de la distribución')
+            raise
 
         return distribution_df
 
@@ -56,5 +58,6 @@ class TXTProcessor(BaseProcessor):
 
         except Exception:
             logging.debug('Falló la descarga de la distribución')
+            raise
 
         return distribution_df
