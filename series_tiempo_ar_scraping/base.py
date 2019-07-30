@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import traceback
 import yaml
 import smtplib
 import arrow
@@ -105,7 +106,8 @@ class Distribution(ETLObject):
             'dataset_identifier': self.parent.identifier,
             'distribution_identifier': self.identifier,
             'distribution_status': 'OK',
-            'distribution_notes': None,
+            'distribution_note': None,
+            'distribution_traceback': None,
         }
 
         self.processor = self.init_processor()
@@ -131,7 +133,7 @@ class Distribution(ETLObject):
             if extension == 'txt':
                 processor = TXTProcessor(
                     distribution_metadata=self.metadata,
-                    catalog_metadata=self.parent.parent.metadata
+                    catalog_metadata=self.parent.parent.metadata,
                 )
 
         return processor
@@ -147,8 +149,8 @@ class Distribution(ETLObject):
 
             except Exception as e:
                 self.report['distribution_status'] = 'ERROR'
-                self.report['distribution_notes'] = repr(e)
-                logging.debug(e, exc_info=True)
+                self.report['distribution_note'] = repr(e)
+                self.report['distribution_traceback'] = traceback.format_exc()
 
         self.post_process()
 
@@ -170,12 +172,17 @@ class Distribution(ETLObject):
 
     def validate(self):
         logging.debug('Valida la distribución')
-        validate_distribution(
-            df=self._df,
-            catalog=self.parent.parent.metadata,
-            dataset_meta=self.parent.metadata,
-            distrib_meta=self.metadata,
-        )
+        try:
+            validate_distribution(
+                df=self._df,
+                catalog=self.parent.parent.metadata,
+                dataset_meta=self.parent.metadata,
+                distrib_meta=self.metadata,
+            )
+            logging.debug(f'Distribución {self.identifier} válida')
+        except Exception as ex:
+            logging.debug(f'Distribución {self.identifier} inválida')
+            raise
 
     def write_distribution_dataframe(self):
         logging.debug('Escribe el dataframe de la distribución')
@@ -194,7 +201,8 @@ class Distribution(ETLObject):
 
     def post_process(self):
         if self.report['distribution_status'] == 'ERROR':
-            logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_notes']}")
+            logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_note']}")
+            logging.debug(self.report['distribution_traceback'])
         else:
             logging.info(f'Distribución {self.identifier}: OK')
         self.context['catalog_distributions_reports'].append(self.report)
@@ -414,7 +422,30 @@ class Catalog(ETLObject):
         logging.info(f'=== Catálogo: {self.identifier} ===')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "csv_file"))} distribuciones para descarga directa')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
+
+        txt_list = set([
+            distribution['scrapingFileURL']
+            for distribution
+            in get_ts_distributions_by_method(self.metadata, "text_file")
+        ])
+
+        for txt_url in txt_list:
+            logging.info(f'Descargando archivo {txt_url}')
+            self.download_with_config(
+                txt_url,
+                self.get_txt_path(txt_url.split('/')[-1]),
+                config={},
+            )
+
         self.init_context_paths()
+
+    def get_txt_path(self, txt_name):
+        return os.path.join(
+            CATALOGS_DIR_INPUT,
+            self.identifier,
+            'sources',
+            txt_name
+        )
 
     def init_context_paths(self):
         self.context['catalog_original_metadata_path'] = \
@@ -645,8 +676,10 @@ class Catalog(ETLObject):
         self.ensure_dir_exists(
             os.path.dirname(file_path),
         )
-
-        download.download_to_file(url, file_path, **config)
+        try:
+            download.download_to_file(url, file_path, **config)
+        except Exception:
+            logging.info('Error al descargar el catálogo')
 
     def read_xlsx_catalog(self, catalog_xlsx_path):
         default_values = {}
