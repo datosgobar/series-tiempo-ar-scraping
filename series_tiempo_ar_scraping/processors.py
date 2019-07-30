@@ -3,6 +3,10 @@ import os
 
 import series_tiempo_ar.readers as readers
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATOS_DIR = os.path.join(ROOT_DIR, "data")
+CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
+
 
 class BaseProcessor():
 
@@ -48,10 +52,20 @@ class TXTProcessor(BaseProcessor):
     def run(self):
         distribution_df = None
 
+        file_source = os.path.join(
+            CATALOGS_DIR_INPUT,
+            self.catalog_metadata.get('identifier'),
+            'sources',
+            self.distribution_metadata.get('scrapingFileURL').split('/')[-1]
+        )
+
+        breakpoint()
+
         try:
             distribution_df = readers.load_ts_distribution(
                 self.catalog_metadata,
                 self.distribution_metadata.get('identifier'),
+                file_source=file_source
             )
 
             logging.debug('Descargó la distribución')

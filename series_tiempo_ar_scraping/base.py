@@ -423,7 +423,29 @@ class Catalog(ETLObject):
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "csv_file"))} distribuciones para descarga directa')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
 
+        txt_list = set([
+            distribution['scrapingFileURL']
+            for distribution
+            in get_ts_distributions_by_method(self.metadata, "text_file")
+        ])
+
+        for txt_url in txt_list:
+            logging.info(f'Descargando archivo {txt_url}')
+            self.download_with_config(
+                txt_url,
+                self.get_txt_path(txt_url.split('/')[-1]),
+                config={},
+            )
+
         self.init_context_paths()
+
+    def get_txt_path(self, txt_name):
+        return os.path.join(
+            CATALOGS_DIR_INPUT,
+            self.identifier,
+            'sources',
+            txt_name
+        )
 
     def init_context_paths(self):
         self.context['catalog_original_metadata_path'] = \
