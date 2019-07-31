@@ -1,7 +1,0 @@
-defensa:
-  url: "http://datos.mindef.gov.ar/data.json"
-  formato: "json"
-
-salud:
-  url: "http://datos.salud.gob.ar/data.json"
-  formato: "json"

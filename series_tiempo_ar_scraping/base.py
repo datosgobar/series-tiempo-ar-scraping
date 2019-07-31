@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import traceback
 import yaml
 import smtplib
 import arrow
@@ -16,9 +17,13 @@ import pydatajson.writers as writers
 
 from series_tiempo_ar import TimeSeriesDataJson
 from series_tiempo_ar.validations import validate_distribution
+from series_tiempo_ar.readers.readers import get_ts_distributions_by_method
 
 from series_tiempo_ar_scraping import download
-from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
+from series_tiempo_ar_scraping.processors import (
+    DirectDownloadProcessor,
+    TXTProcessor,
+)
 
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -90,6 +95,7 @@ class ETLObject:
         l.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
         l.info("=" * SEPARATOR_WIDTH)
 
+
 class Distribution(ETLObject):
 
     def __init__(self, identifier, parent, context):
@@ -100,7 +106,8 @@ class Distribution(ETLObject):
             'dataset_identifier': self.parent.identifier,
             'distribution_identifier': self.identifier,
             'distribution_status': 'OK',
-            'distribution_notes': None,
+            'distribution_note': None,
+            'distribution_traceback': None,
         }
 
         self.processor = self.init_processor()
@@ -116,7 +123,18 @@ class Distribution(ETLObject):
         if self.metadata.get('downloadURL'):
             processor = DirectDownloadProcessor(
                 distribution_metadata=self.metadata,
+                catalog_metadata=self.parent.parent.metadata
             )
+
+        if not self.metadata.get("downloadURL"):
+            path_or_url = self.metadata.get("scrapingFileURL")
+            extension = path_or_url.split(".")[-1].lower()
+
+            if extension == 'txt':
+                processor = TXTProcessor(
+                    distribution_metadata=self.metadata,
+                    catalog_metadata=self.parent.parent.metadata,
+                )
 
         return processor
 
@@ -125,15 +143,14 @@ class Distribution(ETLObject):
 
         if self.processor:
             try:
-
-                self._df_is_valid, self._df = self.processor.run()
+                self._df = self.processor.run()
                 self.validate()
                 self.write_distribution_dataframe()
 
             except Exception as e:
-
                 self.report['distribution_status'] = 'ERROR'
-                self.report['distribution_notes'] = repr(e)
+                self.report['distribution_note'] = repr(e)
+                self.report['distribution_traceback'] = traceback.format_exc()
 
         self.post_process()
 
@@ -155,27 +172,39 @@ class Distribution(ETLObject):
 
     def validate(self):
         logging.debug('Valida la distribución')
-        validate_distribution(
-            df=self._df,
-            catalog=self.context['metadata'],
-            _dataset_meta=None,
-            distrib_meta=self.metadata,
-        )
+        try:
+            validate_distribution(
+                df=self._df,
+                catalog=self.parent.parent.metadata,
+                dataset_meta=self.parent.metadata,
+                distrib_meta=self.metadata,
+            )
+            logging.debug(f'Distribución {self.identifier} válida')
+        except Exception as ex:
+            logging.debug(f'Distribución {self.identifier} inválida')
+            raise
 
     def write_distribution_dataframe(self):
         logging.debug('Escribe el dataframe de la distribución')
         self.ensure_dir_exists(
             os.path.dirname(self.context['distribution_output_path'])
         )
-
-        self._df.to_csv(
-            self.context['distribution_output_path'],
-            encoding="utf-8",
-            index_label="indice_tiempo"
-        )
-        logging.debug(f'CSV de Distribución {self.identifier} escrito')
+        try:
+            self._df.to_csv(
+                self.context['distribution_output_path'],
+                encoding="utf-8",
+                index_label="indice_tiempo"
+            )
+            logging.debug(f'CSV de Distribución {self.identifier} escrito')
+        except Exception as e:
+            logging.info(f'ERROR {repr(e)}')
 
     def post_process(self):
+        if self.report['distribution_status'] == 'ERROR':
+            logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_note']}")
+            logging.debug(self.report['distribution_traceback'])
+        else:
+            logging.info(f'Distribución {self.identifier}: OK')
         self.context['catalog_distributions_reports'].append(self.report)
         logging.debug(self.report)
         # TODO: unset distribution_output_path in context
@@ -294,6 +323,14 @@ class Catalog(ETLObject):
 
     def validate_metadata(self):
         logging.info('Valida metadata')
+
+        self.ensure_dir_exists(
+            os.path.join(
+                REPORTES_DIR,
+                self.identifier,
+            ),
+        )
+
         self.context['metadata'].validate_catalog(
             only_errors=True, fmt="list",
             export_path=os.path.join(
@@ -301,6 +338,7 @@ class Catalog(ETLObject):
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["errors_report"])
         )
+
         self.context['metadata'].generate_datasets_report(
             self.context['metadata'], harvest='valid',
             export_path=os.path.join(
@@ -308,6 +346,7 @@ class Catalog(ETLObject):
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["datasets_report"])
         )
+
         return self.context['metadata'].is_valid_catalog()
 
     def filter_metadata(self):
@@ -380,7 +419,33 @@ class Catalog(ETLObject):
         self.post_process()
 
     def pre_process(self):
+        logging.info(f'=== Catálogo: {self.identifier} ===')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "csv_file"))} distribuciones para descarga directa')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
+
+        txt_list = set([
+            distribution['scrapingFileURL']
+            for distribution
+            in get_ts_distributions_by_method(self.metadata, "text_file")
+        ])
+
+        for txt_url in txt_list:
+            logging.info(f'Descargando archivo {txt_url}')
+            self.download_with_config(
+                txt_url,
+                self.get_txt_path(txt_url.split('/')[-1]),
+                config={},
+            )
+
         self.init_context_paths()
+
+    def get_txt_path(self, txt_name):
+        return os.path.join(
+            CATALOGS_DIR_INPUT,
+            self.identifier,
+            'sources',
+            txt_name
+        )
 
     def init_context_paths(self):
         self.context['catalog_original_metadata_path'] = \
@@ -425,13 +490,6 @@ class Catalog(ETLObject):
 
         distributions_report = self.get_distributions_report()
 
-        self.ensure_dir_exists(
-            os.path.join(
-                REPORTES_DIR,
-                self.identifier,
-            ),
-        )
-
         datasets_report.to_excel(
             os.path.join(
                 REPORTES_DIR,
@@ -454,11 +512,6 @@ class Catalog(ETLObject):
 
         self.log_indicators()
 
-        self.generate_validation_message(self.context['catalog_is_valid'])
-        self.send_group_emails(group_name='extraccion')
-        self.generate_scraping_message()
-        self.send_group_emails(group_name='scraping')
-
     def send_email(self, mailer_config, subject, message, recipients, files=None):
         msg = MIMEMultipart()
         msg["Subject"] = subject
@@ -480,25 +533,24 @@ class Catalog(ETLObject):
                         msg.attach(part)
                 else:
                     logging.warning(f"El archivo {f} no existe")
+        try:
+            if mailer_config["ssl"]:
+                s = smtplib.SMTP_SSL(
+                    mailer_config["smtp_server"], mailer_config["port"])
+            else:
+                s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
+                s.ehlo()
+                s.starttls()
+                s.ehlo()
+            s.login(mailer_config["user"], mailer_config["password"])
+            s.sendmail(mailer_config["user"], recipients, msg.as_string())
+            s.close()
+            logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
+        except Exception as e:
+            logging.info(f'Error al enviar mail: {repr(e)}')
 
-        if mailer_config["ssl"]:
-            s = smtplib.SMTP_SSL(
-                mailer_config["smtp_server"], mailer_config["port"])
-        else:
-            s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
-            s.ehlo()
-            s.starttls()
-            s.ehlo()
-
-        s.login(mailer_config["user"], mailer_config["password"])
-        s.sendmail(mailer_config["user"], recipients, msg.as_string())
-        s.close()
-
-        logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
 
     def send_group_emails(self, group_name):
-        self.print_log_separator(logging, f"Envío de mails para: {group_name}")
-
         try:
             with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
                 cfg = yaml.load(ymlfile)
@@ -519,33 +571,34 @@ class Catalog(ETLObject):
             )
             logging.warning("Salteando catalogo...")
 
-        # asunto y mensaje
-        subject_file_path = self.report_file_path(self.identifier, mail_files["subject"])
-        if os.path.isfile(subject_file_path):
-            with open(subject_file_path, "r") as f:
-                subject = f.read()
         else:
-            logging.warning(
-                f"Catálogo {self.identifier}: no hay archivo de asunto")
-            logging.warning("Salteando catalogo...")
+            # asunto y mensaje
+            subject_file_path = self.report_file_path(self.identifier, mail_files["subject"])
+            if os.path.isfile(subject_file_path):
+                with open(subject_file_path, "r") as f:
+                    subject = f.read()
+            else:
+                logging.warning(
+                    f"Catálogo {self.identifier}: no hay archivo de asunto")
+                logging.warning("Salteando catalogo...")
 
-        message_file_path = self.report_file_path(self.identifier, mail_files["message"])
-        if os.path.isfile(message_file_path):
-            with open(message_file_path, "r") as f:
-                message = f.read()
-        else:
-            logging.warning(
-                f"Catálogo {self.identifier}: no hay archivo de mensaje")
-            logging.warning("Salteando catalogo...")
+            message_file_path = self.report_file_path(self.identifier, mail_files["message"])
+            if os.path.isfile(message_file_path):
+                with open(message_file_path, "r") as f:
+                    message = f.read()
+            else:
+                logging.warning(
+                    f"Catálogo {self.identifier}: no hay archivo de mensaje")
+                logging.warning("Salteando catalogo...")
 
-        # destinatarios y adjuntos
-        recipients = catalogs_configs[self.identifier]["destinatarios"]
-        files = []
-        for attachment in list(mail_files["attachments"].values()):
-            files.append(self.report_file_path(self.identifier, attachment))
+            # destinatarios y adjuntos
+            recipients = catalogs_configs[self.identifier]["destinatarios"]
+            files = []
+            for attachment in list(mail_files["attachments"].values()):
+                files.append(self.report_file_path(self.identifier, attachment))
 
-        logging.info(f"Enviando reporte al grupo {self.identifier}...")
-        self.send_email(mailer_config, subject, message, recipients, files)
+            logging.info(f"Enviando reporte al grupo {self.identifier}...")
+            self.send_email(mailer_config, subject, message, recipients, files)
 
     def report_file_path(self, catalog_id, filename):
         return os.path.join(REPORTES_DIR, catalog_id, filename)
@@ -589,7 +642,7 @@ class Catalog(ETLObject):
 
     def generate_scraping_message(self):
         subject = f"Scraping de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
-        message = self.indicators()
+        message = self.indicators_message()
         self._write_scraping_mail_texts(subject, message)
 
     def get_datasets_report(self):
@@ -623,8 +676,10 @@ class Catalog(ETLObject):
         self.ensure_dir_exists(
             os.path.dirname(file_path),
         )
-
-        download.download_to_file(url, file_path, **config)
+        try:
+            download.download_to_file(url, file_path, **config)
+        except Exception:
+            logging.info('Error al descargar el catálogo')
 
     def read_xlsx_catalog(self, catalog_xlsx_path):
         default_values = {}
@@ -665,38 +720,46 @@ class Catalog(ETLObject):
         return config
 
     def indicators(self):
-        return(
-            f'=== Catálogo: {self.identifier} === \n' +
-            f'Indicadores \n' +
-            f'Datasets: {len(self.childs)} ' +
-            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])} \n' +
-            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])} \n' +
-            f'Distribuciones: {len(self.context["catalog_distributions_reports"])} \n' +
-            f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])} \n' +
-            f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}'
-        )
+        distributions = self.context["catalog_distributions_reports"]
+        distributions_ok = len([r for r in distributions if r.get("distribution_status") == "OK"])
+        distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
+        distributions_prtg = float(distributions_ok / len(distributions))
+        indicators = [
+            '',
+            f'Indicadores',
+            f'Datasets: {len(self.childs)}',
+            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}',
+            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}',
+            f'Distribuciones: {len(distributions)}',
+            f'Distribuciones (ERROR): {distributions_error}',
+            f'Distribuciones (OK): {distributions_ok}',
+            f'Distribuciones (OK %): {round(distributions_prtg, 3) * 100}',
+            ''
+        ]
+        return indicators
+
+    def indicators_message(self):
+        return '\n'.join(self.indicators())
 
     def log_indicators(self):
-        logging.info(f'=== Catálogo: {self.identifier} ===')
-        logging.info(f'Indicadores')
-        logging.info('')
-        logging.info(f'Datasets: {len(self.childs)}')
-        logging.info(f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}')
-        logging.info(f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}')
-        logging.info(f'Distribuciones: {len(self.context["catalog_distributions_reports"])}')
-        logging.info(f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])}')
-        logging.info(f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}')
-        logging.info('')
+        for indicator in self.indicators():
+            logging.info(indicator)
 
 class ETL(ETLObject):
 
     def __init__(self, identifier, parent=None, context=None, **kwargs):
         self.catalogs_from_config = kwargs.get('config')
+        self.print_log_separator(logging, "Extracción de catálogos")
+        logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         super().__init__(identifier, parent, context)
 
+        self.print_log_separator(logging, "Envío de mails para: extracción")
+
+        for child in self.childs:
+            child.generate_validation_message(child.context['catalog_is_valid'])
+            child.send_group_emails(group_name='extraccion')
+
     def init_childs(self):
-        self.print_log_separator(logging, "Scraping de catálogos")
-        logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         self.childs = [
             Catalog(
                 identifier=catalog,
@@ -717,15 +780,20 @@ class ETL(ETLObject):
 
     def process(self):
         self.pre_process()
+
         for child in self.childs:
             child.process()
         self.post_process()
 
     def pre_process(self):
-        pass
+        self.print_log_separator(logging, "Scraping de catálogos")
 
     def post_process(self):
-        pass
+        self.print_log_separator(logging, "Envío de mails para: scraping")
+
+        for child in self.childs:
+            child.generate_scraping_message()
+            child.send_group_emails(group_name='scraping')
 
     def run(self):
         self.process()

@@ -1,0 +1,19 @@
+--- 
+defaults: 
+  tries: 4
+  try_timeout: 15
+example_catalog1: 
+  catalog: 
+    tries: 5
+    verify: false
+  sources: 
+    proxies: 
+      http: "http://example.proxy.com:3000"
+      https: "https://example.proxy.com:4000"
+    try_timeout: 30
+    verify: false
+example_catalog2: 
+  catalog: 
+    try_timeout: 10
+    verify: false
+
