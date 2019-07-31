@@ -136,6 +136,16 @@ class Distribution(ETLObject):
                     catalog_metadata=self.parent.parent.metadata,
                 )
 
+        if not self.metadata.get("downloadURL"):
+            path_or_url = self.metadata.get("scrapingFileURL")
+            extension = path_or_url.split(".")[-1].lower()
+
+            if extension in ['xls', 'xlsx']:
+                processor = SpreadsheetProcessor(
+                    distribution_metadata=self.metadata,
+                    catalog_metadata=self.parent.parent.metadata,
+                )
+
         return processor
 
     def process(self):
