@@ -17,7 +17,7 @@ import pydatajson.writers as writers
 
 from series_tiempo_ar import TimeSeriesDataJson
 from series_tiempo_ar.validations import validate_distribution
-from series_tiempo_ar.readers import get_ts_distributions_by_method
+from series_tiempo_ar.readers.readers import get_ts_distributions_by_method
 
 from series_tiempo_ar_scraping import download
 from series_tiempo_ar_scraping.processors import (

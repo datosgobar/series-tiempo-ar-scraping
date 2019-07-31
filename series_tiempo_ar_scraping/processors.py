@@ -59,8 +59,6 @@ class TXTProcessor(BaseProcessor):
             self.distribution_metadata.get('scrapingFileURL').split('/')[-1]
         )
 
-        breakpoint()
-
         try:
             distribution_df = readers.load_ts_distribution(
                 self.catalog_metadata,

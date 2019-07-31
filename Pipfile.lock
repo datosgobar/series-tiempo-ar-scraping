@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "392dee23cc57d9815b691f86cb974834e4c1b547ca360a3b1247d19e3091c907"
+            "sha256": "568256aa5a28d47931ff185d4592088135ab86d793234121eba7cacc2c96d509"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -197,12 +197,9 @@
             "version": "==1.3.7"
         },
         "series-tiempo-ar": {
-            "hashes": [
-                "sha256:8d2dfb31559bd58e377bc892ee5a1b2840170ad11a88ed89e6aba1af2cfc0b21",
-                "sha256:ccaf7ebdedc97835ed1abadf89f8b328f19603cabb82d9fcc14cfb324b56ebab"
-            ],
-            "index": "pypi",
-            "version": "==0.2.3"
+            "editable": true,
+            "git": "https://github.com/datosgobar/series-tiempo-ar",
+            "ref": "8d08e873bd333c1380005a6e96d8e361466909b8"
         },
         "series-tiempo-ar-scraping": {
             "editable": true,
