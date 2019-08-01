@@ -364,6 +364,7 @@ class Catalog(ETLObject):
             self.get_time_series_distributions_identifiers()
         logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
         logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
+        logging.info(f"Fields: {len(self.metadata.get_fields())}")
         logging.info('')
         self.context['catalog_datasets_reports'] = []
         self.context['catalog_distributions_reports'] = []
