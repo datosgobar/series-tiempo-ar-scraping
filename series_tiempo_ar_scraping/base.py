@@ -176,7 +176,7 @@ class Distribution(ETLObject):
             validate_distribution(
                 df=self._df,
                 catalog=self.parent.parent.metadata,
-                dataset_meta=self.parent.metadata,
+                _dataset_meta=self.parent.metadata,
                 distrib_meta=self.metadata,
             )
             logging.debug(f'Distribución {self.identifier} válida')
