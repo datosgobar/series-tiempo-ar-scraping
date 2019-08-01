@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-series-tiempo-ar = {editable = true,git = "https://github.com/datosgobar/series-tiempo-ar",ref = "0.3.2"}
+series-tiempo-ar = "*"
 click = "*"
 pyyaml = "*"
 series-tiempo-ar-scraping = {editable = true,path = "."}
