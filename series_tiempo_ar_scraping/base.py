@@ -186,7 +186,7 @@ class Distribution(ETLObject):
             validate_distribution(
                 df=self._df,
                 catalog=self.parent.parent.metadata,
-                dataset_meta=self.parent.metadata,
+                _dataset_meta=self.parent.metadata,
                 distrib_meta=self.metadata,
             )
             logging.debug(f'Distribución {self.identifier} válida')
@@ -374,6 +374,7 @@ class Catalog(ETLObject):
             self.get_time_series_distributions_identifiers()
         logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
         logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
+        logging.info(f"Fields: {len(self.metadata.get_fields())}")
         logging.info('')
         self.context['catalog_datasets_reports'] = []
         self.context['catalog_distributions_reports'] = []

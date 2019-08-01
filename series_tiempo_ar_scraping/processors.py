@@ -1,6 +1,7 @@
 import logging
 import os
 
+from series_tiempo_ar.readers.csv_reader import CSVReader
 import series_tiempo_ar.readers as readers
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,14 +30,11 @@ class DirectDownloadProcessor(BaseProcessor):
         valid_df, distribution_df = False, None
 
         try:
-            distribution_df = self.catalog_metadata.load_ts_distribution(
-                self.distribution_metadata.get('identifier'),
-                self.catalog_metadata.get('identifier'),
-                file_source=self.distribution_metadata.get('downloadURL')
-            )
-            logging.debug('Descargó la distribución')
+            reader = CSVReader(self.distribution_metadata)
+            valid_df, distribution_df = True, reader.read()
+            logging.debug('>>> Descargó la distribución <<<')
         except Exception:
-            logging.debug('Falló la descarga de la distribución')
+            logging.debug('>>> Falló la descarga de la distribución <<<')
             raise
 
         return distribution_df
