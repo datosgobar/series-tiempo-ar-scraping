@@ -109,10 +109,11 @@ PRESERVE_WB_OBJ = False
 
 class SpreadsheetProcessor(BaseProcessor):
 
-    def __init__(self, distribution_metadata, catalog_metadata):
+    def __init__(self, distribution_metadata, catalog_metadata, catalog_context):
         super().__init__(distribution_metadata)
 
         self.catalog_metadata = catalog_metadata
+        self.catalog_context = catalog_context
 
     def run(self):
         distribution_df = None
@@ -131,9 +132,7 @@ class SpreadsheetProcessor(BaseProcessor):
         )
 
         try:
-            # # TODO: Change me!
-            path = os.path.join(catalog_sources_dir, self.distribution_metadata.get('scrapingFileURL').split('/')[-1])
-            xl = XlSeries(path)
+            xl = self.catalog_context['xl'].get(file_source.split('/')[-1])
 
             distribution_params = self.gen_distribution_params(
                 self.catalog_metadata, self.distribution_metadata.get('identifier'))
@@ -151,9 +150,9 @@ class SpreadsheetProcessor(BaseProcessor):
             headers_value = distribution_params["headers_value"]
 
             validate_distribution_scraping(xl, worksheet, headers_coord, headers_value,
-                                        distrib_meta)
+                                           distrib_meta)
             validate_distribution(df, self.catalog_metadata, dataset_meta, distrib_meta,
-                                self.distribution_metadata.get('identifier'))
+                                  self.distribution_metadata.get('identifier'))
 
             return df
 

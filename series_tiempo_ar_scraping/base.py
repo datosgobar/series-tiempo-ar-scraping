@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 
 import pandas as pd
+from xlseries import XlSeries
 
 import pydatajson.readers as readers
 import pydatajson.writers as writers
@@ -145,6 +146,7 @@ class Distribution(ETLObject):
                 processor = SpreadsheetProcessor(
                     distribution_metadata=self.metadata,
                     catalog_metadata=self.parent.parent.metadata,
+                    catalog_context=self.parent.parent.context,
                 )
 
         return processor
@@ -457,6 +459,8 @@ class Catalog(ETLObject):
             in get_ts_distributions_by_method(self.metadata, "excel_file")
         ])
 
+        xl = {}
+
         for excel_url in excel_list:
             logging.info(f'Descargando archivo {excel_url}')
             self.download_with_config(
@@ -464,6 +468,10 @@ class Catalog(ETLObject):
                 self.get_excel_path(excel_url.split('/')[-1]),
                 config={},
             )
+
+            xl[excel_url.split('/')[-1]] = XlSeries(self.get_excel_path(excel_url.split('/')[-1]))
+
+        self.context['xl'] = xl
 
         self.init_context_paths()
 
