@@ -1,8 +1,17 @@
 import logging
 import os
+import pandas as pd
+import re
+from copy import deepcopy
 
 from series_tiempo_ar.readers.csv_reader import CSVReader
 import series_tiempo_ar.readers as readers
+from series_tiempo_ar.validations import validate_distribution
+from series_tiempo_ar.validations import validate_distribution_scraping
+from series_tiempo_ar.readers.csv_reader import CSVReader
+
+from xlseries import XlSeries
+from xlseries.strategies.clean.parse_time import TimeIsNotComposed
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATOS_DIR = os.path.join(ROOT_DIR, "data")
@@ -38,6 +47,7 @@ class DirectDownloadProcessor(BaseProcessor):
             raise
 
         return distribution_df
+
 
 
 class TXTProcessor(BaseProcessor):
@@ -92,8 +102,9 @@ XLSERIES_PARAMS = {
     "data_starts": None,
     "frequency": None,
     "time_header_coord": None,
-    # 'time_composed': True
 }
+
+PRESERVE_WB_OBJ = False
 
 
 class SpreadsheetProcessor(BaseProcessor):
@@ -113,38 +124,38 @@ class SpreadsheetProcessor(BaseProcessor):
             self.distribution_metadata.get('scrapingFileURL').split('/')[-1]
         )
 
+        catalog_sources_dir = os.path.join(
+            CATALOGS_DIR_INPUT,
+            self.catalog_metadata.get('identifier'),
+            'sources',
+        )
+
         try:
-            # TODO: Change me!
+            # # TODO: Change me!
+            path = os.path.join(catalog_sources_dir, self.distribution_metadata.get('scrapingFileURL').split('/')[-1])
+            xl = XlSeries(path)
 
-            # distribution_params = gen_distribution_params(
-            #     catalog, distribution_identifier)
-            # distrib_meta = catalog.get_distribution(distribution_identifier)
-            # dataset_meta = catalog.get_dataset(distribution_identifier.split(".")[0])
+            distribution_params = self.gen_distribution_params(
+                self.catalog_metadata, self.distribution_metadata.get('identifier'))
+            distrib_meta = self.catalog_metadata.get_distribution(self.distribution_metadata.get('identifier'))
+            dataset_meta = self.catalog_metadata.get_dataset(self.distribution_metadata.get('identifier').split(".")[0])
 
-            # df = scrape_dataframe(xl, **distribution_params)
+            df = self.scrape_dataframe(xl, **distribution_params)
 
-            # if isinstance(df, list):
-            #     df = pd.concat(df, axis=1)
+            if isinstance(df, list):
+                df = pd.concat(df, axis=1)
 
-            # # VALIDACIONES
-            # worksheet = distribution_params["worksheet"]
-            # headers_coord = distribution_params["headers_coord"]
-            # headers_value = distribution_params["headers_value"]
+            # VALIDACIONES
+            worksheet = distribution_params["worksheet"]
+            headers_coord = distribution_params["headers_coord"]
+            headers_value = distribution_params["headers_value"]
 
-            # validate_distribution_scraping(xl, worksheet, headers_coord, headers_value,
-            #                                distrib_meta)
-            # validate_distribution(df, catalog, dataset_meta, distrib_meta,
-            #                       distribution_identifier)
+            validate_distribution_scraping(xl, worksheet, headers_coord, headers_value,
+                                        distrib_meta)
+            validate_distribution(df, self.catalog_metadata, dataset_meta, distrib_meta,
+                                self.distribution_metadata.get('identifier'))
 
-            # return df <<<--- nuestro return
-
-            # distribution_df = readers.load_ts_distribution(
-            #     self.catalog_metadata,
-            #     self.distribution_metadata.get('identifier'),
-            #     file_source=file_source
-            # )
-
-            logging.debug('Descargó la distribución')
+            return df
 
         except Exception:
             logging.debug('Falló la descarga de la distribución')
@@ -152,7 +163,7 @@ class SpreadsheetProcessor(BaseProcessor):
 
         return distribution_df
 
-    def gen_distribution_params(catalog, distribution_identifier):
+    def gen_distribution_params(self, catalog, distribution_identifier):
         distribution = catalog.get_distribution(distribution_identifier)
 
         fields = distribution["field"]
@@ -174,14 +185,14 @@ class SpreadsheetProcessor(BaseProcessor):
 
         # fila donde empiezan los datos
         params["data_starts"] = list(map(
-            helpers.row_from_cell_coord,
+            self.row_from_cell_coord,
             [field["scrapingDataStartCell"] for field in fields
              if not field.get("specialType")]))
 
         # frecuencia de las series
         field = catalog.get_field(distribution_identifier=distribution_identifier,
                                   title="indice_tiempo")
-        params["frequency"] = helpers.freq_iso_to_xlseries(
+        params["frequency"] = self.freq_iso_to_xlseries(
             field["specialTypeDetail"])
 
         # coordenadas del header del indice de tiempo
@@ -195,8 +206,8 @@ class SpreadsheetProcessor(BaseProcessor):
 
         return params
 
-    def scrape_dataframe(xl, worksheet, headers_coord, headers_value, data_starts,
-                     frequency, time_header_coord, series_names):
+    def scrape_dataframe(self, xl, worksheet, headers_coord, headers_value, data_starts,
+                         frequency, time_header_coord, series_names):
         params = deepcopy(XLSERIES_PARAMS)
         params["headers_coord"] = headers_coord
         params["data_starts"] = data_starts
@@ -214,3 +225,20 @@ class SpreadsheetProcessor(BaseProcessor):
                                      preserve_wb_obj=PRESERVE_WB_OBJ)
 
         return dfs
+
+    def row_from_cell_coord(self, coord):
+        match = re.match(r'^[A-Za-z]+(\d+)$', coord)
+        if not match:
+            raise ValueError('Invalid coordinate')
+
+        return int(match.group(1))
+
+    def freq_iso_to_xlseries(self, freq_iso8601):
+        frequencies_map = {
+            "R/P1Y": "Y",
+            "R/P6M": "S",
+            "R/P3M": "Q",
+            "R/P1M": "M",
+            "R/P1D": "D"
+        }
+        return frequencies_map[freq_iso8601]
