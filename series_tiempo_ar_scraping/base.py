@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 
 import pandas as pd
+from xlseries import XlSeries
 
 import pydatajson.readers as readers
 import pydatajson.writers as writers
@@ -23,6 +24,7 @@ from series_tiempo_ar_scraping import download
 from series_tiempo_ar_scraping.processors import (
     DirectDownloadProcessor,
     TXTProcessor,
+    SpreadsheetProcessor
 )
 
 
@@ -136,6 +138,17 @@ class Distribution(ETLObject):
                     catalog_metadata=self.parent.parent.metadata,
                 )
 
+        if not self.metadata.get("downloadURL"):
+            path_or_url = self.metadata.get("scrapingFileURL")
+            extension = path_or_url.split(".")[-1].lower()
+
+            if extension in ['xls', 'xlsx']:
+                processor = SpreadsheetProcessor(
+                    distribution_metadata=self.metadata,
+                    catalog_metadata=self.parent.parent.metadata,
+                    catalog_context=self.parent.parent.context,
+                )
+
         return processor
 
     def process(self):
@@ -172,6 +185,7 @@ class Distribution(ETLObject):
 
     def validate(self):
         logging.debug('Valida la distribución')
+
         try:
             validate_distribution(
                 df=self._df,
@@ -423,6 +437,7 @@ class Catalog(ETLObject):
         logging.info(f'=== Catálogo: {self.identifier} ===')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "csv_file"))} distribuciones para descarga directa')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "excel_file"))} distribuciones de archivo excel')
 
         txt_list = set([
             distribution['scrapingFileURL']
@@ -438,6 +453,26 @@ class Catalog(ETLObject):
                 config={},
             )
 
+        excel_list = set([
+            distribution['scrapingFileURL']
+            for distribution
+            in get_ts_distributions_by_method(self.metadata, "excel_file")
+        ])
+
+        xl = {}
+
+        for excel_url in excel_list:
+            logging.info(f'Descargando archivo {excel_url}')
+            self.download_with_config(
+                excel_url,
+                self.get_excel_path(excel_url.split('/')[-1]),
+                config={},
+            )
+
+            xl[excel_url.split('/')[-1]] = XlSeries(self.get_excel_path(excel_url.split('/')[-1]))
+
+        self.context['xl'] = xl
+
         self.init_context_paths()
 
     def get_txt_path(self, txt_name):
@@ -446,6 +481,14 @@ class Catalog(ETLObject):
             self.identifier,
             'sources',
             txt_name
+        )
+
+    def get_excel_path(self, excel_name):
+        return os.path.join(
+            CATALOGS_DIR_INPUT,
+            self.identifier,
+            'sources',
+            excel_name
         )
 
     def init_context_paths(self):
@@ -734,7 +777,7 @@ class Catalog(ETLObject):
             f'Distribuciones: {len(distributions)}',
             f'Distribuciones (ERROR): {distributions_error}',
             f'Distribuciones (OK): {distributions_ok}',
-            f'Distribuciones (OK %): {round(distributions_prtg, 3) * 100}',
+            f'Distribuciones (OK %): {round(distributions_prtg * 100, 3)}',
             ''
         ]
         return indicators
