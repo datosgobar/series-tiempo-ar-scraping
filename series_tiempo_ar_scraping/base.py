@@ -151,20 +151,27 @@ class Distribution(ETLObject):
 
         return processor
 
+    def csv_exists(self):
+        return os.path.exists(self.context['distribution_output_path'])
+
     def process(self):
         self.pre_process()
 
         if self.processor:
-            try:
-                self._df = self.processor.run()
-                self.validate()
-                self.write_distribution_dataframe()
+            if not self.csv_exists() or self.context['replace']:
+                try:
+                    self._df = self.processor.run()
+                    self.validate()
+                    if self.csv_exists() and self.context['replace']:
+                        self.report['distribution_status'] = 'OK (Replaced)'
+                    self.write_distribution_dataframe()
 
-            except Exception as e:
-                self.report['distribution_status'] = 'ERROR'
-                self.report['distribution_note'] = repr(e)
-                self.report['distribution_traceback'] = traceback.format_exc()
-
+                except Exception as e:
+                    self.report['distribution_status'] = 'ERROR'
+                    self.report['distribution_note'] = repr(e)
+                    self.report['distribution_traceback'] = traceback.format_exc()
+            else:
+                pass
         self.post_process()
 
     def pre_process(self):
@@ -217,8 +224,10 @@ class Distribution(ETLObject):
         if self.report['distribution_status'] == 'ERROR':
             logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_note']}")
             logging.debug(self.report['distribution_traceback'])
-        else:
+        elif self.report['distribution_status'] == 'OK':
             logging.info(f'Distribución {self.identifier}: OK')
+        else:
+            logging.info(f"Distribución {self.identifier}: OK (Replaced)")
         self.context['catalog_distributions_reports'].append(self.report)
         logging.debug(self.report)
         # TODO: unset distribution_output_path in context
@@ -290,6 +299,7 @@ class Catalog(ETLObject):
     def __init__(self, identifier, parent, context, **kwargs):
         self.url = kwargs.get('url')
         self.extension = kwargs.get('extension')
+        self.replace = kwargs.get('replace')
         logging.info(f'=== Catálogo: {identifier} ===')
 
         super().__init__(identifier, parent, context)
@@ -376,6 +386,7 @@ class Catalog(ETLObject):
     def init_context(self):
         self.context['catalog_time_series_distributions_identifiers'] = \
             self.get_time_series_distributions_identifiers()
+        self.context['replace'] = self.replace
         logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
         logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
         logging.info(f"Fields: {len(self.metadata.get_fields())}")
@@ -795,6 +806,7 @@ class ETL(ETLObject):
         self.catalogs_from_config = kwargs.get('config')
         self.print_log_separator(logging, "Extracción de catálogos")
         logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
+        self.replace = kwargs.get('replace')
         super().__init__(identifier, parent, context)
 
         self.print_log_separator(logging, "Envío de mails para: extracción")
@@ -813,6 +825,7 @@ class ETL(ETLObject):
                 extension=self.catalogs_from_config.get(catalog).get(
                     'formato'
                 ),
+                replace=self.replace,
             )
             for catalog in self.catalogs_from_config.keys()
         ]
