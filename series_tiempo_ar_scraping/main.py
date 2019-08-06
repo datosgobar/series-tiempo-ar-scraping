@@ -48,11 +48,16 @@ def get_logger(log_level):
     default=lambda: read_config(os.path.join(CONFIG_DIR, 'config_general.yaml'))['logging'],
     type=str,
 )
-def cli(config, log_level):
-    main(config, log_level.upper())
+@click.option(
+    '--replace',
+    default=True,
+    type=bool,
+)
+def cli(config, log_level, replace):
+    main(config, log_level.upper(), replace)
 
 
-def main(config, log_level):
+def main(config, log_level, replace):
     config = read_config(file_path=config)
     get_logger(log_level)
 
@@ -62,7 +67,8 @@ def main(config, log_level):
         context=None,
         url=None,
         extension=None,
-        config=config
+        config=config,
+        replace=replace
     )
 
     etl.run()
