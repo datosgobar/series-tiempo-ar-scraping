@@ -170,8 +170,6 @@ class Distribution(ETLObject):
                     self.report['distribution_status'] = 'ERROR'
                     self.report['distribution_note'] = repr(e)
                     self.report['distribution_traceback'] = traceback.format_exc()
-            else:
-                pass
         self.post_process()
 
     def pre_process(self):
