@@ -12,7 +12,6 @@ Aplicación escrita en Python 3 que scrapea series de tiempo de archivos `.xlsx`
 - [Instalación](#instalacion)
 - [Uso](#uso)
   - [Correr el ETL](#correr-el-etl)
-  - [Ejecución Automática con cron](#ejecución-automática-con-cron)
   - [Entradas/Salidas del ETL](#entradassalidas-del-etl)
 - [Contacto](#contacto)
 
