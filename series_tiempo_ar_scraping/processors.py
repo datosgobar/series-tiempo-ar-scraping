@@ -68,9 +68,9 @@ class TXTProcessor(BaseProcessor):
         )
 
         try:
-            distribution_df = readers.load_ts_distribution(
-                self.catalog_metadata,
-                self.distribution_metadata.get('identifier'),
+            distribution_df = self.catalog_metadata.load_ts_distribution(
+                identifier=self.distribution_metadata.get('identifier'),
+                catalog_id=self.catalog_metadata.get('identifier'),
                 file_source=file_source
             )
 
