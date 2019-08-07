@@ -63,6 +63,7 @@ GROUP_CONFIGS = {
     "scraping": SCRAPING_MAIL_CONFIG
 }
 
+
 class ETLObject:
 
     def __init__(self, identifier, parent, context):
@@ -169,7 +170,8 @@ class Distribution(ETLObject):
                 except Exception as e:
                     self.report['distribution_status'] = 'ERROR'
                     self.report['distribution_note'] = repr(e)
-                    self.report['distribution_traceback'] = traceback.format_exc()
+                    self.report[
+                        'distribution_traceback'] = traceback.format_exc()
         self.post_process()
 
     def pre_process(self):
@@ -244,7 +246,8 @@ class Dataset(ETLObject):
 
     def init_metadata(self):
         try:
-            self.metadata = self.context['metadata'].get_dataset(self.identifier)
+            self.metadata = self.context[
+                'metadata'].get_dataset(self.identifier)
         except Exception as e:
             self.report['dataset_status'] = 'ERROR: metadata'
 
@@ -387,7 +390,7 @@ class Catalog(ETLObject):
         self.context['replace'] = self.replace
         logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
         logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
-        logging.info(f"Fields: {len(self.metadata.get_fields())}")
+        logging.info(f"Fields: {len(self.metadata.get_time_series())}")
         logging.info('')
         self.context['catalog_datasets_reports'] = []
         self.context['catalog_distributions_reports'] = []
@@ -478,7 +481,8 @@ class Catalog(ETLObject):
                 config={},
             )
 
-            xl[excel_url.split('/')[-1]] = XlSeries(self.get_excel_path(excel_url.split('/')[-1]))
+            xl[excel_url.split(
+                '/')[-1]] = XlSeries(self.get_excel_path(excel_url.split('/')[-1]))
 
         self.context['xl'] = xl
 
@@ -591,7 +595,8 @@ class Catalog(ETLObject):
                 s = smtplib.SMTP_SSL(
                     mailer_config["smtp_server"], mailer_config["port"])
             else:
-                s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
+                s = smtplib.SMTP(
+                    mailer_config["smtp_server"], mailer_config["port"])
                 s.ehlo()
                 s.starttls()
                 s.ehlo()
@@ -601,7 +606,6 @@ class Catalog(ETLObject):
             logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
         except Exception as e:
             logging.info(f'Error al enviar mail: {repr(e)}')
-
 
     def send_group_emails(self, group_name):
         try:
@@ -626,7 +630,8 @@ class Catalog(ETLObject):
 
         else:
             # asunto y mensaje
-            subject_file_path = self.report_file_path(self.identifier, mail_files["subject"])
+            subject_file_path = self.report_file_path(
+                self.identifier, mail_files["subject"])
             if os.path.isfile(subject_file_path):
                 with open(subject_file_path, "r") as f:
                     subject = f.read()
@@ -635,7 +640,8 @@ class Catalog(ETLObject):
                     f"Catálogo {self.identifier}: no hay archivo de asunto")
                 logging.warning("Salteando catalogo...")
 
-            message_file_path = self.report_file_path(self.identifier, mail_files["message"])
+            message_file_path = self.report_file_path(
+                self.identifier, mail_files["message"])
             if os.path.isfile(message_file_path):
                 with open(message_file_path, "r") as f:
                     message = f.read()
@@ -648,7 +654,8 @@ class Catalog(ETLObject):
             recipients = catalogs_configs[self.identifier]["destinatarios"]
             files = []
             for attachment in list(mail_files["attachments"].values()):
-                files.append(self.report_file_path(self.identifier, attachment))
+                files.append(self.report_file_path(
+                    self.identifier, attachment))
 
             logging.info(f"Enviando reporte al grupo {self.identifier}...")
             self.send_email(mailer_config, subject, message, recipients, files)
@@ -679,7 +686,6 @@ class Catalog(ETLObject):
         with open(os.path.join(reportes_catalog_dir,
                                SCRAPING_MAIL_CONFIG["message"]), "w") as f:
             f.write(message)
-
 
     def generate_validation_message(self, is_valid_catalog):
         # asunto del mail
@@ -774,8 +780,10 @@ class Catalog(ETLObject):
 
     def indicators(self):
         distributions = self.context["catalog_distributions_reports"]
-        distributions_ok = len([r for r in distributions if r.get("distribution_status") == "OK"])
-        distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
+        distributions_ok = len(
+            [r for r in distributions if r.get("distribution_status") == "OK"])
+        distributions_error = len(
+            [r for r in distributions if r.get("distribution_status") == "ERROR"])
         distributions_prtg = float(distributions_ok / len(distributions))
         indicators = [
             '',
@@ -798,6 +806,7 @@ class Catalog(ETLObject):
         for indicator in self.indicators():
             logging.info(indicator)
 
+
 class ETL(ETLObject):
 
     def __init__(self, identifier, parent=None, context=None, **kwargs):
@@ -810,7 +819,8 @@ class ETL(ETLObject):
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
         for child in self.childs:
-            child.generate_validation_message(child.context['catalog_is_valid'])
+            child.generate_validation_message(
+                child.context['catalog_is_valid'])
             child.send_group_emails(group_name='extraccion')
 
     def init_childs(self):
