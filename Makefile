@@ -1,97 +1,72 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help dist
-.DEFAULT_GOAL := help
-define BROWSER_PYSCRIPT
-import os, webbrowser, sys
-try:
-	from urllib import pathname2url
-except:
-	from urllib.request import pathname2url
+# Makefile para Ubuntu 16.04
+SHELL = bash
+SERIES_TIEMPO_PIP ?= pip3
+SERIES_TIEMPO_PYTHON ?= python3
+VIRTUALENV = series-tiempo-ar-scraping
+CONDA_ENV = series-tiempo-ar-scraping
 
-webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
-endef
-export BROWSER_PYSCRIPT
+.PHONY: all \
+		anaconda_all \
+		clean \
+		create_dir \
+		anaconda_dependency_install \		
+		anaconda_setup_virtualenv \
+		anaconda_setup_etl_on_virtualenv \
+		install \
+		run
 
-define PRINT_HELP_PYSCRIPT
-import re, sys
+# recetas para correr el ETL
+all: run
 
-for line in sys.stdin:
-	match = re.match(r'^([a-zA-Z_-]+):.*?## (.*)$$', line)
-	if match:
-		target, help = match.groups()
-		print("%-20s %s" % (target, help))
-endef
-export PRINT_HELP_PYSCRIPT
-BROWSER := python -c "$$BROWSER_PYSCRIPT"
+anaconda_all: anaconda_run
 
-help:
-	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+anaconda_install: anaconda_dependency_install anaconda_setup_virtualenv anaconda_setup_etl_on_virtualenv
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+anaconda_dependency_install:
+	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+	bash Miniconda3-latest-Linux-x86_64.sh
+	rm Miniconda3-latest-Linux-x86_64.sh
 
+anaconda_setup_virtualenv: create_dir
+	test -d $(VIRTUALENV)/bin/activate || $(SERIES_TIEMPO_PYTHON) -m venv $(VIRTUALENV)
+	source $(VIRTUALENV)/bin/activate; \
+		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
-clean-build: ## remove build artifacts
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+anaconda_setup_etl_on_virtualenv: create_dir
+	conda create -n $(CONDA_ENV) --no-default-packages
+	source activate $(CONDA_ENV); \
+		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
-clean-pyc: ## remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
+anaconda_update_environment: create_dir
+	git pull origin master
+	$(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
 
-clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
+anaconda_run:
+	etl
 
-lint: ## check style with flake8
-	flake8 series_tiempo_ar_scraping tests
+create_dir:
+	mkdir -p logs
+	mkdir -p docs
+	mkdir -p data
+	mkdir -p data/input
+	mkdir -p data/input/catalog
+	mkdir -p data/output
+	mkdir -p data/output/catalog
+	mkdir -p data/test_output
+	mkdir -p data/test_output/catalog
+	mkdir -p data/reports
+	mkdir -p data/backup
+	mkdir -p data/backup/catalog
 
-test: ## run tests quickly with the default Python
-	py.test
-	
+clean:
+	rm -rf data/input/
+	rm -rf data/output/
+	rm -rf data/test_output/
+	rm -rf data/reports
+	make create_dir
 
-test-all: ## run tests on every Python version with tox
-	tox
+install:
+	pipenv install
 
-coverage: ## check code coverage quickly with the default Python
-	coverage run --source series_tiempo_ar_scraping -m pytest
-	
-		coverage report -m
-		coverage html
-		$(BROWSER) htmlcov/index.html
-
-docs: ## generate Sphinx HTML documentation, including API docs
-	cp README.md docs/README.md
-	cp HISTORY.md docs/HISTORY.md
-	rm -f docs/series_tiempo_ar_scraping.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ series_tiempo_ar_scraping
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
-
-servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
-
-dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
-	ls -l dist
-
-install: clean ## install the package to the active Python's site-packages
-	python setup.py install
-
-pypi: dist ## register the package to PyPi get travis ready to deploy to pip
-	twine upload dist/*
-	python travis_pypi_setup.py
-
-release: dist ## package and upload a release
-	twine upload dist/*
-
-doctoc: ## generate table of contents, doctoc command line tool required
-        ## https://github.com/thlorenz/doctoc
-	doctoc --title "## Indice" README.md
+run:
+	pipenv run etl
