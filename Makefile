@@ -9,7 +9,7 @@ CONDA_ENV = series-tiempo-ar-scraping
 		anaconda_all \
 		clean \
 		create_dir \
-		anaconda_dependency_install \		
+		anaconda_dependency_install \
 		anaconda_setup_virtualenv \
 		anaconda_setup_etl_on_virtualenv \
 		install \
@@ -19,6 +19,8 @@ CONDA_ENV = series-tiempo-ar-scraping
 all: run
 
 anaconda_all: anaconda_run
+
+anaconda_all_error: anaconda_run_error
 
 anaconda_install: anaconda_dependency_install anaconda_setup_virtualenv anaconda_setup_etl_on_virtualenv
 
@@ -40,6 +42,9 @@ anaconda_setup_etl_on_virtualenv: create_dir
 anaconda_update_environment: create_dir
 	git pull origin master
 	$(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
+
+anaconda_run_error:
+	etl --log-level DEBUG
 
 anaconda_run:
 	etl

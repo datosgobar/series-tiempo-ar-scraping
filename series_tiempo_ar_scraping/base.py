@@ -458,7 +458,7 @@ class Catalog(ETLObject):
         ])
 
         for txt_url in txt_list:
-            logging.info(f'Descargando archivo {txt_url}')
+            logging.info(f'Descargando {txt_url}')
             self.download_with_config(
                 txt_url,
                 self.get_txt_path(txt_url.split('/')[-1]),
@@ -474,7 +474,7 @@ class Catalog(ETLObject):
         xl = {}
 
         for excel_url in excel_list:
-            logging.info(f'Descargando archivo {excel_url}')
+            logging.info(f'Descargando {excel_url}')
             self.download_with_config(
                 excel_url,
                 self.get_excel_path(excel_url.split('/')[-1]),
@@ -737,8 +737,9 @@ class Catalog(ETLObject):
         )
         try:
             download.download_to_file(url, file_path, **config)
-        except Exception:
-            logging.info('Error al descargar el catálogo')
+        except Exception as e:
+            logging.info('Error al descargar {}'.format(url))
+            logging.error(repr(e))
 
     def read_xlsx_catalog(self, catalog_xlsx_path):
         default_values = {}

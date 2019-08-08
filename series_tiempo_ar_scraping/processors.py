@@ -49,7 +49,6 @@ class DirectDownloadProcessor(BaseProcessor):
         return distribution_df
 
 
-
 class TXTProcessor(BaseProcessor):
 
     def __init__(self, distribution_metadata, catalog_metadata):
@@ -136,8 +135,10 @@ class SpreadsheetProcessor(BaseProcessor):
 
             distribution_params = self.gen_distribution_params(
                 self.catalog_metadata, self.distribution_metadata.get('identifier'))
-            distrib_meta = self.catalog_metadata.get_distribution(self.distribution_metadata.get('identifier'))
-            dataset_meta = self.catalog_metadata.get_dataset(self.distribution_metadata.get('identifier').split(".")[0])
+            distrib_meta = self.catalog_metadata.get_distribution(
+                self.distribution_metadata.get('identifier'))
+            dataset_meta = self.catalog_metadata.get_dataset(
+                self.distribution_metadata.get('identifier').split(".")[0])
 
             df = self.scrape_dataframe(xl, **distribution_params)
 
