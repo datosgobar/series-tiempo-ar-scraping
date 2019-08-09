@@ -448,6 +448,8 @@ class Catalog(ETLObject):
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "excel_file"))} distribuciones de archivo excel')
 
+        config = self.get_catalog_download_config(self.identifier).get('catalog')
+
         txt_list = set([
             distribution['scrapingFileURL']
             for distribution
@@ -459,7 +461,7 @@ class Catalog(ETLObject):
             self.download_with_config(
                 txt_url,
                 self.get_txt_path(txt_url.split('/')[-1]),
-                config={},
+                config=config,
             )
 
         excel_list = set([
@@ -475,7 +477,7 @@ class Catalog(ETLObject):
             self.download_with_config(
                 excel_url,
                 self.get_excel_path(excel_url.split('/')[-1]),
-                config={},
+                config=config,
             )
 
             xl[excel_url.split('/')[-1]] = XlSeries(self.get_excel_path(excel_url.split('/')[-1]))
@@ -783,7 +785,8 @@ class Catalog(ETLObject):
         distributions = self.context["catalog_distributions_reports"]
         distributions_ok = len([r for r in distributions if r.get("distribution_status") == "OK"])
         distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
-        distributions_prtg = float(distributions_ok / len(distributions))
+        distributions_replaced = len([r for r in distributions if r.get("distribution_status") == "OK (Replaced)"])
+        distributions_percentage = float((distributions_ok + distributions_replaced) / len(distributions))
         indicators = [
             '',
             f'Indicadores',
@@ -792,8 +795,8 @@ class Catalog(ETLObject):
             f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}',
             f'Distribuciones: {len(distributions)}',
             f'Distribuciones (ERROR): {distributions_error}',
-            f'Distribuciones (OK): {distributions_ok}',
-            f'Distribuciones (OK %): {round(distributions_prtg * 100, 3)}',
+            f'Distribuciones (OK): {distributions_ok + distributions_replaced}',
+            f'Distribuciones (OK %): {round(distributions_percentage * 100, 3)}',
             ''
         ]
         return indicators
