@@ -33,7 +33,7 @@ DATOS_DIR = os.path.join(ROOT_DIR, "data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
-CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
+CONFIG_DOWNLOAD_PATH = os.path.join(CONFIG_DIR, "config_download.yaml")
 CONFIG_EMAIL_PATH = os.path.join(CONFIG_DIR, "config_email.yaml")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
@@ -387,7 +387,7 @@ class Catalog(ETLObject):
         self.context['replace'] = self.replace
         logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
         logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
-        logging.info(f"Fields: {len(self.metadata.get_fields())}")
+        logging.info(f"Fields: {len(self.metadata.get_time_series())}")
         logging.info('')
         self.context['catalog_datasets_reports'] = []
         self.context['catalog_distributions_reports'] = []
@@ -753,9 +753,16 @@ class Catalog(ETLObject):
                             field["id"] = field["id"].replace(" ", "")
 
     def get_catalog_download_config(self, identifier):
-        configs = {
-            "defaults": {}
-        }
+        try:
+            with open(CONFIG_DOWNLOAD_PATH) as config_download_file:
+                configs = yaml.load(config_download_file)
+        except (IOError, yaml.parser.ParserError):
+            logging.info("No se pudo cargar el archivo de configuración \
+                'config_downloads.yaml'.")
+            logging.info("Utilizando configuración default...")
+            configs = {
+                "defaults": {}
+            }
 
         default_config = configs["defaults"]
 
