@@ -16,8 +16,8 @@ from xlseries import XlSeries
 from series_tiempo_ar.validations import validate_distribution_scraping
 from series_tiempo_ar.validations import validate_distribution
 from series_tiempo_ar import TimeSeriesDataJson
-from series_tiempo_ar.readers import get_ts_distributions_by_method
-from series_tiempo_ar.readers import get_distribution_generation_method
+from series_tiempo_ar.readers.readers import get_ts_distributions_by_method
+from series_tiempo_ar.readers.readers import get_distribution_generation_method
 
 import helpers
 
