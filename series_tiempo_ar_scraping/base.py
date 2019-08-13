@@ -33,7 +33,7 @@ DATOS_DIR = os.path.join(ROOT_DIR, "data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
-CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
+CONFIG_DOWNLOAD_PATH = os.path.join(CONFIG_DIR, "config_downloads.yaml")
 CONFIG_EMAIL_PATH = os.path.join(CONFIG_DIR, "config_email.yaml")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
@@ -451,6 +451,8 @@ class Catalog(ETLObject):
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "excel_file"))} distribuciones de archivo excel')
 
+        config = self.get_catalog_download_config(self.identifier).get('catalog')
+
         txt_list = set([
             distribution['scrapingFileURL']
             for distribution
@@ -462,7 +464,7 @@ class Catalog(ETLObject):
             self.download_with_config(
                 txt_url,
                 self.get_txt_path(txt_url.split('/')[-1]),
-                config={},
+                config=config,
             )
 
         excel_list = set([
@@ -478,7 +480,7 @@ class Catalog(ETLObject):
             self.download_with_config(
                 excel_url,
                 self.get_excel_path(excel_url.split('/')[-1]),
-                config={},
+                config=config,
             )
 
             xl[excel_url.split(
@@ -760,9 +762,16 @@ class Catalog(ETLObject):
                             field["id"] = field["id"].replace(" ", "")
 
     def get_catalog_download_config(self, identifier):
-        configs = {
-            "defaults": {}
-        }
+        try:
+            with open(CONFIG_DOWNLOAD_PATH) as config_download_file:
+                configs = yaml.load(config_download_file)
+        except (IOError, yaml.parser.ParserError):
+            logging.info("No se pudo cargar el archivo de configuración \
+                'config_downloads.yaml'.")
+            logging.info("Utilizando configuración default...")
+            configs = {
+                "defaults": {}
+            }
 
         default_config = configs["defaults"]
 
@@ -781,11 +790,10 @@ class Catalog(ETLObject):
 
     def indicators(self):
         distributions = self.context["catalog_distributions_reports"]
-        distributions_ok = len(
-            [r for r in distributions if r.get("distribution_status") == "OK"])
-        distributions_error = len(
-            [r for r in distributions if r.get("distribution_status") == "ERROR"])
-        distributions_prtg = float(distributions_ok / len(distributions))
+        distributions_ok = len([r for r in distributions if r.get("distribution_status") == "OK"])
+        distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
+        distributions_replaced = len([r for r in distributions if r.get("distribution_status") == "OK (Replaced)"])
+        distributions_percentage = float((distributions_ok + distributions_replaced) / len(distributions))
         indicators = [
             '',
             f'Indicadores',
@@ -794,8 +802,8 @@ class Catalog(ETLObject):
             f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}',
             f'Distribuciones: {len(distributions)}',
             f'Distribuciones (ERROR): {distributions_error}',
-            f'Distribuciones (OK): {distributions_ok}',
-            f'Distribuciones (OK %): {round(distributions_prtg * 100, 3)}',
+            f'Distribuciones (OK): {distributions_ok + distributions_replaced}',
+            f'Distribuciones (OK %): {round(distributions_percentage * 100, 3)}',
             ''
         ]
         return indicators

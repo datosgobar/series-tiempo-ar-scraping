@@ -11,6 +11,7 @@ click = "*"
 pyyaml = "*"
 xlseries = "*"
 series-tiempo-ar-scraping = {editable = true,path = "."}
+requests = {extras = ["security"],version = "*"}
 
 [requires]
 python_version = "3.6.2"

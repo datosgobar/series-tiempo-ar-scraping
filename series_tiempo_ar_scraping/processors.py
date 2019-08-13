@@ -5,7 +5,6 @@ import re
 from copy import deepcopy
 
 from series_tiempo_ar.readers.csv_reader import CSVReader
-import series_tiempo_ar.readers as readers
 from series_tiempo_ar.validations import validate_distribution
 from series_tiempo_ar.validations import validate_distribution_scraping
 from series_tiempo_ar.readers.csv_reader import CSVReader
@@ -65,7 +64,6 @@ class TXTProcessor(BaseProcessor):
             'sources',
             self.distribution_metadata.get('scrapingFileURL').split('/')[-1]
         )
-
         try:
             distribution_df = self.catalog_metadata.load_ts_distribution(
                 identifier=self.distribution_metadata.get('identifier'),
@@ -122,12 +120,6 @@ class SpreadsheetProcessor(BaseProcessor):
             self.catalog_metadata.get('identifier'),
             'sources',
             self.distribution_metadata.get('scrapingFileURL').split('/')[-1]
-        )
-
-        catalog_sources_dir = os.path.join(
-            CATALOGS_DIR_INPUT,
-            self.catalog_metadata.get('identifier'),
-            'sources',
         )
 
         try:
