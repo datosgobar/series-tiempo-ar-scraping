@@ -35,7 +35,7 @@ install_anaconda:
 	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 	bash Miniconda3-latest-Linux-x86_64.sh
 	rm Miniconda3-latest-Linux-x86_64.sh
-	export PATH=$PATH:/home/series/miniconda3/bin
+	export PATH=$$PATH:/home/series/miniconda3/bin
 
 run:
 	source activate $(CONDA_ENV); etl
