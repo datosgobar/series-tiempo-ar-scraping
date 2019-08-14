@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import pdb
 import traceback
 import yaml
 import smtplib
@@ -608,7 +609,7 @@ class Catalog(ETLObject):
     def send_group_emails(self, group_name):
         try:
             with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
-                cfg = yaml.load(ymlfile)
+                cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
         except (IOError, yaml.parser.ParserError):
             logging.warning(
                 "No se pudo cargar archivo de configuración 'config_email.yaml'.")
@@ -757,7 +758,7 @@ class Catalog(ETLObject):
     def get_catalog_download_config(self, identifier):
         try:
             with open(CONFIG_DOWNLOAD_PATH) as config_download_file:
-                configs = yaml.load(config_download_file)
+                configs = yaml.load(config_download_file, Loader=yaml.FullLoader)
         except (IOError, yaml.parser.ParserError):
             logging.info("No se pudo cargar el archivo de configuración \
                 'config_downloads.yaml'.")
@@ -781,24 +782,59 @@ class Catalog(ETLObject):
 
         return config
 
-    def indicators(self):
+    def catalog_distributions_reports(self):
         distributions = self.context["catalog_distributions_reports"]
-        distributions_ok = len([r for r in distributions if r.get("distribution_status") == "OK"])
-        distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
-        distributions_replaced = len([r for r in distributions if r.get("distribution_status") == "OK (Replaced)"])
-        distributions_percentage = float((distributions_ok + distributions_replaced) / len(distributions))
+        return distributions
+
+    def distributions_ok(self):
+        distributions_ok = len([r for r in self.catalog_distributions_reports() if r.get("distribution_status") == "OK"])
+        return distributions_ok
+
+    def distributions_error(self):
+        distributions_error = len([r for r in self.catalog_distributions_reports() if r.get("distribution_status") == "ERROR"])
+        return distributions_error
+
+    def distributions_replaced(self):
+        distributions_replaced = len([r for r in self.catalog_distributions_reports() if r.get("distribution_status") == "OK (Replaced)"])
+        return distributions_replaced
+
+    def distributions_percentage(self):
+        distributions_percentage = float((self.distributions_ok() + self.distributions_replaced()) / len(self.catalog_distributions_reports()))
+        return distributions_percentage
+
+    def catalog_datasets_reports(self):
+        datasets = self.context["catalog_datasets_reports"]
+        return datasets
+
+    def get_indicators(self):
+        indicators = {
+            'datasets': len(self.childs),
+            'datasets_ok': len([r for r in self.catalog_datasets_reports() if r.get("dataset_status") == "OK"]), 
+            'datasets_error': len([r for r in self.catalog_datasets_reports() if r.get("dataset_status") == "ERROR"]),
+            'distributions': len(self.catalog_distributions_reports()),
+            'distributions_ok': self.distributions_ok() + self.distributions_replaced(),
+            'distributions_error': self.distributions_error(),
+            'distributions_percentage': self.distributions_percentage(),
+        }
+
+        return indicators
+
+    def indicators(self):
+        _indicators = self.get_indicators()
+
         indicators = [
             '',
             f'Indicadores',
-            f'Datasets: {len(self.childs)}',
-            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}',
-            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}',
-            f'Distribuciones: {len(distributions)}',
-            f'Distribuciones (ERROR): {distributions_error}',
-            f'Distribuciones (OK): {distributions_ok + distributions_replaced}',
-            f'Distribuciones (OK %): {round(distributions_percentage * 100, 3)}',
+            f'Datasets: {_indicators.get("datasets")}',
+            f'Datasets (ERROR): {_indicators.get("datasets_error")}',
+            f'Datasets (OK): {_indicators.get("datasets_ok")}',
+            f'Distribuciones: {_indicators.get("distributions")}',
+            f'Distribuciones (ERROR): {_indicators.get("distributions_error")}',
+            f'Distribuciones (OK): {_indicators.get("distributions_ok")}',
+            f'Distribuciones (OK %): {round(_indicators.get("distributions_percentage") * 100, 3)}',
             ''
         ]
+
         return indicators
 
     def indicators_message(self):
@@ -824,6 +860,7 @@ class ETL(ETLObject):
             child.send_group_emails(group_name='extraccion')
 
     def init_childs(self):
+
         self.childs = [
             Catalog(
                 identifier=catalog,
