@@ -71,7 +71,11 @@ class ETLObject:
         self.parent = parent
         self.context = context
         self.childs = []
+        # self.init_metadata()
+        # self.init_context()
+        # self.init_childs()
 
+    def init_object(self):
         self.init_metadata()
         self.init_context()
         self.init_childs()
@@ -244,12 +248,14 @@ class Dataset(ETLObject):
         }
 
     def init_metadata(self):
+
         try:
             self.metadata = self.context['metadata'].get_dataset(self.identifier)
         except Exception as e:
             self.report['dataset_status'] = 'ERROR: metadata'
 
     def init_childs(self):
+
         dataset_distributions_identifiers = [
             distribution['identifier']
             for distribution in self.metadata.get('distribution')
@@ -316,6 +322,7 @@ class Catalog(ETLObject):
             self.write_metadata()
 
     def fetch_metadata_file(self):
+
         if self.extension in ['xlsx', 'json']:
             config = self.get_catalog_download_config(
                 self.identifier
@@ -725,7 +732,7 @@ class Catalog(ETLObject):
             self.context['catalog_distributions_reports'],
             columns=columns,
         )
-
+        pdb.set_trace()
         return distributions_report
 
     def download_with_config(self, url, file_path, config):
@@ -806,14 +813,49 @@ class Catalog(ETLObject):
         datasets = self.context["catalog_datasets_reports"]
         return datasets
 
+    def _get_datasets_reports_indicator(self, status=None):
+        return len(
+            [report for report in self.context["catalog_datasets_reports"]
+             if report.get('dataset_status') == status]
+            if status
+            else self.context["catalog_datasets_reports"]
+        )
+
+    def _get_datasets_reports(self, status=None):
+        datasets_reports = {}
+        datasets = self.context['catalog_datasets_reports']
+        datasets_reports['datasets'] = len(self.context['catalog_datasets_reports'])
+
+        datasets_reports['datasets_ok'] = len([r for r in datasets if r.get('dataset_status') == 'OK'])
+        datasets_reports['datasets_error'] = len([r for r in datasets if r.get('dataset_status') == 'ERROR'])
+        return datasets_reports
+
+    def _get_distributions_reports(self):
+        distributions_reports = {}
+        distributions = self.context["catalog_distributions_reports"]
+        distributions_reports['distributions'] = len(self.context['catalog_distributions_reports'])
+
+        distributions_reports['distributions_ok'] = len(
+            [r for r in distributions if r.get("distribution_status") == "OK"]
+        )
+        distributions_reports['distributions_error'] = len(
+            [r for r in distributions if r.get("distribution_status") == "ERROR"]
+        )
+        distributions_reports['distributions_replaced'] = len(
+            [r for r in distributions if r.get("distribution_status") == "OK (Replaced)"]
+        )
+        pdb.set_trace()
+        return distributions_reports
+
     def get_indicators(self):
+        self._get_distributions_reports()
         indicators = {
             'datasets': len(self.childs),
-            'datasets_ok': len([r for r in self.catalog_datasets_reports() if r.get("dataset_status") == "OK"]), 
+            'datasets_ok': len([r for r in self.catalog_datasets_reports() if r.get("dataset_status") == "OK"]),
             'datasets_error': len([r for r in self.catalog_datasets_reports() if r.get("dataset_status") == "ERROR"]),
-            'distributions': len(self.catalog_distributions_reports()),
-            'distributions_ok': self.distributions_ok() + self.distributions_replaced(),
-            'distributions_error': self.distributions_error(),
+            'distributions': self._get_distributions_reports().get('distributions'),
+            'distributions_ok': self._get_distributions_reports().get('distributions_ok') + self._get_distributions_reports().get('distributions_replaced'),
+            'distributions_error': self._get_distributions_reports().get('distributions_error'),
             'distributions_percentage': self.distributions_percentage(),
         }
 
