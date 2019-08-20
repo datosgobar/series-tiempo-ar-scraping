@@ -1,7 +1,6 @@
 import logging
 import sys
 import os
-import pdb
 import traceback
 import yaml
 import smtplib
@@ -71,9 +70,6 @@ class ETLObject:
         self.parent = parent
         self.context = context
         self.childs = []
-        # self.init_metadata()
-        # self.init_context()
-        # self.init_childs()
 
     def init_object(self):
         self.init_metadata()
@@ -117,7 +113,13 @@ class Distribution(ETLObject):
             'distribution_traceback': None,
         }
 
+        self.init_object()
         self.processor = self.init_processor()
+
+    def init_object(self):
+        self.init_metadata()
+        self.init_context()
+        self.init_childs()
 
     def init_metadata(self):
         self.metadata = self.context['metadata'].get_distribution(
@@ -247,6 +249,13 @@ class Dataset(ETLObject):
             'dataset_status': 'OK',
         }
 
+        self.init_object()
+
+    def init_object(self):
+        self.init_metadata()
+        self.init_context()
+        self.init_childs()
+
     def init_metadata(self):
 
         try:
@@ -308,8 +317,14 @@ class Catalog(ETLObject):
         logging.info(f'=== Catálogo: {identifier} ===')
 
         super().__init__(identifier, parent, context)
+        self.init_object()
 
-    def init_metadata(self, write=True):
+    def init_object(self):
+        self.init_metadata()
+        self.init_context()
+        self.init_childs()
+
+    def init_metadata(self, write=False):
         logging.info('Descarga y lectura del catálogo')
         self.fetch_metadata_file()
         self.context['metadata'] = self.get_metadata_from_file()
@@ -732,7 +747,7 @@ class Catalog(ETLObject):
             self.context['catalog_distributions_reports'],
             columns=columns,
         )
-        pdb.set_trace()
+
         return distributions_report
 
     def download_with_config(self, url, file_path, config):
@@ -789,42 +804,13 @@ class Catalog(ETLObject):
 
         return config
 
-    def catalog_distributions_reports(self):
-        distributions = self.context["catalog_distributions_reports"]
-        return distributions
-
-    def distributions_ok(self):
-        distributions_ok = len([r for r in self.catalog_distributions_reports() if r.get("distribution_status") == "OK"])
-        return distributions_ok
-
-    def distributions_error(self):
-        distributions_error = len([r for r in self.catalog_distributions_reports() if r.get("distribution_status") == "ERROR"])
-        return distributions_error
-
-    def distributions_replaced(self):
-        distributions_replaced = len([r for r in self.catalog_distributions_reports() if r.get("distribution_status") == "OK (Replaced)"])
-        return distributions_replaced
-
-    def distributions_percentage(self):
-        distributions_percentage = float((self.distributions_ok() + self.distributions_replaced()) / len(self.catalog_distributions_reports()))
-        return distributions_percentage
-
-    def catalog_datasets_reports(self):
-        datasets = self.context["catalog_datasets_reports"]
-        return datasets
-
-    def _get_datasets_reports_indicator(self, status=None):
-        return len(
-            [report for report in self.context["catalog_datasets_reports"]
-             if report.get('dataset_status') == status]
-            if status
-            else self.context["catalog_datasets_reports"]
-        )
-
     def _get_datasets_reports(self, status=None):
         datasets_reports = {}
         datasets = self.context['catalog_datasets_reports']
-        datasets_reports['datasets'] = len(self.context['catalog_datasets_reports'])
+        datasets_reports['datasets'] = len([r for r in self.context['catalog_datasets_reports']
+                                            if r.get('dataset_status') == status]
+                                           if status
+                                           else self.context['catalog_datasets_reports'])
 
         datasets_reports['datasets_ok'] = len([r for r in datasets if r.get('dataset_status') == 'OK'])
         datasets_reports['datasets_error'] = len([r for r in datasets if r.get('dataset_status') == 'ERROR'])
@@ -833,7 +819,7 @@ class Catalog(ETLObject):
     def _get_distributions_reports(self):
         distributions_reports = {}
         distributions = self.context["catalog_distributions_reports"]
-        distributions_reports['distributions'] = len(self.context['catalog_distributions_reports'])
+        distributions_reports['distributions'] = len(distributions)
 
         distributions_reports['distributions_ok'] = len(
             [r for r in distributions if r.get("distribution_status") == "OK"]
@@ -844,19 +830,32 @@ class Catalog(ETLObject):
         distributions_reports['distributions_replaced'] = len(
             [r for r in distributions if r.get("distribution_status") == "OK (Replaced)"]
         )
-        pdb.set_trace()
+
         return distributions_reports
+
+    def _get_distributions_percentage(self):
+        distributions_ok = self._get_distributions_reports().get('distributions_ok')
+        distributions_replaced = self._get_distributions_reports().get('distributions_replaced')
+        distributions = self._get_distributions_reports().get('distributions')
+        try:
+            distributions_percentage = float(
+                (distributions_ok + distributions_replaced) / distributions
+            )
+        except:
+            distributions_percentage = 0
+
+        return distributions_percentage
 
     def get_indicators(self):
         self._get_distributions_reports()
         indicators = {
             'datasets': len(self.childs),
-            'datasets_ok': len([r for r in self.catalog_datasets_reports() if r.get("dataset_status") == "OK"]),
-            'datasets_error': len([r for r in self.catalog_datasets_reports() if r.get("dataset_status") == "ERROR"]),
+            'datasets_ok': self._get_datasets_reports().get('datasets_ok'),
+            'datasets_error': self._get_datasets_reports().get('datasets_error'),
             'distributions': self._get_distributions_reports().get('distributions'),
             'distributions_ok': self._get_distributions_reports().get('distributions_ok') + self._get_distributions_reports().get('distributions_replaced'),
             'distributions_error': self._get_distributions_reports().get('distributions_error'),
-            'distributions_percentage': self.distributions_percentage(),
+            'distributions_percentage': self._get_distributions_percentage(),
         }
 
         return indicators
@@ -894,12 +893,15 @@ class ETL(ETLObject):
         logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         self.replace = kwargs.get('replace')
         super().__init__(identifier, parent, context)
-
+        self.init_object()
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
         for child in self.childs:
             child.generate_validation_message(child.context['catalog_is_valid'])
             child.send_group_emails(group_name='extraccion')
+
+    def init_object(self):
+        self.init_childs()
 
     def init_childs(self):
 
