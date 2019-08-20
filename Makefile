@@ -1,7 +1,7 @@
 # Makefile para Ubuntu 16.04
 SHELL = bash
-SERIES_TIEMPO_PIP ?= pip3
-SERIES_TIEMPO_PYTHON ?= python3
+SERIES_TIEMPO_PYTHON=/home/series/series-tiempo-ar-scraping/series-tiempo-ar-scraping/bin/python
+SERIES_TIEMPO_PIP=/home/series/series-tiempo-ar-scraping/series-tiempo-ar-scraping/bin/pip
 VIRTUALENV = series-tiempo-ar-scraping
 CONDA_ENV = series-tiempo-ar-scraping
 
@@ -43,10 +43,10 @@ copy_nginx_conf:
 
 # FILE SERVER
 start_python_server:
-	cd data/output && $(SERIES_TIEMPO_PYTHON) -m SimpleHTTPServer 8080
+	cd data/output && source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) -m SimpleHTTPServer 8080
 
 setup_virtualenv: create_dir
-	test -d $(VIRTUALENV)/bin/activate || $(SERIES_TIEMPO_PYTHON) -m venv $(VIRTUALENV)
+	test -d $(VIRTUALENV)/bin/activate || source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) -m venv $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
 		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
@@ -90,29 +90,29 @@ install_cron: config/cron_jobs
 
 # EXTRACTION
 extract_catalogs:
-	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py
 
 send_extraction_report:
-	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
 
 generate_urls:
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py scraping
-	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py distribution
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py scraping
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py distribution
 
 download_sources:
-	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py scraping
-	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py distribution
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py scraping
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py distribution
 
 # TRANSFORMATION
 scrape_datasets:
-	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py replace
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py replace
 
 send_transformation_report:
-	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
+	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
 
 list_catalogs:
 	@cd scripts && \
-		$(SERIES_TIEMPO_PYTHON) -c "import helpers; helpers.list_catalogs()"
+		source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) -c "import helpers; helpers.list_catalogs()"
 
 # CLEAN
 clean:
@@ -124,7 +124,7 @@ clean:
 
 custom_steps:
 	if [[ -f config/custom_steps.sh ]]; then \
-		bash config/custom_steps.sh `$(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
+		bash config/custom_steps.sh `source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
 	fi;
 
 test:
