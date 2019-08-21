@@ -314,7 +314,7 @@ class Catalog(ETLObject):
         super().__init__(identifier, parent, context)
         super().init_object()
 
-    def init_metadata(self, write=False):
+    def init_metadata(self, write=True):
         logging.info('Descarga y lectura del catálogo')
         self.fetch_metadata_file()
         self.context['metadata'] = self.get_metadata_from_file()
