@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+factory-boy = "*"
 
 [packages]
 series-tiempo-ar = "*"
@@ -13,8 +14,6 @@ pyyaml = "*"
 xlseries = "*"
 series-tiempo-ar-scraping = {editable = true,path = "."}
 requests = {extras = ["security"],version = "*"}
-boy = "*"
-factory-boy = "*"
 
 [requires]
 python_version = "3.6.2"
