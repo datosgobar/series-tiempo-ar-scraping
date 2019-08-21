@@ -72,7 +72,6 @@ class ETLObject:
         self.context = context
         self.childs = []
 
-    def init_object(self):
         self.init_metadata()
         self.init_context()
         self.init_childs()
@@ -113,7 +112,7 @@ class Distribution(ETLObject):
             'distribution_note': None,
             'distribution_traceback': None,
         }
-        super().init_object()
+
         self.processor = self.init_processor()
 
     def init_metadata(self):
@@ -243,7 +242,6 @@ class Dataset(ETLObject):
             'dataset_identifier': self.identifier,
             'dataset_status': 'OK',
         }
-        super().init_object()
 
     def init_metadata(self):
 
@@ -305,7 +303,6 @@ class Catalog(ETLObject):
         logging.info(f'=== Catálogo: {identifier} ===')
 
         super().__init__(identifier, parent, context)
-        super().init_object()
 
     def init_metadata(self, write=True):
         logging.info('Descarga y lectura del catálogo')
@@ -862,7 +859,6 @@ class ETL(ETLObject):
         self.replace = kwargs.get('replace')
         super().__init__(identifier, parent, context)
         self.print_log_separator(logging, "Envío de mails para: extracción")
-        super().init_object()
 
         for child in self.childs:
             child.generate_validation_message(child.context['catalog_is_valid'])

@@ -2,7 +2,7 @@ from mock import patch
 import pytest
 
 from series_tiempo_ar_scraping.base import Catalog, ETLObject
-from series_tiempo_ar_scraping.factories import CatalogFactory
+from tests.factories import CatalogFactory
 
 
 @pytest.mark.parametrize(
@@ -17,12 +17,15 @@ from series_tiempo_ar_scraping.factories import CatalogFactory
 def test_get_catalog_dataset_reports_indicator(catalog_datasets_reports, expected):
     with patch.object(
         ETLObject,
-        'init_object',
-        return_value={}
+        '__init__',
+        lambda _, identifier, parent, context: None
     ):
-        catalog = CatalogFactory()
 
-        catalog.context['catalog_datasets_reports'] = catalog_datasets_reports
+        catalog = CatalogFactory()
+        catalog.context = {
+            'catalog_datasets_reports': catalog_datasets_reports,
+        }
+
         assert catalog._get_dataset_reports_indicator(status='OK') == expected
 
 
@@ -38,12 +41,15 @@ def test_get_catalog_dataset_reports_indicator(catalog_datasets_reports, expecte
 def test_get_catalog_distribution_reports_indicator(catalog_distributions_reports, expected):
     with patch.object(
         ETLObject,
-        'init_object',
-        return_value={}
+        '__init__',
+        lambda _, identifier, parent, context: None
     ):
-        catalog = CatalogFactory()
 
-        catalog.context['catalog_distributions_reports'] = catalog_distributions_reports
+        catalog = CatalogFactory()
+        catalog.context = {
+            'catalog_distributions_reports': catalog_distributions_reports,
+        }
+
         assert catalog._get_distribution_reports_indicator(status='OK') == expected
 
 
@@ -60,10 +66,13 @@ def test_get_catalog_distribution_reports_indicator(catalog_distributions_report
 def test_get_catalog_distributions_percentage_indicator(catalog_distributions_reports, expected):
     with patch.object(
         ETLObject,
-        'init_object',
-        return_value={}
+        '__init__',
+        lambda _, identifier, parent, context: None
     ):
-        catalog = CatalogFactory()
 
-        catalog.context['catalog_distributions_reports'] = catalog_distributions_reports
+        catalog = CatalogFactory()
+        catalog.context = {
+            'catalog_distributions_reports': catalog_distributions_reports,
+        }
+
         assert catalog._get_distributions_percentage_indicator() == expected

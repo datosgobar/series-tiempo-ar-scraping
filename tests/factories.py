@@ -14,4 +14,4 @@ class CatalogFactory(factory.Factory):
 
     identifier = factory.Faker('uuid4')
     parent = None
-    context = {}
+    context = factory.Dict({})
