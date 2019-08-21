@@ -60,7 +60,6 @@ def test_get_catalog_distribution_reports_indicator(catalog_distributions_report
         ([{'identifier': 'foo', 'distribution_status': 'OK'}, {'identifier': 'bar', 'distribution_status': 'OK'}], 100.0),
         ([{'identifier': 'foo', 'distribution_status': 'OK'}, {'identifier': 'bar', 'distribution_status': 'ERROR'}], 50.0),
         ([{'identifier': 'foo', 'distribution_status': 'ERROR'}, {'identifier': 'bar', 'distribution_status': 'ERROR'}], 0.0),
-        ([{'identifier': 'foo', 'distribution_status': 'OK (Replaced)'}, {'identifier': 'bar', 'distribution_status': 'ERROR'}], 50.0),
     ],
 )
 def test_get_catalog_distributions_percentage_indicator(catalog_distributions_reports, expected):
