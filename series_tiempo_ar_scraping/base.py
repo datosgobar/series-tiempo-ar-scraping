@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import pdb
 import traceback
 import yaml
 import smtplib
@@ -245,6 +246,7 @@ class Dataset(ETLObject):
         }
 
     def init_metadata(self):
+
         try:
             self.metadata = self.context[
                 'metadata'].get_dataset(self.identifier)
@@ -318,6 +320,7 @@ class Catalog(ETLObject):
             self.write_metadata()
 
     def fetch_metadata_file(self):
+
         if self.extension in ['xlsx', 'json']:
             config = self.get_catalog_download_config(
                 self.identifier
@@ -612,7 +615,7 @@ class Catalog(ETLObject):
     def send_group_emails(self, group_name):
         try:
             with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
-                cfg = yaml.load(ymlfile)
+                cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
         except (IOError, yaml.parser.ParserError):
             logging.warning(
                 "No se pudo cargar archivo de configuración 'config_email.yaml'.")
@@ -679,6 +682,7 @@ class Catalog(ETLObject):
 
     def _write_scraping_mail_texts(self, subject, message):
         # genera directorio de reportes para el catálogo
+
         reportes_catalog_dir = os.path.join(REPORTES_DIR, self.identifier)
         self.ensure_dir_exists(reportes_catalog_dir)
 
@@ -764,7 +768,7 @@ class Catalog(ETLObject):
     def get_catalog_download_config(self, identifier):
         try:
             with open(CONFIG_DOWNLOAD_PATH) as config_download_file:
-                configs = yaml.load(config_download_file)
+                configs = yaml.load(config_download_file, Loader=yaml.FullLoader)
         except (IOError, yaml.parser.ParserError):
             logging.info("No se pudo cargar el archivo de configuración \
                 'config_downloads.yaml'.")
@@ -788,24 +792,62 @@ class Catalog(ETLObject):
 
         return config
 
+    def _get_dataset_reports_indicator(self, status=None):
+        return len(
+            [r for r in self.context['catalog_datasets_reports'] if r.get('dataset_status') == status]
+            if status
+            else self.context['catalog_datasets_reports']
+        )
+
+    def _get_distribution_reports_indicator(self, status=None):
+        return len(
+            [r for r in self.context['catalog_distributions_reports'] if r.get('distribution_status') == status]
+            if status
+            else self.context['catalog_distributions_reports']
+        )
+
+    def _get_distributions_percentage_indicator(self):
+        distributions_ok = self._get_distribution_reports_indicator(status='OK')
+        distributions_replaced = self._get_distribution_reports_indicator(status='OK (Replaced)')
+        distributions = self._get_distribution_reports_indicator()
+        try:
+            distributions_percentage = round(float(
+                (distributions_ok + distributions_replaced
+                ) / distributions) * 100, 3)
+        except:
+            distributions_percentage = 0
+
+        return distributions_percentage
+
+    def get_indicators(self):
+        indicators = {
+            'datasets': len(self.childs),
+            'datasets_ok': self._get_dataset_reports_indicator(status='OK'),
+            'datasets_error': self._get_dataset_reports_indicator(status='ERROR'),
+            'distributions': self._get_distribution_reports_indicator(),
+            'distributions_ok': self._get_distribution_reports_indicator(status='OK') + self._get_distribution_reports_indicator(status='OK (Replaced)'),
+            'distributions_error': self._get_distribution_reports_indicator(status='ERROR'),
+            'distributions_percentage': self._get_distributions_percentage_indicator(),
+        }
+
+        return indicators
+
     def indicators(self):
-        distributions = self.context["catalog_distributions_reports"]
-        distributions_ok = len([r for r in distributions if r.get("distribution_status") == "OK"])
-        distributions_error = len([r for r in distributions if r.get("distribution_status") == "ERROR"])
-        distributions_replaced = len([r for r in distributions if r.get("distribution_status") == "OK (Replaced)"])
-        distributions_percentage = float((distributions_ok + distributions_replaced) / len(distributions))
+        _indicators = self.get_indicators()
+
         indicators = [
             '',
             f'Indicadores',
-            f'Datasets: {len(self.childs)}',
-            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}',
-            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}',
-            f'Distribuciones: {len(distributions)}',
-            f'Distribuciones (ERROR): {distributions_error}',
-            f'Distribuciones (OK): {distributions_ok + distributions_replaced}',
-            f'Distribuciones (OK %): {round(distributions_percentage * 100, 3)}',
+            f'Datasets: {_indicators.get("datasets")}',
+            f'Datasets (ERROR): {_indicators.get("datasets_error")}',
+            f'Datasets (OK): {_indicators.get("datasets_ok")}',
+            f'Distribuciones: {_indicators.get("distributions")}',
+            f'Distribuciones (ERROR): {_indicators.get("distributions_error")}',
+            f'Distribuciones (OK): {_indicators.get("distributions_ok")}',
+            f'Distribuciones (OK %): {_indicators.get("distributions_percentage")}',
             ''
         ]
+
         return indicators
 
     def indicators_message(self):
@@ -824,7 +866,6 @@ class ETL(ETLObject):
         logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         self.replace = kwargs.get('replace')
         super().__init__(identifier, parent, context)
-
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
         for child in self.childs:
