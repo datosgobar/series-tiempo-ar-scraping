@@ -1,7 +1,6 @@
 import logging
 import sys
 import os
-import pdb
 import traceback
 import yaml
 import smtplib
@@ -165,7 +164,7 @@ class Distribution(ETLObject):
                     self._df = self.processor.run()
                     self.validate()
                     if self.csv_exists() and self.context['replace']:
-                        self.report['distribution_status'] = 'OK (Replaced)'
+                        self.report['distribution_note'] = 'Replaced'
                     self.write_distribution_dataframe()
 
                 except Exception as e:
@@ -226,9 +225,10 @@ class Distribution(ETLObject):
             logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_note']}")
             logging.debug(self.report['distribution_traceback'])
         elif self.report['distribution_status'] == 'OK':
-            logging.info(f'Distribución {self.identifier}: OK')
-        else:
-            logging.info(f"Distribución {self.identifier}: OK (Replaced)")
+            if self.report['distribution_note'] == 'Replaced':
+                logging.info(f"Distribución {self.identifier}: OK (Replaced)")
+            else:
+                logging.info(f'Distribución {self.identifier}: OK')
         self.context['catalog_distributions_reports'].append(self.report)
         logging.debug(self.report)
         # TODO: unset distribution_output_path in context
@@ -727,7 +727,7 @@ class Catalog(ETLObject):
             'dataset_identifier',
             'distribution_identifier',
             'distribution_status',
-            'distribution_notes',
+            'distribution_note',
         )
 
         distributions_report = pd.DataFrame(
@@ -808,11 +808,10 @@ class Catalog(ETLObject):
 
     def _get_distributions_percentage_indicator(self):
         distributions_ok = self._get_distribution_reports_indicator(status='OK')
-        distributions_replaced = self._get_distribution_reports_indicator(status='OK (Replaced)')
         distributions = self._get_distribution_reports_indicator()
         try:
             distributions_percentage = round(float(
-                (distributions_ok + distributions_replaced
+                (distributions_ok
                 ) / distributions) * 100, 3)
         except:
             distributions_percentage = 0
@@ -825,7 +824,7 @@ class Catalog(ETLObject):
             'datasets_ok': self._get_dataset_reports_indicator(status='OK'),
             'datasets_error': self._get_dataset_reports_indicator(status='ERROR'),
             'distributions': self._get_distribution_reports_indicator(),
-            'distributions_ok': self._get_distribution_reports_indicator(status='OK') + self._get_distribution_reports_indicator(status='OK (Replaced)'),
+            'distributions_ok': self._get_distribution_reports_indicator(status='OK'),
             'distributions_error': self._get_distribution_reports_indicator(status='ERROR'),
             'distributions_percentage': self._get_distributions_percentage_indicator(),
         }
