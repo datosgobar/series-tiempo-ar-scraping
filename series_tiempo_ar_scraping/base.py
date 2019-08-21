@@ -724,7 +724,7 @@ class Catalog(ETLObject):
             'dataset_identifier',
             'distribution_identifier',
             'distribution_status',
-            'distribution_note',
+            'distribution_notes',
         )
 
         distributions_report = pd.DataFrame(
