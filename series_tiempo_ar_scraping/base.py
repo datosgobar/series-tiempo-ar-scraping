@@ -114,14 +114,7 @@ class Distribution(ETLObject):
             'distribution_traceback': None,
         }
         super().init_object()
-        # self.init_object()
-        # self.processor = self.init_processor()
-
-    # def init_object(self):
-    #     super().init_object()
-
-    #     self.init_processor()
-
+        self.processor = self.init_processor()
 
     def init_metadata(self):
         self.metadata = self.context['metadata'].get_distribution(
