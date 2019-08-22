@@ -183,16 +183,7 @@ class Distribution(ETLObject):
     def _get_new_downloadURL(self):
         return os.path.join(
             self.config['host'],
-            'data',
-            'output',
-            'catalog',
-            self.parent.parent.identifier,
-            'dataset',
-            self.parent.identifier,
-            'distribution',
-            self.identifier,
-            'download',
-            self.metadata.get('fileName', self.identifier)
+            self.context['distribution_output_path'].split('/', 5)[5]
         )
 
     def init_context_paths(self):
