@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import pdb
 import traceback
 import yaml
 import smtplib
@@ -101,7 +102,8 @@ class ETLObject:
 
 class Distribution(ETLObject):
 
-    def __init__(self, identifier, parent, context):
+    def __init__(self, identifier, parent, context, **kwargs):
+        self.config = kwargs.get('config')
         super().__init__(identifier, parent, context)
         self.processor = None
 
@@ -166,6 +168,7 @@ class Distribution(ETLObject):
                     if self.csv_exists() and self.context['replace']:
                         self.report['distribution_note'] = 'Replaced'
                     self.write_distribution_dataframe()
+                    self.context['metadata'].get_distribution(self.identifier)['downloadURL'] = self._get_new_downloadURL()
 
                 except Exception as e:
                     self.report['distribution_status'] = 'ERROR'
@@ -176,6 +179,21 @@ class Distribution(ETLObject):
 
     def pre_process(self):
         self.init_context_paths()
+
+    def _get_new_downloadURL(self):
+        return os.path.join(
+            self.config['host'],
+            'data',
+            'output',
+            'catalog',
+            self.parent.parent.identifier,
+            'dataset',
+            self.parent.identifier,
+            'distribution',
+            self.identifier,
+            'download',
+            self.metadata.get('fileName', self.identifier)
+        )
 
     def init_context_paths(self):
         self.context['distribution_output_path'] = \
@@ -237,7 +255,8 @@ class Distribution(ETLObject):
 
 class Dataset(ETLObject):
 
-    def __init__(self, identifier, parent, context):
+    def __init__(self, identifier, parent, context, **kwargs):
+        self.config = kwargs.get('config')
         super().__init__(identifier, parent, context)
 
         self.report = {
@@ -266,6 +285,7 @@ class Dataset(ETLObject):
                 identifier=identifier,
                 parent=self,
                 context=self.context,
+                config=self.config
             )
             for identifier in dataset_distributions_identifiers
         ]
@@ -303,6 +323,7 @@ class Catalog(ETLObject):
         self.url = kwargs.get('url')
         self.extension = kwargs.get('extension')
         self.replace = kwargs.get('replace')
+        self.config = kwargs.get('config')
         logging.info(f'=== Catálogo: {identifier} ===')
 
         super().__init__(identifier, parent, context)
@@ -429,7 +450,8 @@ class Catalog(ETLObject):
             Dataset(
                 identifier=dataset_identifier,
                 parent=self,
-                context=self.context
+                context=self.context,
+                config=self.config
             )
             for dataset_identifier in datasets_identifiers
         ]
@@ -522,7 +544,7 @@ class Catalog(ETLObject):
         return os.path.join(
             CATALOGS_DIR_INPUT,
             self.identifier,
-            f'data.{self.extension}'
+            'data.json'
         )
 
     def get_json_metadata_path(self):
@@ -547,6 +569,8 @@ class Catalog(ETLObject):
 
     def post_process(self):
         # TODO: unset dataset_path
+        logging.info(f'Escribiendo una nueva versión de {self.get_json_metadata_path()}')
+        self.write_json_metadata()
 
         datasets_report = self.get_datasets_report()
 
@@ -860,10 +884,11 @@ class Catalog(ETLObject):
 class ETL(ETLObject):
 
     def __init__(self, identifier, parent=None, context=None, **kwargs):
-        self.catalogs_from_config = kwargs.get('config')
+        self.catalogs_from_config = kwargs.get('index')
         self.print_log_separator(logging, "Extracción de catálogos")
         logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         self.replace = kwargs.get('replace')
+        self.config = kwargs.get('config')
         super().__init__(identifier, parent, context)
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
@@ -883,6 +908,7 @@ class ETL(ETLObject):
                     'formato'
                 ),
                 replace=self.replace,
+                config=self.config
             )
             for catalog in self.catalogs_from_config.keys()
         ]

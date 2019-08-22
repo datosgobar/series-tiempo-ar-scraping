@@ -58,7 +58,8 @@ def cli(config, log_level, replace):
 
 
 def main(config, log_level, replace):
-    config = read_config(file_path=config)
+    index = read_config(file_path=config)
+    config = read_config(file_path=os.path.join(CONFIG_DIR, 'config_general.yaml'))
     get_logger(log_level)
 
     etl = ETL(
@@ -67,8 +68,9 @@ def main(config, log_level, replace):
         context=None,
         url=None,
         extension=None,
-        config=config,
-        replace=replace
+        index=index,
+        replace=replace,
+        config=config
     )
 
     etl.run()
