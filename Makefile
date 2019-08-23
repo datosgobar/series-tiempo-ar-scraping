@@ -124,7 +124,7 @@ clean:
 
 custom_steps:
 	if [[ -f config/custom_steps.sh ]]; then \
-		bash config/custom_steps.sh  $(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
+		bash config/custom_steps.sh  $(SERIES_TIEMPO_PYTHON) scripts/paths.py; \
 	fi;
 
 test:
