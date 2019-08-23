@@ -43,10 +43,10 @@ copy_nginx_conf:
 
 # FILE SERVER
 start_python_server:
-	cd data/output && source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) -m SimpleHTTPServer 8080
+	cd data/output && $(SERIES_TIEMPO_PYTHON) -m SimpleHTTPServer 8080
 
 setup_virtualenv: create_dir
-	test -d $(VIRTUALENV)/bin/activate || source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) -m venv $(VIRTUALENV)
+	test -d $(VIRTUALENV)/bin/activate || $(SERIES_TIEMPO_PYTHON) -m venv $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
 		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
@@ -90,29 +90,29 @@ install_cron: config/cron_jobs
 
 # EXTRACTION
 extract_catalogs:
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py
+ $(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py
 
 send_extraction_report:
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
+ $(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
 
 generate_urls:
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py scraping
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py distribution
+ $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py scraping
+ $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py distribution
 
 download_sources:
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py scraping
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py distribution
+ $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py scraping
+ $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py distribution
 
 # TRANSFORMATION
 scrape_datasets:
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py replace
+ $(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py replace
 
 send_transformation_report:
-	source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
+ $(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
 
 list_catalogs:
 	@cd scripts && \
-		source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) -c "import helpers; helpers.list_catalogs()"
+	 $(SERIES_TIEMPO_PYTHON) -c "import helpers; helpers.list_catalogs()"
 
 # CLEAN
 clean:
@@ -124,7 +124,7 @@ clean:
 
 custom_steps:
 	if [[ -f config/custom_steps.sh ]]; then \
-		bash config/custom_steps.sh `source activate $(CONDA_ENV) && $(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
+		bash config/custom_steps.sh  $(SERIES_TIEMPO_PYTHON) scripts/paths.py`; \
 	fi;
 
 test:
