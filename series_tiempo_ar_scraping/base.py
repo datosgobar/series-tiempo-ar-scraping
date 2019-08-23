@@ -535,7 +535,7 @@ class Catalog(ETLObject):
         return os.path.join(
             CATALOGS_DIR_INPUT,
             self.identifier,
-            'data.json'
+            f'data.{self.extension}'
         )
 
     def get_json_metadata_path(self):
