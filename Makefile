@@ -90,25 +90,25 @@ install_cron: config/cron_jobs
 
 # EXTRACTION
 extract_catalogs:
- $(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py
+	$(SERIES_TIEMPO_PYTHON) scripts/extract_catalogs.py
 
 send_extraction_report:
- $(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
+ 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py extraccion
 
 generate_urls:
- $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py scraping
- $(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py distribution
+ 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py scraping
+ 	$(SERIES_TIEMPO_PYTHON) scripts/generate_urls.py distribution
 
 download_sources:
- $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py scraping
- $(SERIES_TIEMPO_PYTHON) scripts/download_urls.py distribution
+ 	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py scraping
+ 	$(SERIES_TIEMPO_PYTHON) scripts/download_urls.py distribution
 
 # TRANSFORMATION
 scrape_datasets:
- $(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py replace
+ 	$(SERIES_TIEMPO_PYTHON) scripts/scrape_datasets.py replace
 
 send_transformation_report:
- $(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
+ 	$(SERIES_TIEMPO_PYTHON) scripts/send_email.py scraping
 
 list_catalogs:
 	@cd scripts && \
