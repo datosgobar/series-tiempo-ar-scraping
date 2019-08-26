@@ -1,8 +1,8 @@
 from mock import patch
 import pytest
 
-from series_tiempo_ar_scraping.base import Catalog, ETLObject
-from tests.factories import CatalogFactory
+from series_tiempo_ar_scraping.base import Catalog, ETLObject, Distribution
+from tests.factories import CatalogFactory, DistributionFactory
 
 
 @pytest.mark.parametrize(
@@ -16,10 +16,10 @@ from tests.factories import CatalogFactory
 )
 def test_get_catalog_dataset_reports_indicator(catalog_datasets_reports, expected):
     with patch.object(
-        ETLObject,
-        '__init__',
-        lambda _, identifier, parent, context: None
-    ):
+            ETLObject,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
 
         catalog = CatalogFactory()
         catalog.context = {
@@ -40,10 +40,10 @@ def test_get_catalog_dataset_reports_indicator(catalog_datasets_reports, expecte
 )
 def test_get_catalog_distribution_reports_indicator(catalog_distributions_reports, expected):
     with patch.object(
-        ETLObject,
-        '__init__',
-        lambda _, identifier, parent, context: None
-    ):
+            ETLObject,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
 
         catalog = CatalogFactory()
         catalog.context = {
@@ -64,10 +64,10 @@ def test_get_catalog_distribution_reports_indicator(catalog_distributions_report
 )
 def test_get_catalog_distributions_percentage_indicator(catalog_distributions_reports, expected):
     with patch.object(
-        ETLObject,
-        '__init__',
-        lambda _, identifier, parent, context: None
-    ):
+            ETLObject,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
 
         catalog = CatalogFactory()
         catalog.context = {
@@ -75,3 +75,25 @@ def test_get_catalog_distributions_percentage_indicator(catalog_distributions_re
         }
 
         assert catalog._get_distributions_percentage_indicator() == expected
+
+
+@pytest.mark.parametrize(
+    'config, distribution_output_path, expected',
+    [
+        ({'host': 'example_host'}, '/home/alan/Code/series-tiempo-ar-scraping/data/output/catalog/identifier', "example_host/data/output/catalog/identifier"),
+        ({'host': 'example_host'}, '/tmp/data/output/catalog/identifier', ""),
+    ],
+)
+def test_get_new_downloadURL(config, distribution_output_path, expected):
+    with patch.object(
+            Distribution,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
+        distribution = DistributionFactory()
+        distribution.config = config
+        distribution.context = {
+            'distribution_output_path': distribution_output_path
+        }
+
+        assert distribution._get_new_downloadURL() == expected
