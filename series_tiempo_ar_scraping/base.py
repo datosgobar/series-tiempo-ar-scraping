@@ -181,6 +181,16 @@ class Distribution(ETLObject):
         self.init_context_paths()
 
     def _get_new_downloadURL(self):
+        """
+        En ésta función de la clase Distribution se verifica
+        si ROOT_DIR se encuentra dentro del output path de la distribución.
+
+        Returns:
+            En caso de que sea True, reemplaza el ROOT_DIR por el contenido que haya
+            en host dentro de config_general.yaml, y lo devuelve.
+            Si es False, devuelve un string vacío.
+
+        """
         if ROOT_DIR in self.context['distribution_output_path']:
             downloadURL = self.context['distribution_output_path'].replace(
                 ROOT_DIR, self.config['host']
