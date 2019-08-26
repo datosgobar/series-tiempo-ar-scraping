@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import re
 import traceback
 import yaml
 import smtplib
@@ -29,7 +30,7 @@ from series_tiempo_ar_scraping.processors import (
 
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATOS_DIR = os.path.join(ROOT_DIR, "data")
+DATOS_DIR = os.path.join("data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
@@ -180,10 +181,13 @@ class Distribution(ETLObject):
         self.init_context_paths()
 
     def _get_new_downloadURL(self):
-        return os.path.join(
-            self.config['host'],
-            self.context['distribution_output_path'].split('/', 5)[5]
-        )
+        if ROOT_DIR in self.context['distribution_output_path']:
+            downloadURL = self.context['distribution_output_path'].replace(
+                ROOT_DIR, self.config['host']
+            )
+        else:
+            downloadURL = ''
+        return downloadURL
 
     def init_context_paths(self):
         self.context['distribution_output_path'] = \
@@ -365,6 +369,7 @@ class Catalog(ETLObject):
 
         self.ensure_dir_exists(
             os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
             ),
@@ -373,6 +378,7 @@ class Catalog(ETLObject):
         self.context['metadata'].validate_catalog(
             only_errors=True, fmt="list",
             export_path=os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["errors_report"])
@@ -381,6 +387,7 @@ class Catalog(ETLObject):
         self.context['metadata'].generate_datasets_report(
             self.context['metadata'], harvest='valid',
             export_path=os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["datasets_report"])
@@ -507,6 +514,7 @@ class Catalog(ETLObject):
 
     def get_txt_path(self, txt_name):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR_INPUT,
             self.identifier,
             'sources',
@@ -515,6 +523,7 @@ class Catalog(ETLObject):
 
     def get_excel_path(self, excel_name):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR_INPUT,
             self.identifier,
             'sources',
@@ -532,6 +541,7 @@ class Catalog(ETLObject):
 
     def get_original_metadata_path(self):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR_INPUT,
             self.identifier,
             f'data.{self.extension}'
@@ -539,6 +549,7 @@ class Catalog(ETLObject):
 
     def get_json_metadata_path(self):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
             f'data.{self.extension}'
@@ -546,6 +557,7 @@ class Catalog(ETLObject):
 
     def get_xlsx_metadata_path(self):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
             'catalog.xlsx'
@@ -553,6 +565,7 @@ class Catalog(ETLObject):
 
     def get_output_path(self):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
         )
@@ -568,6 +581,7 @@ class Catalog(ETLObject):
 
         datasets_report.to_excel(
             os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 'reporte-datasets.xlsx'
@@ -578,6 +592,7 @@ class Catalog(ETLObject):
 
         distributions_report.to_excel(
             os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 'reporte-distributions.xlsx'
@@ -680,11 +695,11 @@ class Catalog(ETLObject):
             self.send_email(mailer_config, subject, message, recipients, files)
 
     def report_file_path(self, catalog_id, filename):
-        return os.path.join(REPORTES_DIR, catalog_id, filename)
+        return os.path.join(ROOT_DIR, REPORTES_DIR, catalog_id, filename)
 
     def _write_extraction_mail_texts(self, subject, message):
         # genera directorio de reportes para el catálogo
-        reportes_catalog_dir = os.path.join(REPORTES_DIR, self.identifier)
+        reportes_catalog_dir = os.path.join(ROOT_DIR, REPORTES_DIR, self.identifier)
         self.ensure_dir_exists(reportes_catalog_dir)
 
         with open(os.path.join(reportes_catalog_dir,
@@ -697,7 +712,7 @@ class Catalog(ETLObject):
     def _write_scraping_mail_texts(self, subject, message):
         # genera directorio de reportes para el catálogo
 
-        reportes_catalog_dir = os.path.join(REPORTES_DIR, self.identifier)
+        reportes_catalog_dir = os.path.join(ROOT_DIR, REPORTES_DIR, self.identifier)
         self.ensure_dir_exists(reportes_catalog_dir)
 
         with open(os.path.join(reportes_catalog_dir,
