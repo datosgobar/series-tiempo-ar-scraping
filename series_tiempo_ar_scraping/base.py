@@ -738,7 +738,7 @@ class Catalog(ETLObject):
 
     def generate_validation_message(self, is_valid_catalog):
         # asunto del mail
-        subject = f"Validación de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+        subject = self.get_validation_mail_subject()
 
         # mensaje del mail
         if is_valid_catalog:
@@ -749,9 +749,25 @@ class Catalog(ETLObject):
         self._write_extraction_mail_texts(subject, message)
 
     def generate_scraping_message(self):
-        subject = f"Scraping de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+        subject = self.get_scraping_mail_subject()
         message = self.indicators_message()
         self._write_scraping_mail_texts(subject, message)
+
+    def get_validation_mail_subject(self):
+        return self._get_mail_subject(stage='Validación')
+
+    def get_scraping_mail_subject(self):
+        return self._get_mail_subject(stage='Scraping')
+
+    def _get_mail_subject(self, stage):
+        server_environment = self.config.get('environment')
+
+        subject = f"{stage} de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+
+        if 'prod' not in server_environment:
+            subject = f"[{server_environment}] {subject}"
+
+        return subject
 
     def get_datasets_report(self):
         columns = (
