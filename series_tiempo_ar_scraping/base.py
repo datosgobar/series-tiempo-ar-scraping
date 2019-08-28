@@ -552,15 +552,21 @@ class Catalog(ETLObject):
             ROOT_DIR,
             CATALOGS_DIR_INPUT,
             self.identifier,
-            f'data.{self.extension}'
+            f'catalog.{self.extension}'
         )
 
     def get_json_metadata_path(self):
+        '''
+        Devuelve el path absoluto donde se guarda la metadata en formato json.
+
+        Returns:
+            String.
+        '''
         return os.path.join(
             ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
-            f'data.{self.extension}'
+            'data.json'
         )
 
     def get_xlsx_metadata_path(self):
