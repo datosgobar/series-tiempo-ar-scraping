@@ -42,8 +42,6 @@ SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 SEPARATOR_WIDTH = 60
 
 EXTRACTION_MAIL_CONFIG = {
-    "subject": "extraction_mail_subject.txt",
-    "message": "extraction_mail_message.txt",
     "attachments": {
         "errors_report": "reporte-catalogo-errores.xlsx",
         "datasets_report": "reporte-datasets-completos.xlsx"
@@ -51,8 +49,6 @@ EXTRACTION_MAIL_CONFIG = {
 }
 
 SCRAPING_MAIL_CONFIG = {
-    "subject": "scraping_mail_subject.txt",
-    "message": "scraping_mail_message.txt",
     "attachments": {
         "datasets_report": "reporte-datasets.xlsx",
         "distributions_report": "reporte-distributions.xlsx"
@@ -677,26 +673,12 @@ class Catalog(ETLObject):
             logging.warning("Salteando catalogo...")
 
         else:
-            # asunto y mensaje
-            subject_file_path = self.report_file_path(
-                self.identifier, mail_files["subject"])
-            if os.path.isfile(subject_file_path):
-                with open(subject_file_path, "r") as f:
-                    subject = f.read()
+            if group_name == 'extraccion':
+                subject = self.generate_validation_subject()
+                message = self.generate_validation_message(self.context['catalog_is_valid'])
             else:
-                logging.warning(
-                    f"Catálogo {self.identifier}: no hay archivo de asunto")
-                logging.warning("Salteando catalogo...")
-
-            message_file_path = self.report_file_path(
-                self.identifier, mail_files["message"])
-            if os.path.isfile(message_file_path):
-                with open(message_file_path, "r") as f:
-                    message = f.read()
-            else:
-                logging.warning(
-                    f"Catálogo {self.identifier}: no hay archivo de mensaje")
-                logging.warning("Salteando catalogo...")
+                subject = self.generate_scraping_subject()
+                message = self.generate_scraping_message()
 
             # destinatarios y adjuntos
             recipients = catalogs_configs[self.identifier]["destinatarios"]
@@ -711,47 +693,23 @@ class Catalog(ETLObject):
     def report_file_path(self, catalog_id, filename):
         return os.path.join(ROOT_DIR, REPORTES_DIR, catalog_id, filename)
 
-    def _write_extraction_mail_texts(self, subject, message):
-        # genera directorio de reportes para el catálogo
-        reportes_catalog_dir = os.path.join(ROOT_DIR, REPORTES_DIR, self.identifier)
-        self.ensure_dir_exists(reportes_catalog_dir)
-
-        with open(os.path.join(reportes_catalog_dir,
-                               EXTRACTION_MAIL_CONFIG["subject"]), "w") as f:
-            f.write(subject)
-        with open(os.path.join(reportes_catalog_dir,
-                               EXTRACTION_MAIL_CONFIG["message"]), "w") as f:
-            f.write(message)
-
-    def _write_scraping_mail_texts(self, subject, message):
-        # genera directorio de reportes para el catálogo
-
-        reportes_catalog_dir = os.path.join(ROOT_DIR, REPORTES_DIR, self.identifier)
-        self.ensure_dir_exists(reportes_catalog_dir)
-
-        with open(os.path.join(reportes_catalog_dir,
-                               SCRAPING_MAIL_CONFIG["subject"]), "w") as f:
-            f.write(subject)
-        with open(os.path.join(reportes_catalog_dir,
-                               SCRAPING_MAIL_CONFIG["message"]), "w") as f:
-            f.write(message)
+    def generate_validation_subject(self):
+        subject = self.get_validation_mail_subject()
+        return subject
 
     def generate_validation_message(self, is_valid_catalog):
-        # asunto del mail
-        subject = self.get_validation_mail_subject()
-
-        # mensaje del mail
+        message = f"El catálogo '{self.identifier}' tiene errores."
         if is_valid_catalog:
             message = f"El catálogo '{self.identifier}' no tiene errores."
-        else:
-            message = f"El catálogo '{self.identifier}' tiene errores."
+        return message
 
-        self._write_extraction_mail_texts(subject, message)
+    def generate_scraping_subject(self):
+        subject = self.get_scraping_mail_subject()
+        return subject
 
     def generate_scraping_message(self):
-        subject = self.get_scraping_mail_subject()
         message = self.indicators_message()
-        self._write_scraping_mail_texts(subject, message)
+        return message
 
     def get_validation_mail_subject(self):
         return self._get_mail_subject(stage='Validación')
@@ -928,8 +886,6 @@ class ETL(ETLObject):
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
         for child in self.childs:
-            child.generate_validation_message(
-                child.context['catalog_is_valid'])
             child.send_group_emails(group_name='extraccion')
 
     def init_childs(self):
@@ -967,7 +923,6 @@ class ETL(ETLObject):
         self.print_log_separator(logging, "Envío de mails para: scraping")
 
         for child in self.childs:
-            child.generate_scraping_message()
             child.send_group_emails(group_name='scraping')
 
     def run(self):
