@@ -651,15 +651,9 @@ class Catalog(ETLObject):
         except Exception as e:
             logging.info(f'Error al enviar mail: {repr(e)}')
 
-    def send_group_emails(self, group_name):
-        if group_name == 'extraccion':
-            self.send_validation_group_email()
-        else:
-            self.send_scraping_group_email()
-
     def send_validation_group_email(self):
         mailer_config = self.context['config_mail']['mailer']
-        catalog_config = self.get_catalog_email_config()
+        catalog_config = self.get_validation_catalog_email_config()
         if not catalog_config or self.identifier not in catalog_config:
             logging.warning(
                 f"No hay configuración de mails para catálogo {self.identifier}."
@@ -674,9 +668,15 @@ class Catalog(ETLObject):
             logging.info(f"Enviando reporte al grupo {self.identifier}...")
             self.send_email(mailer_config, subject, message, recipients, files)
 
-    def get_catalog_email_config(self):
+    def get_validation_catalog_email_config(self):
+        return self.get_catalog_email_config(stage='extraccion')
+
+    def get_scraping_catalog_email_config(self):
+        return self.get_catalog_email_config(stage='scraping')
+
+    def get_catalog_email_config(self, stage):
         try:
-            catalog_config = self.context['config_mail']['extraccion']
+            catalog_config = self.context['config_mail'][stage]
         except (IOError, yaml.parser.ParserError):
             logging.warning(
                 "No se pudo cargar archivo de configuración 'config_email.yaml'.")
@@ -686,7 +686,7 @@ class Catalog(ETLObject):
 
     def send_scraping_group_email(self):
         mailer_config = self.context['config_mail']['mailer']
-        catalog_config = self.get_catalog_email_config()
+        catalog_config = self.get_scraping_catalog_email_config()
         if not catalog_config or self.identifier not in catalog_config:
             logging.warning(
                 f"No hay configuración de mails para catálogo {self.identifier}."
@@ -702,15 +702,13 @@ class Catalog(ETLObject):
             self.send_email(mailer_config, subject, message, recipients, files)
 
     def get_validation_email_files(self):
-        mail_files = GROUP_CONFIGS['extraccion']
-        files = []
-        for attachment in list(mail_files["attachments"].values()):
-            files.append(self.report_file_path(
-                self.identifier, attachment))
-        return files
+        return self.get_email_files(stage='extraccion')
 
     def get_scraping_email_files(self):
-        mail_files = GROUP_CONFIGS['scraping']
+        return self.get_email_files(stage='scraping')
+
+    def get_email_files(self, stage):
+        mail_files = GROUP_CONFIGS[stage]
         files = []
         for attachment in list(mail_files["attachments"].values()):
             files.append(self.report_file_path(
@@ -725,9 +723,12 @@ class Catalog(ETLObject):
         return subject
 
     def generate_validation_message(self, is_valid_catalog):
-        message = f"El catálogo '{self.identifier}' tiene errores."
-        if is_valid_catalog:
-            message = f"El catálogo '{self.identifier}' no tiene errores."
+        message = (
+            f"El catálogo '{self.identifier}' tiene errores."
+            if is_valid_catalog
+            else f"El catálogo '{self.identifier}' no tiene errores."
+        )
+
         return message
 
     def generate_scraping_subject(self):
@@ -913,7 +914,7 @@ class ETL(ETLObject):
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
         for child in self.childs:
-            child.send_group_emails(group_name='extraccion')
+            child.send_validation_group_email()
 
     def init_childs(self):
         self.childs = [
@@ -961,7 +962,7 @@ class ETL(ETLObject):
         self.print_log_separator(logging, "Envío de mails para: scraping")
 
         for child in self.childs:
-            child.send_group_emails(group_name='scraping')
+            child.send_scraping_group_email()
 
     def run(self):
         self.process()
