@@ -97,3 +97,90 @@ def test_get_new_downloadURL(config, distribution_output_path, expected):
         }
 
         assert distribution._get_new_downloadURL() == expected
+
+@pytest.mark.parametrize(
+    'root_dir, catalog_dir, expected',
+    [
+        ('/foo', 'bar/baz', "/foo/bar/baz/asdf/data.json"),
+        ('/foo/bar', 'baz', "/foo/bar/baz/asdf/data.json")
+    ],
+)
+def test_get_json_metadata_path(root_dir, catalog_dir, expected):
+
+    with patch.object(
+            ETLObject,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
+        with patch(
+                'series_tiempo_ar_scraping.base.ROOT_DIR', root_dir
+            ):
+            with patch(
+                    'series_tiempo_ar_scraping.base.CATALOGS_DIR', catalog_dir
+                ):
+                catalog = CatalogFactory()
+                catalog.identifier = 'asdf'
+
+                assert expected == catalog.get_json_metadata_path()
+
+
+@pytest.mark.parametrize(
+    'config, identifier, stage, expected',
+    [
+        ({'environment': 'prod'}, 'foo', 'Validación', "Validación de catálogo 'foo'"),
+        ({'environment': 'dev'}, 'foo', 'Validación', "[dev]"),
+        ({'environment': 'stg'}, 'foo', 'Validación', "[stg]")
+    ],
+)
+def test_get_mail_subject(config, identifier, stage, expected):
+
+    with patch.object(
+            ETLObject,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
+        catalog = CatalogFactory()
+        catalog.config = config
+        catalog.identifier = identifier
+
+        assert catalog._get_mail_subject(stage).startswith(expected)
+
+
+@pytest.mark.parametrize(
+    'config, identifier, expected',
+    [
+        ({'environment': 'prod'}, 'foo', "Validación")
+    ],
+)
+def test_get_validation_mail_subject(config, identifier, expected):
+
+    with patch.object(
+            ETLObject,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
+        catalog = CatalogFactory()
+        catalog.config = config
+        catalog.identifier = identifier
+
+        assert expected in catalog.get_validation_mail_subject()
+
+
+@pytest.mark.parametrize(
+    'config, identifier, expected',
+    [
+        ({'environment': 'prod'}, 'foo', "Scraping")
+    ],
+)
+def test_get_scraping_mail_subject(config, identifier, expected):
+
+    with patch.object(
+            ETLObject,
+            '__init__',
+            lambda _, identifier, parent, context: None
+        ):
+        catalog = CatalogFactory()
+        catalog.config = config
+        catalog.identifier = identifier
+
+        assert expected in catalog.get_scraping_mail_subject()

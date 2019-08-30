@@ -42,8 +42,6 @@ SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 SEPARATOR_WIDTH = 60
 
 EXTRACTION_MAIL_CONFIG = {
-    "subject": "extraction_mail_subject.txt",
-    "message": "extraction_mail_message.txt",
     "attachments": {
         "errors_report": "reporte-catalogo-errores.xlsx",
         "datasets_report": "reporte-datasets-completos.xlsx"
@@ -51,8 +49,6 @@ EXTRACTION_MAIL_CONFIG = {
 }
 
 SCRAPING_MAIL_CONFIG = {
-    "subject": "scraping_mail_subject.txt",
-    "message": "scraping_mail_message.txt",
     "attachments": {
         "datasets_report": "reporte-datasets.xlsx",
         "distributions_report": "reporte-distributions.xlsx"
@@ -552,15 +548,21 @@ class Catalog(ETLObject):
             ROOT_DIR,
             CATALOGS_DIR_INPUT,
             self.identifier,
-            f'data.{self.extension}'
+            f'catalog.{self.extension}'
         )
 
     def get_json_metadata_path(self):
+        '''
+        Devuelve el path absoluto donde se guarda la metadata en formato json.
+
+        Returns:
+            String.
+        '''
         return os.path.join(
             ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
-            f'data.{self.extension}'
+            'data.json'
         )
 
     def get_xlsx_metadata_path(self):
@@ -649,103 +651,109 @@ class Catalog(ETLObject):
         except Exception as e:
             logging.info(f'Error al enviar mail: {repr(e)}')
 
-    def send_group_emails(self, group_name):
-        try:
-            with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
-                cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-        except (IOError, yaml.parser.ParserError):
-            logging.warning(
-                "No se pudo cargar archivo de configuración 'config_email.yaml'.")
-            logging.warning("Salteando envío de mails...")
-            return
-
-        mailer_config = cfg["mailer"]
-        catalogs_configs = cfg[group_name]
-
-        mail_files = GROUP_CONFIGS[group_name]
-
-        if not catalogs_configs or self.identifier not in catalogs_configs:
+    def send_validation_group_email(self):
+        mailer_config = self.context['config_mail']['mailer']
+        catalog_config = self.get_validation_catalog_email_config()
+        if not catalog_config or self.identifier not in catalog_config:
             logging.warning(
                 f"No hay configuración de mails para catálogo {self.identifier}."
             )
             logging.warning("Salteando catalogo...")
-
         else:
-            # asunto y mensaje
-            subject_file_path = self.report_file_path(
-                self.identifier, mail_files["subject"])
-            if os.path.isfile(subject_file_path):
-                with open(subject_file_path, "r") as f:
-                    subject = f.read()
-            else:
-                logging.warning(
-                    f"Catálogo {self.identifier}: no hay archivo de asunto")
-                logging.warning("Salteando catalogo...")
-
-            message_file_path = self.report_file_path(
-                self.identifier, mail_files["message"])
-            if os.path.isfile(message_file_path):
-                with open(message_file_path, "r") as f:
-                    message = f.read()
-            else:
-                logging.warning(
-                    f"Catálogo {self.identifier}: no hay archivo de mensaje")
-                logging.warning("Salteando catalogo...")
-
-            # destinatarios y adjuntos
-            recipients = catalogs_configs[self.identifier]["destinatarios"]
-            files = []
-            for attachment in list(mail_files["attachments"].values()):
-                files.append(self.report_file_path(
-                    self.identifier, attachment))
+            subject = self.generate_validation_subject()
+            message = self.generate_validation_message(self.context['catalog_is_valid'])
+            recipients = catalog_config[self.identifier]['destinatarios']
+            files = self.get_validation_email_files()
 
             logging.info(f"Enviando reporte al grupo {self.identifier}...")
             self.send_email(mailer_config, subject, message, recipients, files)
 
+    def get_validation_catalog_email_config(self):
+        return self.get_catalog_email_config(stage='extraccion')
+
+    def get_scraping_catalog_email_config(self):
+        return self.get_catalog_email_config(stage='scraping')
+
+    def get_catalog_email_config(self, stage):
+        try:
+            catalog_config = self.context['config_mail'][stage]
+        except (IOError, yaml.parser.ParserError):
+            logging.warning(
+                "No se pudo cargar archivo de configuración 'config_email.yaml'.")
+            logging.warning("Salteando envío de mails...")
+
+        return catalog_config
+
+    def send_scraping_group_email(self):
+        mailer_config = self.context['config_mail']['mailer']
+        catalog_config = self.get_scraping_catalog_email_config()
+        if not catalog_config or self.identifier not in catalog_config:
+            logging.warning(
+                f"No hay configuración de mails para catálogo {self.identifier}."
+            )
+            logging.warning("Salteando catalogo...")
+        else:
+            subject = self.generate_scraping_subject()
+            message = self.generate_scraping_message()
+            recipients = catalog_config[self.identifier]['destinatarios']
+            files = self.get_scraping_email_files()
+
+            logging.info(f"Enviando reporte al grupo {self.identifier}...")
+            self.send_email(mailer_config, subject, message, recipients, files)
+
+    def get_validation_email_files(self):
+        return self.get_email_files(stage='extraccion')
+
+    def get_scraping_email_files(self):
+        return self.get_email_files(stage='scraping')
+
+    def get_email_files(self, stage):
+        mail_files = GROUP_CONFIGS[stage]
+        files = []
+        for attachment in list(mail_files["attachments"].values()):
+            files.append(self.report_file_path(
+                self.identifier, attachment))
+        return files
+
     def report_file_path(self, catalog_id, filename):
         return os.path.join(ROOT_DIR, REPORTES_DIR, catalog_id, filename)
 
-    def _write_extraction_mail_texts(self, subject, message):
-        # genera directorio de reportes para el catálogo
-        reportes_catalog_dir = os.path.join(ROOT_DIR, REPORTES_DIR, self.identifier)
-        self.ensure_dir_exists(reportes_catalog_dir)
-
-        with open(os.path.join(reportes_catalog_dir,
-                               EXTRACTION_MAIL_CONFIG["subject"]), "w") as f:
-            f.write(subject)
-        with open(os.path.join(reportes_catalog_dir,
-                               EXTRACTION_MAIL_CONFIG["message"]), "w") as f:
-            f.write(message)
-
-    def _write_scraping_mail_texts(self, subject, message):
-        # genera directorio de reportes para el catálogo
-
-        reportes_catalog_dir = os.path.join(ROOT_DIR, REPORTES_DIR, self.identifier)
-        self.ensure_dir_exists(reportes_catalog_dir)
-
-        with open(os.path.join(reportes_catalog_dir,
-                               SCRAPING_MAIL_CONFIG["subject"]), "w") as f:
-            f.write(subject)
-        with open(os.path.join(reportes_catalog_dir,
-                               SCRAPING_MAIL_CONFIG["message"]), "w") as f:
-            f.write(message)
+    def generate_validation_subject(self):
+        subject = self.get_validation_mail_subject()
+        return subject
 
     def generate_validation_message(self, is_valid_catalog):
-        # asunto del mail
-        subject = f"Validación de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+        message = (
+            f"El catálogo '{self.identifier}' tiene errores."
+            if is_valid_catalog
+            else f"El catálogo '{self.identifier}' no tiene errores."
+        )
 
-        # mensaje del mail
-        if is_valid_catalog:
-            message = f"El catálogo '{self.identifier}' no tiene errores."
-        else:
-            message = f"El catálogo '{self.identifier}' tiene errores."
+        return message
 
-        self._write_extraction_mail_texts(subject, message)
+    def generate_scraping_subject(self):
+        subject = self.get_scraping_mail_subject()
+        return subject
 
     def generate_scraping_message(self):
-        subject = f"Scraping de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
         message = self.indicators_message()
-        self._write_scraping_mail_texts(subject, message)
+        return message
+
+    def get_validation_mail_subject(self):
+        return self._get_mail_subject(stage='Validación')
+
+    def get_scraping_mail_subject(self):
+        return self._get_mail_subject(stage='Scraping')
+
+    def _get_mail_subject(self, stage):
+        server_environment = self.config.get('environment')
+
+        subject = f"{stage} de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+
+        if 'prod' not in server_environment:
+            subject = f"[{server_environment}] {subject}"
+
+        return subject
 
     def get_datasets_report(self):
         columns = (
@@ -906,9 +914,7 @@ class ETL(ETLObject):
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
         for child in self.childs:
-            child.generate_validation_message(
-                child.context['catalog_is_valid'])
-            child.send_group_emails(group_name='extraccion')
+            child.send_validation_group_email()
 
     def init_childs(self):
         self.childs = [
@@ -929,7 +935,18 @@ class ETL(ETLObject):
     def _get_default_context(self):
         return {
             'catalogs_dir': CATALOGS_DIR,
+            'config_mail': self.read_config_mail()
         }
+
+    def read_config_mail(self):
+        try:
+            with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
+                cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        except (IOError, yaml.parser.ParserError):
+            logging.warning(
+                "No se pudo cargar archivo de configuración 'config_email.yaml'.")
+            logging.warning("Salteando envío de mails...")
+        return cfg
 
     def process(self):
         self.pre_process()
@@ -945,8 +962,7 @@ class ETL(ETLObject):
         self.print_log_separator(logging, "Envío de mails para: scraping")
 
         for child in self.childs:
-            child.generate_scraping_message()
-            child.send_group_emails(group_name='scraping')
+            child.send_scraping_group_email()
 
     def run(self):
         self.process()
