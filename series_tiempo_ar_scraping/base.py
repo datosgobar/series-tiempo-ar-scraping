@@ -953,7 +953,7 @@ class ETL(ETLObject):
             logging.warning(
                 "No se pudo cargar archivo de configuración 'config_email.yaml'.")
             logging.warning("Salteando envío de mails...")
-            cfg = {}
+            cfg = None
         return cfg
 
     def process(self):
