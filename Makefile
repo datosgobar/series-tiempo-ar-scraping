@@ -1,5 +1,5 @@
 # Makefile para Ubuntu 16.04
-SHELL = bash
+SHELL = /bin/bash
 SERIES_TIEMPO_PIP ?= pip
 SERIES_TIEMPO_PYTHON ?= python
 VIRTUALENV = series-tiempo-ar-scraping
