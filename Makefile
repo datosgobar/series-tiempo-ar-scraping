@@ -50,5 +50,5 @@ setup_virtualenv: create_dir
 		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
 update_environment: create_dir
-	git pull origin master
+	git pull
 	$(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
