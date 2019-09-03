@@ -4,10 +4,12 @@ SERIES_TIEMPO_PIP ?= pip
 SERIES_TIEMPO_PYTHON ?= python
 VIRTUALENV = series-tiempo-ar-scraping
 CONDA_ENV = series-tiempo-ar-scraping
+ACTIVATE = /home/series/miniconda3/bin/activate
 
 .PHONY: all clean create_dir install_anaconda run setup_anaconda
 
 all: run
+all_local: run_local
 
 clean:
 	rm -rf data/input/
@@ -38,11 +40,14 @@ install_anaconda:
 	export PATH=$$PATH:/home/series/miniconda3/bin
 
 run:
+	source $(ACTIVATE) $(CONDA_ENV); etl
+
+run_local:
 	source activate $(CONDA_ENV); etl
 
 setup_anaconda:
 	conda create -n $(CONDA_ENV) python=3.6 --no-default-packages
-	source activate $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -e .
+	source $(ACTIVATE) $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -e .
 
 setup_virtualenv: create_dir
 	test -d $(VIRTUALENV)/bin/activate || $(SERIES_TIEMPO_PYTHON) -m venv $(VIRTUALENV)
@@ -50,5 +55,9 @@ setup_virtualenv: create_dir
 		$(SERIES_TIEMPO_PIP) install -r requirements.txt
 
 update_environment: create_dir
+	git pull
+	source $(ACTIVATE) $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
+
+update_environment_local: create_dir
 	git pull
 	source activate $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
