@@ -1,7 +1,7 @@
 # Makefile para Ubuntu 16.04
 SHELL = /bin/bash
-SERIES_TIEMPO_PYTHON=/home/series/series-tiempo-ar-scraping/series-tiempo-ar-scraping/bin/python
-SERIES_TIEMPO_PIP=/home/series/series-tiempo-ar-scraping/series-tiempo-ar-scraping/bin/pip
+SERIES_TIEMPO_PIP ?= pip
+SERIES_TIEMPO_PYTHON ?= python
 VIRTUALENV = series-tiempo-ar-scraping
 CONDA_ENV = series-tiempo-ar-scraping
 
