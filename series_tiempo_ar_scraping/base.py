@@ -1,6 +1,6 @@
 import logging
-import sys
 import os
+import traceback
 import yaml
 import smtplib
 import arrow
@@ -10,23 +10,29 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 
 import pandas as pd
+from xlseries import XlSeries
 
 import pydatajson.readers as readers
 import pydatajson.writers as writers
 
 from series_tiempo_ar import TimeSeriesDataJson
 from series_tiempo_ar.validations import validate_distribution
+from series_tiempo_ar.readers.readers import get_ts_distributions_by_method
 
 from series_tiempo_ar_scraping import download
-from series_tiempo_ar_scraping.processors import DirectDownloadProcessor
+from series_tiempo_ar_scraping.processors import (
+    DirectDownloadProcessor,
+    TXTProcessor,
+    SpreadsheetProcessor
+)
 
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATOS_DIR = os.path.join(ROOT_DIR, "data")
+DATOS_DIR = os.path.join("data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
-CATALOGS_INDEX_PATH = os.path.join(CONFIG_DIR, "index_sample.yaml")
+CONFIG_DOWNLOAD_PATH = os.path.join(CONFIG_DIR, "config_downloads.yaml")
 CONFIG_EMAIL_PATH = os.path.join(CONFIG_DIR, "config_email.yaml")
 REPORTES_DIR = os.path.join(DATOS_DIR, "reports")
 SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
@@ -34,8 +40,6 @@ SCHEMAS_DIR = os.path.join(CONFIG_DIR, "schemas")
 SEPARATOR_WIDTH = 60
 
 EXTRACTION_MAIL_CONFIG = {
-    "subject": "extraction_mail_subject.txt",
-    "message": "extraction_mail_message.txt",
     "attachments": {
         "errors_report": "reporte-catalogo-errores.xlsx",
         "datasets_report": "reporte-datasets-completos.xlsx"
@@ -43,8 +47,6 @@ EXTRACTION_MAIL_CONFIG = {
 }
 
 SCRAPING_MAIL_CONFIG = {
-    "subject": "scraping_mail_subject.txt",
-    "message": "scraping_mail_message.txt",
     "attachments": {
         "datasets_report": "reporte-datasets.xlsx",
         "distributions_report": "reporte-distributions.xlsx"
@@ -55,6 +57,7 @@ GROUP_CONFIGS = {
     "extraccion": EXTRACTION_MAIL_CONFIG,
     "scraping": SCRAPING_MAIL_CONFIG
 }
+
 
 class ETLObject:
 
@@ -90,9 +93,11 @@ class ETLObject:
         l.info("|" + " " * (SEPARATOR_WIDTH - 2) + "|")
         l.info("=" * SEPARATOR_WIDTH)
 
+
 class Distribution(ETLObject):
 
-    def __init__(self, identifier, parent, context):
+    def __init__(self, identifier, parent, context, **kwargs):
+        self.config = kwargs.get('config')
         super().__init__(identifier, parent, context)
         self.processor = None
 
@@ -100,7 +105,8 @@ class Distribution(ETLObject):
             'dataset_identifier': self.parent.identifier,
             'distribution_identifier': self.identifier,
             'distribution_status': 'OK',
-            'distribution_notes': None,
+            'distribution_note': None,
+            'distribution_traceback': None,
         }
 
         self.processor = self.init_processor()
@@ -116,29 +122,75 @@ class Distribution(ETLObject):
         if self.metadata.get('downloadURL'):
             processor = DirectDownloadProcessor(
                 distribution_metadata=self.metadata,
+                catalog_metadata=self.parent.parent.metadata
             )
 
+        if not self.metadata.get("downloadURL"):
+            path_or_url = self.metadata.get("scrapingFileURL")
+            extension = path_or_url.split(".")[-1].lower()
+
+            if extension == 'txt':
+                processor = TXTProcessor(
+                    distribution_metadata=self.metadata,
+                    catalog_metadata=self.parent.parent.metadata,
+                )
+
+        if not self.metadata.get("downloadURL"):
+            path_or_url = self.metadata.get("scrapingFileURL")
+            extension = path_or_url.split(".")[-1].lower()
+
+            if extension in ['xls', 'xlsx']:
+                processor = SpreadsheetProcessor(
+                    distribution_metadata=self.metadata,
+                    catalog_metadata=self.parent.parent.metadata,
+                    catalog_context=self.parent.parent.context,
+                )
+
         return processor
+
+    def csv_exists(self):
+        return os.path.exists(self.context['distribution_output_path'])
 
     def process(self):
         self.pre_process()
 
         if self.processor:
-            try:
+            if not self.csv_exists() or self.context['replace']:
+                try:
+                    self._df = self.processor.run()
+                    self.validate()
+                    if self.csv_exists() and self.context['replace']:
+                        self.report['distribution_note'] = 'Replaced'
+                    self.write_distribution_dataframe()
+                    self.context['metadata'].get_distribution(
+                        self.identifier)['downloadURL'] = self._get_new_downloadURL()
 
-                self._df_is_valid, self._df = self.processor.run()
-                self.validate()
-                self.write_distribution_dataframe()
-
-            except Exception as e:
-
-                self.report['distribution_status'] = 'ERROR'
-                self.report['distribution_notes'] = repr(e)
-
+                except Exception as e:
+                    self.report['distribution_status'] = 'ERROR'
+                    self.report['distribution_note'] = repr(e)
+                    self.report[
+                        'distribution_traceback'] = traceback.format_exc()
         self.post_process()
 
     def pre_process(self):
         self.init_context_paths()
+
+    def _get_new_downloadURL(self):
+        """
+        Devuelve una url de descarga para la distribución.
+
+        Returns:
+            String. En caso de que la verificación sea True, reemplaza el ROOT_DIR por el contenido que haya
+                    en el host dentro de la configuración, y el resto del path se mantiene.
+                    Si es False, devuelve un string vacío.
+        """
+        if ROOT_DIR in self.context['distribution_output_path']:
+            downloadURL = self.context['distribution_output_path'].replace(
+                ROOT_DIR, self.config['host']
+            )
+        else:
+            downloadURL = ''
+        return downloadURL
 
     def init_context_paths(self):
         self.context['distribution_output_path'] = \
@@ -155,27 +207,43 @@ class Distribution(ETLObject):
 
     def validate(self):
         logging.debug('Valida la distribución')
-        validate_distribution(
-            df=self._df,
-            catalog=self.context['metadata'],
-            _dataset_meta=None,
-            distrib_meta=self.metadata,
-        )
+
+        try:
+            validate_distribution(
+                df=self._df,
+                catalog=self.parent.parent.metadata,
+                _dataset_meta=self.parent.metadata,
+                distrib_meta=self.metadata,
+            )
+            logging.debug(f'Distribución {self.identifier} válida')
+        except Exception as ex:
+            logging.debug(f'Distribución {self.identifier} inválida')
+            raise
 
     def write_distribution_dataframe(self):
         logging.debug('Escribe el dataframe de la distribución')
         self.ensure_dir_exists(
             os.path.dirname(self.context['distribution_output_path'])
         )
-
-        self._df.to_csv(
-            self.context['distribution_output_path'],
-            encoding="utf-8",
-            index_label="indice_tiempo"
-        )
-        logging.debug(f'CSV de Distribución {self.identifier} escrito')
+        try:
+            self._df.to_csv(
+                self.context['distribution_output_path'],
+                encoding="utf-8",
+                index_label="indice_tiempo"
+            )
+            logging.debug(f'CSV de Distribución {self.identifier} escrito')
+        except Exception as e:
+            logging.info(f'ERROR {repr(e)}')
 
     def post_process(self):
+        if self.report['distribution_status'] == 'ERROR':
+            logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_note']}")
+            logging.debug(self.report['distribution_traceback'])
+        elif self.report['distribution_status'] == 'OK':
+            if self.report['distribution_note'] == 'Replaced':
+                logging.info(f"Distribución {self.identifier}: OK (Replaced)")
+            else:
+                logging.info(f'Distribución {self.identifier}: OK')
         self.context['catalog_distributions_reports'].append(self.report)
         logging.debug(self.report)
         # TODO: unset distribution_output_path in context
@@ -184,7 +252,8 @@ class Distribution(ETLObject):
 
 class Dataset(ETLObject):
 
-    def __init__(self, identifier, parent, context):
+    def __init__(self, identifier, parent, context, **kwargs):
+        self.config = kwargs.get('config')
         super().__init__(identifier, parent, context)
 
         self.report = {
@@ -193,8 +262,10 @@ class Dataset(ETLObject):
         }
 
     def init_metadata(self):
+
         try:
-            self.metadata = self.context['metadata'].get_dataset(self.identifier)
+            self.metadata = self.context[
+                'metadata'].get_dataset(self.identifier)
         except Exception as e:
             self.report['dataset_status'] = 'ERROR: metadata'
 
@@ -211,6 +282,7 @@ class Dataset(ETLObject):
                 identifier=identifier,
                 parent=self,
                 context=self.context,
+                config=self.config
             )
             for identifier in dataset_distributions_identifiers
         ]
@@ -247,6 +319,8 @@ class Catalog(ETLObject):
     def __init__(self, identifier, parent, context, **kwargs):
         self.url = kwargs.get('url')
         self.extension = kwargs.get('extension')
+        self.replace = kwargs.get('replace')
+        self.config = kwargs.get('config')
         logging.info(f'=== Catálogo: {identifier} ===')
 
         super().__init__(identifier, parent, context)
@@ -254,16 +328,19 @@ class Catalog(ETLObject):
     def init_metadata(self, write=True):
         logging.info('Descarga y lectura del catálogo')
         self.fetch_metadata_file()
-        self.context['metadata'] = self.get_metadata_from_file()
 
-        self.context['catalog_is_valid'] = self.validate_metadata()
-        self.context['metadata'] = self.filter_metadata()
-        self.metadata = self.context['metadata']
+        self.context['catalog'][self.identifier] = {}
+        self.context['catalog'][self.identifier]['metadata'] = self.get_metadata_from_file()
+
+        self.context['catalog'][self.identifier]['catalog_is_valid'] = self.validate_metadata()
+        self.context['catalog'][self.identifier]['metadata'] = self.filter_metadata()
+        self.metadata = self.context['catalog'][self.identifier]['metadata']
 
         if write:
             self.write_metadata()
 
     def fetch_metadata_file(self):
+
         if self.extension in ['xlsx', 'json']:
             config = self.get_catalog_download_config(
                 self.identifier
@@ -297,46 +374,52 @@ class Catalog(ETLObject):
 
         self.ensure_dir_exists(
             os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
             ),
         )
 
-        self.context['metadata'].validate_catalog(
+        self.context['catalog'][self.identifier]['metadata'].validate_catalog(
             only_errors=True, fmt="list",
             export_path=os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["errors_report"])
         )
 
-        self.context['metadata'].generate_datasets_report(
-            self.context['metadata'], harvest='valid',
+        self.context['catalog'][self.identifier]['metadata'].generate_datasets_report(
+            self.context['catalog'][self.identifier]['metadata'], harvest='valid',
             export_path=os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 EXTRACTION_MAIL_CONFIG["attachments"]["datasets_report"])
         )
-        return self.context['metadata'].is_valid_catalog()
+
+        return self.context['catalog'][self.identifier]['metadata'].is_valid_catalog()
 
     def filter_metadata(self):
         logging.info('Filtra metadata')
         filtered_metadata = \
-            self.context['metadata'].generate_harvestable_catalogs(
-                self.context['metadata'],
+            self.context['catalog'][self.identifier]['metadata'].generate_harvestable_catalogs(
+                self.context['catalog'][self.identifier]['metadata'],
                 harvest='valid'
             )[0]
 
         return filtered_metadata
 
     def init_context(self):
-        self.context['catalog_time_series_distributions_identifiers'] = \
+        self.context['catalog'][self.identifier]['catalog_time_series_distributions_identifiers'] = \
             self.get_time_series_distributions_identifiers()
+        self.context['catalog'][self.identifier]['replace'] = self.replace
         logging.info(f'Datasets: {len(self.get_time_series_distributions_datasets_ids())}')
-        logging.info(f"Distribuciones: {len(self.context['catalog_time_series_distributions_identifiers'])}")
+        logging.info(f"Distribuciones: {len(self.context['catalog'][self.identifier]['catalog_time_series_distributions_identifiers'])}")
+        logging.info(f"Fields: {len(self.metadata.get_time_series())}")
         logging.info('')
-        self.context['catalog_datasets_reports'] = []
-        self.context['catalog_distributions_reports'] = []
+        self.context['catalog'][self.identifier]['catalog_datasets_reports'] = []
+        self.context['catalog'][self.identifier]['catalog_distributions_reports'] = []
 
     def get_time_series_distributions_identifiers(self):
         return [
@@ -369,7 +452,8 @@ class Catalog(ETLObject):
             Dataset(
                 identifier=dataset_identifier,
                 parent=self,
-                context=self.context
+                context=self.context['catalog'][self.identifier],
+                config=self.config
             )
             for dataset_identifier in datasets_identifiers
         ]
@@ -389,33 +473,103 @@ class Catalog(ETLObject):
         self.post_process()
 
     def pre_process(self):
+        logging.info(f'=== Catálogo: {self.identifier} ===')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "csv_file"))} distribuciones para descarga directa')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
+        logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "excel_file"))} distribuciones de archivo excel')
+
+        config = self.get_catalog_download_config(
+            self.identifier).get('catalog')
+
+        txt_list = set([
+            distribution['scrapingFileURL']
+            for distribution
+            in get_ts_distributions_by_method(self.metadata, "text_file")
+        ])
+
+        for txt_url in txt_list:
+            logging.info(f'Descargando {txt_url}')
+            self.download_with_config(
+                txt_url,
+                self.get_txt_path(txt_url.split('/')[-1]),
+                config=config,
+            )
+
+        excel_list = set([
+            distribution['scrapingFileURL']
+            for distribution
+            in get_ts_distributions_by_method(self.metadata, "excel_file")
+        ])
+
+        xl = {}
+
+        for excel_url in excel_list:
+            logging.info(f'Descargando {excel_url}')
+            self.download_with_config(
+                excel_url,
+                self.get_excel_path(excel_url.split('/')[-1]),
+                config=config,
+            )
+
+            xl[excel_url.split(
+                '/')[-1]] = XlSeries(self.get_excel_path(excel_url.split('/')[-1]))
+
+        self.context['catalog'][self.identifier]['xl'] = xl
+
         self.init_context_paths()
 
+    def get_txt_path(self, txt_name):
+        return os.path.join(
+            ROOT_DIR,
+            CATALOGS_DIR_INPUT,
+            self.identifier,
+            'sources',
+            txt_name
+        )
+
+    def get_excel_path(self, excel_name):
+        return os.path.join(
+            ROOT_DIR,
+            CATALOGS_DIR_INPUT,
+            self.identifier,
+            'sources',
+            excel_name
+        )
+
     def init_context_paths(self):
-        self.context['catalog_original_metadata_path'] = \
+        self.context['catalog'][self.identifier]['catalog_original_metadata_path'] = \
             self.get_original_metadata_path()
-        self.context['catalog_json_metadata_path'] = \
+        self.context['catalog'][self.identifier]['catalog_json_metadata_path'] = \
             self.get_json_metadata_path()
-        self.context['catalog_xlsx_metadata_path'] = \
+        self.context['catalog'][self.identifier]['catalog_xlsx_metadata_path'] = \
             self.get_xlsx_metadata_path()
-        self.context['catalog_output_path'] = self.get_output_path()
+        self.context['catalog'][self.identifier]['catalog_output_path'] = self.get_output_path()
 
     def get_original_metadata_path(self):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR_INPUT,
             self.identifier,
-            f'data.{self.extension}'
+            f'catalog.{self.extension}'
         )
 
     def get_json_metadata_path(self):
+        '''
+        Devuelve el path absoluto donde se guarda la metadata en formato json.
+
+        Returns:
+            String.
+        '''
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
-            f'data.{self.extension}'
+            'data.json'
         )
 
     def get_xlsx_metadata_path(self):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
             'catalog.xlsx'
@@ -423,12 +577,15 @@ class Catalog(ETLObject):
 
     def get_output_path(self):
         return os.path.join(
+            ROOT_DIR,
             CATALOGS_DIR,
             self.identifier,
         )
 
     def post_process(self):
         # TODO: unset dataset_path
+        logging.info(f'Escribiendo una nueva versión de {self.get_json_metadata_path()}')
+        self.write_json_metadata()
 
         datasets_report = self.get_datasets_report()
 
@@ -436,6 +593,7 @@ class Catalog(ETLObject):
 
         datasets_report.to_excel(
             os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 'reporte-datasets.xlsx'
@@ -446,6 +604,7 @@ class Catalog(ETLObject):
 
         distributions_report.to_excel(
             os.path.join(
+                ROOT_DIR,
                 REPORTES_DIR,
                 self.identifier,
                 'reporte-distributions.xlsx'
@@ -455,11 +614,6 @@ class Catalog(ETLObject):
         )
 
         self.log_indicators()
-
-        self.generate_validation_message(self.context['catalog_is_valid'])
-        self.send_group_emails(group_name='extraccion')
-        self.generate_scraping_message()
-        self.send_group_emails(group_name='scraping')
 
     def send_email(self, mailer_config, subject, message, recipients, files=None):
         msg = MIMEMultipart()
@@ -482,117 +636,145 @@ class Catalog(ETLObject):
                         msg.attach(part)
                 else:
                     logging.warning(f"El archivo {f} no existe")
+        try:
+            if mailer_config["ssl"]:
+                s = smtplib.SMTP_SSL(
+                    mailer_config["smtp_server"], mailer_config["port"])
+            else:
+                s = smtplib.SMTP(
+                    mailer_config["smtp_server"], mailer_config["port"])
+                s.ehlo()
+                s.starttls()
+                s.ehlo()
+            s.login(mailer_config["user"], mailer_config["password"])
+            s.sendmail(mailer_config["user"], recipients, msg.as_string())
+            s.close()
+            logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
+        except Exception as e:
+            logging.info(f'Error al enviar mail: {repr(e)}')
 
-        if mailer_config["ssl"]:
-            s = smtplib.SMTP_SSL(
-                mailer_config["smtp_server"], mailer_config["port"])
-        else:
-            s = smtplib.SMTP(mailer_config["smtp_server"], mailer_config["port"])
-            s.ehlo()
-            s.starttls()
-            s.ehlo()
-
-        s.login(mailer_config["user"], mailer_config["password"])
-        s.sendmail(mailer_config["user"], recipients, msg.as_string())
-        s.close()
-
-        logging.info(f"Se envió exitosamente un reporte a {', '.join(recipients)}")
-
-    def send_group_emails(self, group_name):
-        self.print_log_separator(logging, f"Envío de mails para: {group_name}")
+    def send_validation_group_email(self):
+        mailer_config = self.get_mailer()
+        catalog_config = self.get_validation_catalog_email_config()
 
         try:
-            with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
-                cfg = yaml.load(ymlfile)
+            if not catalog_config or self.identifier not in catalog_config:
+                logging.warning(
+                    f"No hay configuración de mails para catálogo {self.identifier}."
+                )
+                logging.warning("Salteando catálogo...")
+            else:
+                subject = self.generate_validation_subject()
+                message = self.generate_validation_message(self.context['catalog'][self.identifier]['catalog_is_valid'])
+
+                recipients = catalog_config.get(self.identifier, {}).get('destinatarios', [])
+                if recipients:
+                    files = self.get_validation_email_files()
+
+                    logging.info(f"Enviando reporte al grupo {self.identifier}...")
+                    self.send_email(mailer_config, subject, message, recipients, files)
+                else:
+                    logging.warning(f'No hay destinatarios para catálogo {self.identifier}')
+                    logging.warning('Salteando catálogo...')
+        except Exception:
+            raise
+
+    def get_mailer(self):
+        try:
+            mailer_config = self.context['config_mail']['mailer']
+            return mailer_config
+        except Exception:
+            logging.info(f'Error en la configuración para el envío de mails')
+
+    def get_validation_catalog_email_config(self):
+        return self.get_catalog_email_config(stage='extraccion')
+
+    def get_scraping_catalog_email_config(self):
+        return self.get_catalog_email_config(stage='scraping')
+
+    def get_catalog_email_config(self, stage):
+        try:
+            catalog_config = self.context.get('config_mail', {}).get(stage, {})
+            return catalog_config
         except (IOError, yaml.parser.ParserError):
             logging.warning(
                 "No se pudo cargar archivo de configuración 'config_email.yaml'.")
             logging.warning("Salteando envío de mails...")
-            return
 
-        mailer_config = cfg["mailer"]
-        catalogs_configs = cfg[group_name]
-
-        mail_files = GROUP_CONFIGS[group_name]
-
-        if not catalogs_configs or self.identifier not in catalogs_configs:
+    def send_scraping_group_email(self):
+        mailer_config = self.get_mailer()
+        catalog_config = self.get_scraping_catalog_email_config()
+        if not catalog_config or self.identifier not in catalog_config:
             logging.warning(
                 f"No hay configuración de mails para catálogo {self.identifier}."
             )
-            logging.warning("Salteando catalogo...")
-
-        # asunto y mensaje
-        subject_file_path = self.report_file_path(self.identifier, mail_files["subject"])
-        if os.path.isfile(subject_file_path):
-            with open(subject_file_path, "r") as f:
-                subject = f.read()
+            logging.warning("Salteando catálogo...")
         else:
-            logging.warning(
-                f"Catálogo {self.identifier}: no hay archivo de asunto")
-            logging.warning("Salteando catalogo...")
+            subject = self.generate_scraping_subject()
+            message = self.generate_scraping_message()
+            recipients = catalog_config.get(self.identifier, {}).get('destinatarios', [])
+            if recipients:
+                files = self.get_scraping_email_files()
 
-        message_file_path = self.report_file_path(self.identifier, mail_files["message"])
-        if os.path.isfile(message_file_path):
-            with open(message_file_path, "r") as f:
-                message = f.read()
-        else:
-            logging.warning(
-                f"Catálogo {self.identifier}: no hay archivo de mensaje")
-            logging.warning("Salteando catalogo...")
+                logging.info(f"Enviando reporte al grupo {self.identifier}...")
+                self.send_email(mailer_config, subject, message, recipients, files)
+            else:
+                logging.warning(f'No hay destinatarios para catálogo {self.identifier}')
+                logging.warning('Salteando catálogo...')
 
-        # destinatarios y adjuntos
-        recipients = catalogs_configs[self.identifier]["destinatarios"]
+    def get_validation_email_files(self):
+        return self.get_email_files(stage='extraccion')
+
+    def get_scraping_email_files(self):
+        return self.get_email_files(stage='scraping')
+
+    def get_email_files(self, stage):
+        mail_files = GROUP_CONFIGS[stage]
         files = []
         for attachment in list(mail_files["attachments"].values()):
-            files.append(self.report_file_path(self.identifier, attachment))
-
-        logging.info(f"Enviando reporte al grupo {self.identifier}...")
-        self.send_email(mailer_config, subject, message, recipients, files)
+            files.append(self.report_file_path(
+                self.identifier, attachment))
+        return files
 
     def report_file_path(self, catalog_id, filename):
-        return os.path.join(REPORTES_DIR, catalog_id, filename)
+        return os.path.join(ROOT_DIR, REPORTES_DIR, catalog_id, filename)
 
-    def _write_extraction_mail_texts(self, subject, message):
-        # genera directorio de reportes para el catálogo
-        reportes_catalog_dir = os.path.join(REPORTES_DIR, self.identifier)
-        self.ensure_dir_exists(reportes_catalog_dir)
-
-        with open(os.path.join(reportes_catalog_dir,
-                               EXTRACTION_MAIL_CONFIG["subject"]), "w") as f:
-            f.write(subject)
-        with open(os.path.join(reportes_catalog_dir,
-                               EXTRACTION_MAIL_CONFIG["message"]), "w") as f:
-            f.write(message)
-
-    def _write_scraping_mail_texts(self, subject, message):
-        # genera directorio de reportes para el catálogo
-        reportes_catalog_dir = os.path.join(REPORTES_DIR, self.identifier)
-        self.ensure_dir_exists(reportes_catalog_dir)
-
-        with open(os.path.join(reportes_catalog_dir,
-                               SCRAPING_MAIL_CONFIG["subject"]), "w") as f:
-            f.write(subject)
-        with open(os.path.join(reportes_catalog_dir,
-                               SCRAPING_MAIL_CONFIG["message"]), "w") as f:
-            f.write(message)
-
+    def generate_validation_subject(self):
+        subject = self.get_validation_mail_subject()
+        return subject
 
     def generate_validation_message(self, is_valid_catalog):
-        # asunto del mail
-        subject = f"Validación de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+        message = (
+            f"El catálogo '{self.identifier}' tiene errores."
+            if is_valid_catalog
+            else f"El catálogo '{self.identifier}' no tiene errores."
+        )
 
-        # mensaje del mail
-        if is_valid_catalog:
-            message = f"El catálogo '{self.identifier}' no tiene errores."
-        else:
-            message = f"El catálogo '{self.identifier}' tiene errores."
+        return message
 
-        self._write_extraction_mail_texts(subject, message)
+    def generate_scraping_subject(self):
+        subject = self.get_scraping_mail_subject()
+        return subject
 
     def generate_scraping_message(self):
-        subject = f"Scraping de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
-        message = self.indicators()
-        self._write_scraping_mail_texts(subject, message)
+        message = self.indicators_message()
+        return message
+
+    def get_validation_mail_subject(self):
+        return self._get_mail_subject(stage='Validación')
+
+    def get_scraping_mail_subject(self):
+        return self._get_mail_subject(stage='Scraping')
+
+    def _get_mail_subject(self, stage):
+        server_environment = self.config.get('environment')
+
+        subject = f"{stage} de catálogo '{self.identifier}': {arrow.now().format('DD/MM/YYYY HH:mm')}"
+
+        if 'prod' not in server_environment:
+            subject = f"[{server_environment}] {subject}"
+
+        return subject
 
     def get_datasets_report(self):
         columns = (
@@ -600,7 +782,7 @@ class Catalog(ETLObject):
         )
 
         datasets_report = pd.DataFrame(
-            self.context['catalog_datasets_reports'],
+            self.context['catalog'][self.identifier]['catalog_datasets_reports'],
             columns=columns,
         )
 
@@ -611,11 +793,11 @@ class Catalog(ETLObject):
             'dataset_identifier',
             'distribution_identifier',
             'distribution_status',
-            'distribution_notes',
+            'distribution_note',
         )
 
         distributions_report = pd.DataFrame(
-            self.context['catalog_distributions_reports'],
+            self.context['catalog'][self.identifier]['catalog_distributions_reports'],
             columns=columns,
         )
 
@@ -625,8 +807,11 @@ class Catalog(ETLObject):
         self.ensure_dir_exists(
             os.path.dirname(file_path),
         )
-
-        download.download_to_file(url, file_path, **config)
+        try:
+            download.download_to_file(url, file_path, **config)
+        except Exception as e:
+            logging.info('Error al descargar {}'.format(url))
+            logging.error(repr(e))
 
     def read_xlsx_catalog(self, catalog_xlsx_path):
         default_values = {}
@@ -647,9 +832,17 @@ class Catalog(ETLObject):
                             field["id"] = field["id"].replace(" ", "")
 
     def get_catalog_download_config(self, identifier):
-        configs = {
-            "defaults": {}
-        }
+        try:
+            with open(CONFIG_DOWNLOAD_PATH) as config_download_file:
+                configs = yaml.load(config_download_file,
+                                    Loader=yaml.FullLoader)
+        except (IOError, yaml.parser.ParserError):
+            logging.info("No se pudo cargar el archivo de configuración \
+                'config_downloads.yaml'.")
+            logging.info("Utilizando configuración default...")
+            configs = {
+                "defaults": {}
+            }
 
         default_config = configs["defaults"]
 
@@ -666,68 +859,152 @@ class Catalog(ETLObject):
 
         return config
 
-    def indicators(self):
-        return(
-            f'=== Catálogo: {self.identifier} === \n' +
-            f'Indicadores \n' +
-            f'Datasets: {len(self.childs)} ' +
-            f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])} \n' +
-            f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])} \n' +
-            f'Distribuciones: {len(self.context["catalog_distributions_reports"])} \n' +
-            f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])} \n' +
-            f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}'
+    def _get_dataset_reports_indicator(self, status=None):
+        return len(
+            [r for r in self.context['catalog'][self.identifier]['catalog_datasets_reports']
+                if r.get('dataset_status') == status]
+            if status
+            else self.context['catalog'][self.identifier]['catalog_datasets_reports']
         )
 
+    def _get_distribution_reports_indicator(self, status=None):
+        return len(
+            [r for r in self.context['catalog'][self.identifier]['catalog_distributions_reports']
+                if r.get('distribution_status') == status]
+            if status
+            else self.context['catalog'][self.identifier]['catalog_distributions_reports']
+        )
+
+    def _get_distributions_percentage_indicator(self):
+        distributions_ok = self._get_distribution_reports_indicator(
+            status='OK')
+        distributions = self._get_distribution_reports_indicator()
+        try:
+            distributions_percentage = round(float(
+                (distributions_ok
+                 ) / distributions) * 100, 3)
+        except:
+            distributions_percentage = 0
+
+        return distributions_percentage
+
+    def get_indicators(self):
+        indicators = {
+            'datasets': len(self.childs),
+            'datasets_ok': self._get_dataset_reports_indicator(status='OK'),
+            'datasets_error': self._get_dataset_reports_indicator(status='ERROR'),
+            'distributions': self._get_distribution_reports_indicator(),
+            'distributions_ok': self._get_distribution_reports_indicator(status='OK'),
+            'distributions_error': self._get_distribution_reports_indicator(status='ERROR'),
+            'distributions_percentage': self._get_distributions_percentage_indicator(),
+        }
+
+        return indicators
+
+    def indicators(self):
+        _indicators = self.get_indicators()
+
+        indicators = [
+            '',
+            f'Indicadores',
+            f'Datasets: {_indicators.get("datasets")}',
+            f'Datasets (ERROR): {_indicators.get("datasets_error")}',
+            f'Datasets (OK): {_indicators.get("datasets_ok")}',
+            f'Distribuciones: {_indicators.get("distributions")}',
+            f'Distribuciones (ERROR): {_indicators.get("distributions_error")}',
+            f'Distribuciones (OK): {_indicators.get("distributions_ok")}',
+            f'Distribuciones (OK %): {_indicators.get("distributions_percentage")}',
+            ''
+        ]
+
+        return indicators
+
+    def indicators_message(self):
+        return '\n'.join(self.indicators())
+
     def log_indicators(self):
-        logging.info(f'=== Catálogo: {self.identifier} ===')
-        logging.info(f'Indicadores')
-        logging.info('')
-        logging.info(f'Datasets: {len(self.childs)}')
-        logging.info(f'Datasets (ERROR): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "ERROR"])}')
-        logging.info(f'Datasets (OK): {len([r for r in self.context["catalog_datasets_reports"] if r.get("dataset_status") == "OK"])}')
-        logging.info(f'Distribuciones: {len(self.context["catalog_distributions_reports"])}')
-        logging.info(f'Distribuciones (ERROR): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "ERROR"])}')
-        logging.info(f'Distribuciones (OK): {len([r for r in self.context["catalog_distributions_reports"] if r.get("distribution_status") == "OK"])}')
-        logging.info('')
+        for indicator in self.indicators():
+            logging.info(indicator)
+
 
 class ETL(ETLObject):
 
     def __init__(self, identifier, parent=None, context=None, **kwargs):
-        self.catalogs_from_config = kwargs.get('config')
+        self.catalogs_from_config = kwargs.get('index')
+        self.print_log_separator(logging, "Extracción de catálogos")
+        logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
+        self.replace = kwargs.get('replace')
+        self.config = kwargs.get('config')
         super().__init__(identifier, parent, context)
+        self.print_log_separator(logging, "Envío de mails para: extracción")
+
+        if self.context['config_mail']:
+            for child in self.childs:
+                child.send_validation_group_email()
+        else:
+            logging.warning(
+                "No hay configuración para envío de mails.")
+            logging.warning("Salteando envío de mails...")
+
+    def init_context(self):
+        self.context = self._get_default_context()
+        self.context['config_mail'] = self.read_config_mail()
+        self.context['catalog'] = {}
 
     def init_childs(self):
-        self.print_log_separator(logging, "Scraping de catálogos")
-        logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         self.childs = [
             Catalog(
                 identifier=catalog,
-                context=self._get_default_context(),
+                context=self.context,
                 parent=self,
                 url=self.catalogs_from_config.get(catalog).get('url'),
                 extension=self.catalogs_from_config.get(catalog).get(
                     'formato'
                 ),
+                replace=self.replace,
+                config=self.config
             )
             for catalog in self.catalogs_from_config.keys()
         ]
 
     def _get_default_context(self):
         return {
-            'catalogs_dir': CATALOGS_DIR,
+            'catalogs_dir': CATALOGS_DIR
         }
+
+    def read_config_mail(self):
+        cfg = {}
+        try:
+            with open(CONFIG_EMAIL_PATH, 'r') as ymlfile:
+                cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        except (IOError, yaml.parser.ParserError):
+            logging.warning(
+                "No se pudo cargar el archivo de configuración 'config_email.yaml'.")
+            logging.warning("Salteando envío de mails...")
+            cfg = None
+
+        return cfg
 
     def process(self):
         self.pre_process()
+
         for child in self.childs:
             child.process()
         self.post_process()
 
     def pre_process(self):
-        pass
+        self.print_log_separator(logging, "Scraping de catálogos")
 
     def post_process(self):
-        pass
+        self.print_log_separator(logging, "Envío de mails para: scraping")
+
+        if self.context['config_mail']:
+            for child in self.childs:
+                child.send_scraping_group_email()
+        else:
+            logging.warning(
+                "No se pudo cargar archivo de configuración 'config_email.yaml'.")
+            logging.warning("Salteando envío de mails...")
 
     def run(self):
         self.process()

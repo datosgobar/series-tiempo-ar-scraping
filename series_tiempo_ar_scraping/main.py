@@ -40,21 +40,27 @@ def get_logger(log_level):
 @click.command()
 @click.option(
     '--config',
-    default=lambda: os.path.join(CONFIG_DIR, 'index.example.yaml'),
+    default=lambda: os.path.join(CONFIG_DIR, 'index.yaml'),
     type=click.Path(exists=True),
 )
 @click.option(
-    '--log_level',
+    '--log-level',
     default=lambda: read_config(os.path.join(CONFIG_DIR, 'config_general.yaml'))['logging'],
     type=str,
 )
-def cli(config, log_level):
-    main(config, log_level)
+@click.option(
+    '--replace',
+    default=True,
+    type=bool,
+)
+def cli(config, log_level, replace):
+    main(config, log_level.upper(), replace)
 
 
-def main(config, log_level):
-    config = read_config(file_path=config)
-    logger = get_logger(log_level)
+def main(config, log_level, replace):
+    index = read_config(file_path=config)
+    config = read_config(file_path=os.path.join(CONFIG_DIR, 'config_general.yaml'))
+    get_logger(log_level)
 
     etl = ETL(
         identifier=None,
@@ -62,10 +68,9 @@ def main(config, log_level):
         context=None,
         url=None,
         extension=None,
+        index=index,
+        replace=replace,
         config=config
     )
+
     etl.run()
-
-
-if __name__ == '__main__':
-    main()

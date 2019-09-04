@@ -73,3 +73,11 @@ Scraping BCRA.ipynb
 config_downloads.yaml
 index.yaml
 series-tiempo-ar-scraping/bin
+.python-version
+
+config/config_downloads.yaml
+config/config_email.yaml
+config/config_general.yaml
+config/index.yaml
+
+data

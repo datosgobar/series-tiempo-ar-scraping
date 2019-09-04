@@ -1,5 +1,6 @@
 import time
 import requests
+import pathlib
 
 DEFAULT_TRIES = 1
 RETRY_DELAY = 1
@@ -27,6 +28,10 @@ def download(url, tries=DEFAULT_TRIES, retry_delay=RETRY_DELAY,
         bytes: Contenido del archivo
 
     """
+    # TODO: remover cuando los métodos que llaman a "download()" le pasen
+    # la configuración de descarga correctamente.
+    verify = False
+
     for i in range(tries):
         try:
             response = requests.get(url, timeout=try_timeout, proxies=proxies,
@@ -41,7 +46,8 @@ def download(url, tries=DEFAULT_TRIES, retry_delay=RETRY_DELAY,
             if i < tries - 1:
                 time.sleep(retry_delay)
 
-    raise DownloadException() from download_exception
+    # raise DownloadException() from download_exception
+    raise download_exception
 
 
 def download_to_file(url, file_path, **kwargs):
@@ -55,9 +61,16 @@ def download_to_file(url, file_path, **kwargs):
         kwargs: Parámetros para download().
 
     """
+    # print(url, file_path, kwargs)
     content = download(url, **kwargs)
-    with open(file_path, "wb") as f:
+
+    # crea todos los directorios necesarios
+    path = pathlib.Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("wb") as f:
         try:
             f.write(content)
         except IOError as e:
-            raise DownloadException() from e
+            # raise DownloadException() from e
+            raise e
