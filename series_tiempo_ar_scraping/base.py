@@ -1,7 +1,5 @@
 import logging
-import sys
 import os
-import re
 import traceback
 import yaml
 import smtplib
@@ -164,7 +162,8 @@ class Distribution(ETLObject):
                     if self.csv_exists() and self.context['replace']:
                         self.report['distribution_note'] = 'Replaced'
                     self.write_distribution_dataframe()
-                    self.context['metadata'].get_distribution(self.identifier)['downloadURL'] = self._get_new_downloadURL()
+                    self.context['metadata'].get_distribution(
+                        self.identifier)['downloadURL'] = self._get_new_downloadURL()
 
                 except Exception as e:
                     self.report['distribution_status'] = 'ERROR'
@@ -479,7 +478,8 @@ class Catalog(ETLObject):
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "text_file"))} distribuciones de archivo de texto')
         logging.info(f'Hay {len(get_ts_distributions_by_method(self.metadata, "excel_file"))} distribuciones de archivo excel')
 
-        config = self.get_catalog_download_config(self.identifier).get('catalog')
+        config = self.get_catalog_download_config(
+            self.identifier).get('catalog')
 
         txt_list = set([
             distribution['scrapingFileURL']
@@ -656,6 +656,7 @@ class Catalog(ETLObject):
     def send_validation_group_email(self):
         mailer_config = self.get_mailer()
         catalog_config = self.get_validation_catalog_email_config()
+
         try:
             if not catalog_config or self.identifier not in catalog_config:
                 logging.warning(
@@ -833,7 +834,8 @@ class Catalog(ETLObject):
     def get_catalog_download_config(self, identifier):
         try:
             with open(CONFIG_DOWNLOAD_PATH) as config_download_file:
-                configs = yaml.load(config_download_file, Loader=yaml.FullLoader)
+                configs = yaml.load(config_download_file,
+                                    Loader=yaml.FullLoader)
         except (IOError, yaml.parser.ParserError):
             logging.info("No se pudo cargar el archivo de configuración \
                 'config_downloads.yaml'.")
@@ -859,25 +861,28 @@ class Catalog(ETLObject):
 
     def _get_dataset_reports_indicator(self, status=None):
         return len(
-            [r for r in self.context['catalog'][self.identifier]['catalog_datasets_reports'] if r.get('dataset_status') == status]
+            [r for r in self.context['catalog'][self.identifier]['catalog_datasets_reports']
+                if r.get('dataset_status') == status]
             if status
             else self.context['catalog'][self.identifier]['catalog_datasets_reports']
         )
 
     def _get_distribution_reports_indicator(self, status=None):
         return len(
-            [r for r in self.context['catalog'][self.identifier]['catalog_distributions_reports'] if r.get('distribution_status') == status]
+            [r for r in self.context['catalog'][self.identifier]['catalog_distributions_reports']
+                if r.get('distribution_status') == status]
             if status
             else self.context['catalog'][self.identifier]['catalog_distributions_reports']
         )
 
     def _get_distributions_percentage_indicator(self):
-        distributions_ok = self._get_distribution_reports_indicator(status='OK')
+        distributions_ok = self._get_distribution_reports_indicator(
+            status='OK')
         distributions = self._get_distribution_reports_indicator()
         try:
             distributions_percentage = round(float(
                 (distributions_ok
-                ) / distributions) * 100, 3)
+                 ) / distributions) * 100, 3)
         except:
             distributions_percentage = 0
 
@@ -975,9 +980,11 @@ class ETL(ETLObject):
         except (IOError, yaml.parser.ParserError):
             logging.warning(
                 "No se pudo cargar el archivo de configuración 'config_email.yaml'.")
+            logging.warning("Salteando envío de mails...")
+            cfg = None
 
         return cfg
-        
+
     def process(self):
         self.pre_process()
 

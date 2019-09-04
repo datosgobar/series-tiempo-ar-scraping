@@ -38,7 +38,7 @@ $ cd series-tiempo-ar-scraping
 
     Si *Anaconda* **no** se encuentra instalado, instalarlo:
     ```bash
-    $ make anaconda_dependency_install
+    $ make install_anaconda
     ```
     Durante el proceso de instalación, asegurar que el instalador modifique el archivo `.bashrc` para incluir el comando `conda` en el `PATH`.
 
@@ -48,7 +48,7 @@ $ cd series-tiempo-ar-scraping
     ```
     Una vez instalado *Anaconda* y habilitado el comando `conda`, crear el entorno virtual:
     ```bash
-    $ make anaconda_setup_etl_on_virtualenv
+    $ make setup_anaconda
     ```
     **Virtualenv:**
 
@@ -59,7 +59,7 @@ $ cd series-tiempo-ar-scraping
     
     **Virtualenv:**
     ```bash
-    $ make install
+    $ make setup_virtualenv
     ```
 
 4. Crear el índice de catálogos y el archivo de configuración general:
