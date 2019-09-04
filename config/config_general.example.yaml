@@ -1,1 +1,3 @@
+host: http://localhost/
+environment: local # prod, stg o dev
 logging: info # critical, error, warning, info o debug
