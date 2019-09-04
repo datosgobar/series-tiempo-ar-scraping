@@ -1,5 +1,0 @@
-responses==0.10.5
-flake8==3.7.5
-pylint==1.9.4
-coverage==4.5.2
-coveralls==1.5.1
