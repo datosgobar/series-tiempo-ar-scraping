@@ -123,7 +123,7 @@ class SpreadsheetProcessor(BaseProcessor):
         )
 
         try:
-            xl = self.catalog_context['xl'].get(file_source.split('/')[-1])
+            xl = self.catalog_context['catalog'][self.catalog_metadata.get('identifier')]['xl'].get(file_source.split('/')[-1])
 
             distribution_params = self.gen_distribution_params(
                 self.catalog_metadata, self.distribution_metadata.get('identifier'))
