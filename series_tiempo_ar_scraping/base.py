@@ -30,7 +30,7 @@ from series_tiempo_ar_scraping.processors import (
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATOS_DIR = os.path.join("data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
-OUTPUT_DIR = os.path.join(DATOS_DIR, "output")
+OUTPUT_DIR = os.path.join(ROOT_DIR, "data", "output")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 CONFIG_DOWNLOAD_PATH = os.path.join(CONFIG_DIR, "config_downloads.yaml")
