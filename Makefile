@@ -11,6 +11,9 @@ ACTIVATE = /home/series/miniconda3/bin/activate
 all: run
 all_local: run_local
 
+custom_steps:
+	bash config/custom_steps.sh data/output/catalog
+
 clean:
 	rm -rf data/input/
 	rm -rf data/output/
