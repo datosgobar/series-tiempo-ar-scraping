@@ -340,7 +340,7 @@
                 "sha256:5b5a6e039c45e447d516dbf0588b0a1ebae6fb0e67bde3384bb70a568b6cdd9a"
             ],
             "index": "pypi",
-            "version": "==0.3.2"
+            "version": "==0.3.5"
         },
         "series-tiempo-ar-scraping": {
             "editable": true,
