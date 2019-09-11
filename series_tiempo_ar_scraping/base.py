@@ -30,6 +30,7 @@ from series_tiempo_ar_scraping.processors import (
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATOS_DIR = os.path.join("data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
+OUTPUT_DIR = os.path.join(DATOS_DIR, "output")
 CATALOGS_DIR = os.path.join(DATOS_DIR, "output", "catalog")
 CATALOGS_DIR_INPUT = os.path.join(DATOS_DIR, "input", "catalog")
 CONFIG_DOWNLOAD_PATH = os.path.join(CONFIG_DIR, "config_downloads.yaml")
@@ -184,9 +185,9 @@ class Distribution(ETLObject):
                     en el host dentro de la configuración, y el resto del path se mantiene.
                     Si es False, devuelve un string vacío.
         """
-        if ROOT_DIR in self.context['distribution_output_path']:
+        if OUTPUT_DIR in self.context['distribution_output_path']:
             downloadURL = self.context['distribution_output_path'].replace(
-                ROOT_DIR, self.config['host']
+                OUTPUT_DIR, self.config['host']
             )
         else:
             downloadURL = ''
@@ -330,10 +331,13 @@ class Catalog(ETLObject):
         self.fetch_metadata_file()
 
         self.context['catalog'][self.identifier] = {}
-        self.context['catalog'][self.identifier]['metadata'] = self.get_metadata_from_file()
+        self.context['catalog'][self.identifier][
+            'metadata'] = self.get_metadata_from_file()
 
-        self.context['catalog'][self.identifier]['catalog_is_valid'] = self.validate_metadata()
-        self.context['catalog'][self.identifier]['metadata'] = self.filter_metadata()
+        self.context['catalog'][self.identifier][
+            'catalog_is_valid'] = self.validate_metadata()
+        self.context['catalog'][self.identifier][
+            'metadata'] = self.filter_metadata()
         self.metadata = self.context['catalog'][self.identifier]['metadata']
 
         if write:
@@ -390,7 +394,8 @@ class Catalog(ETLObject):
         )
 
         self.context['catalog'][self.identifier]['metadata'].generate_datasets_report(
-            self.context['catalog'][self.identifier]['metadata'], harvest='valid',
+            self.context['catalog'][self.identifier][
+                'metadata'], harvest='valid',
             export_path=os.path.join(
                 ROOT_DIR,
                 REPORTES_DIR,
@@ -418,8 +423,10 @@ class Catalog(ETLObject):
         logging.info(f"Distribuciones: {len(self.context['catalog'][self.identifier]['catalog_time_series_distributions_identifiers'])}")
         logging.info(f"Fields: {len(self.metadata.get_time_series())}")
         logging.info('')
-        self.context['catalog'][self.identifier]['catalog_datasets_reports'] = []
-        self.context['catalog'][self.identifier]['catalog_distributions_reports'] = []
+        self.context['catalog'][self.identifier][
+            'catalog_datasets_reports'] = []
+        self.context['catalog'][self.identifier][
+            'catalog_distributions_reports'] = []
 
     def get_time_series_distributions_identifiers(self):
         return [
@@ -543,7 +550,8 @@ class Catalog(ETLObject):
             self.get_json_metadata_path()
         self.context['catalog'][self.identifier]['catalog_xlsx_metadata_path'] = \
             self.get_xlsx_metadata_path()
-        self.context['catalog'][self.identifier]['catalog_output_path'] = self.get_output_path()
+        self.context['catalog'][self.identifier][
+            'catalog_output_path'] = self.get_output_path()
 
     def get_original_metadata_path(self):
         return os.path.join(
@@ -665,14 +673,17 @@ class Catalog(ETLObject):
                 logging.warning("Salteando catálogo...")
             else:
                 subject = self.generate_validation_subject()
-                message = self.generate_validation_message(self.context['catalog'][self.identifier]['catalog_is_valid'])
+                message = self.generate_validation_message(
+                    self.context['catalog'][self.identifier]['catalog_is_valid'])
 
-                recipients = catalog_config.get(self.identifier, {}).get('destinatarios', [])
+                recipients = catalog_config.get(
+                    self.identifier, {}).get('destinatarios', [])
                 if recipients:
                     files = self.get_validation_email_files()
 
                     logging.info(f"Enviando reporte al grupo {self.identifier}...")
-                    self.send_email(mailer_config, subject, message, recipients, files)
+                    self.send_email(mailer_config, subject,
+                                    message, recipients, files)
                 else:
                     logging.warning(f'No hay destinatarios para catálogo {self.identifier}')
                     logging.warning('Salteando catálogo...')
@@ -712,12 +723,14 @@ class Catalog(ETLObject):
         else:
             subject = self.generate_scraping_subject()
             message = self.generate_scraping_message()
-            recipients = catalog_config.get(self.identifier, {}).get('destinatarios', [])
+            recipients = catalog_config.get(
+                self.identifier, {}).get('destinatarios', [])
             if recipients:
                 files = self.get_scraping_email_files()
 
                 logging.info(f"Enviando reporte al grupo {self.identifier}...")
-                self.send_email(mailer_config, subject, message, recipients, files)
+                self.send_email(mailer_config, subject,
+                                message, recipients, files)
             else:
                 logging.warning(f'No hay destinatarios para catálogo {self.identifier}')
                 logging.warning('Salteando catálogo...')
@@ -782,7 +795,8 @@ class Catalog(ETLObject):
         )
 
         datasets_report = pd.DataFrame(
-            self.context['catalog'][self.identifier]['catalog_datasets_reports'],
+            self.context['catalog'][self.identifier][
+                'catalog_datasets_reports'],
             columns=columns,
         )
 
@@ -797,7 +811,8 @@ class Catalog(ETLObject):
         )
 
         distributions_report = pd.DataFrame(
-            self.context['catalog'][self.identifier]['catalog_distributions_reports'],
+            self.context['catalog'][self.identifier][
+                'catalog_distributions_reports'],
             columns=columns,
         )
 
