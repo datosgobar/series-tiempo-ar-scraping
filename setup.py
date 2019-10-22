@@ -11,7 +11,7 @@ with open("requirements.txt") as f:
 
 setup(
     name='series-tiempo-ar-scraping',
-    version='0.1.1',
+    version='0.3.1',
     description="Descripción corta del proyecto.",
     long_description=readme,
     author="Datos Argentina",
