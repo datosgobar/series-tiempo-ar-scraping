@@ -66,8 +66,8 @@ setup_virtualenv: create_dir
 
 update_environment: create_dir
 	git pull
-	source $(ACTIVATE) $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
+	source $(ACTIVATE) $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade; $(SERIES_TIEMPO_PIP) install -e .
 
 update_environment_local: create_dir
 	git pull
-	source activate $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade
+	source activate $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -r requirements.txt --upgrade; $(SERIES_TIEMPO_PIP) install -e .
