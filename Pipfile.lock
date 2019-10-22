@@ -386,7 +386,7 @@
                 "sha256:a9f13d5551487b3283e58d4366e62952f24a1b85cf6c5af5a998db5c4d904aba"
             ],
             "index": "pypi",
-            "version": "==0.2.3"
+            "version": "==0.2.5"
         }
     },
     "develop": {

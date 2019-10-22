@@ -322,6 +322,7 @@ class Catalog(ETLObject):
         self.extension = kwargs.get('extension')
         self.replace = kwargs.get('replace')
         self.config = kwargs.get('config')
+        self.distribution_id_filter = kwargs.get('distribution_id_filter')
         logging.info(f'=== Catálogo: {identifier} ===')
 
         super().__init__(identifier, parent, context)
@@ -433,6 +434,10 @@ class Catalog(ETLObject):
             distribution['identifier']
             for distribution
             in self.metadata.get_distributions(only_time_series=True)
+            if (
+                not self.distribution_id_filter or
+                distribution['identifier'] == self.distribution_id_filter
+            )
         ]
 
     def write_metadata(self):
@@ -470,6 +475,10 @@ class Catalog(ETLObject):
             distribution['dataset_identifier']
             for distribution
             in self.metadata.get_distributions(only_time_series=True)
+            if (
+                not self.distribution_id_filter or
+                distribution['identifier'] == self.distribution_id_filter
+            )
         ])
 
     def process(self):
@@ -492,6 +501,10 @@ class Catalog(ETLObject):
             distribution['scrapingFileURL']
             for distribution
             in get_ts_distributions_by_method(self.metadata, "text_file")
+            if (
+                not self.distribution_id_filter or
+                distribution['identifier'] == self.distribution_id_filter
+            )
         ])
 
         for txt_url in txt_list:
@@ -506,6 +519,10 @@ class Catalog(ETLObject):
             distribution['scrapingFileURL']
             for distribution
             in get_ts_distributions_by_method(self.metadata, "excel_file")
+            if (
+                not self.distribution_id_filter or
+                distribution['identifier'] == self.distribution_id_filter
+            )
         ])
 
         xl = {}
@@ -950,6 +967,8 @@ class ETL(ETLObject):
         logging.info(f'Hay {len(self.catalogs_from_config.keys())} catálogos')
         self.replace = kwargs.get('replace')
         self.config = kwargs.get('config')
+        self.catalog_id_filter = kwargs.get('catalog_id_filter')
+        self.distribution_id_filter = kwargs.get('distribution_id_filter')
         super().__init__(identifier, parent, context)
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
@@ -977,9 +996,12 @@ class ETL(ETLObject):
                     'formato'
                 ),
                 replace=self.replace,
-                config=self.config
+                config=self.config,
+                distribution_id_filter=self.distribution_id_filter
             )
             for catalog in self.catalogs_from_config.keys()
+            if (not self.catalog_id_filter or
+                catalog == self.catalog_id_filter)
         ]
 
     def _get_default_context(self):

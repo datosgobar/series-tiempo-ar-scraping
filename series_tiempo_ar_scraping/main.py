@@ -45,7 +45,8 @@ def get_logger(log_level):
 )
 @click.option(
     '--log-level',
-    default=lambda: read_config(os.path.join(CONFIG_DIR, 'config_general.yaml'))['logging'],
+    default=lambda: read_config(os.path.join(
+        CONFIG_DIR, 'config_general.yaml'))['logging'],
     type=str,
 )
 @click.option(
@@ -53,13 +54,26 @@ def get_logger(log_level):
     default=True,
     type=bool,
 )
-def cli(config, log_level, replace):
-    main(config, log_level.upper(), replace)
+@click.option(
+    '--catalog-id-filter',
+    default=None,
+    type=str,
+)
+@click.option(
+    '--distribution-id-filter',
+    default=None,
+    type=str,
+)
+def cli(config, log_level, replace, catalog_id_filter, distribution_id_filter):
+    main(config, log_level.upper(), replace,
+         catalog_id_filter, distribution_id_filter)
 
 
-def main(config, log_level, replace):
+def main(config, log_level, replace, catalog_id_filter,
+         distribution_id_filter):
     index = read_config(file_path=config)
-    config = read_config(file_path=os.path.join(CONFIG_DIR, 'config_general.yaml'))
+    config = read_config(file_path=os.path.join(
+        CONFIG_DIR, 'config_general.yaml'))
     get_logger(log_level)
 
     etl = ETL(
@@ -70,7 +84,9 @@ def main(config, log_level, replace):
         extension=None,
         index=index,
         replace=replace,
-        config=config
+        config=config,
+        catalog_id_filter=catalog_id_filter,
+        distribution_id_filter=distribution_id_filter
     )
 
     etl.run()

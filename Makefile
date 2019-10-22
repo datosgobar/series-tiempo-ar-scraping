@@ -48,6 +48,9 @@ run:
 run_local:
 	source activate $(CONDA_ENV); etl
 
+run_local_distribution:
+	source activate $(CONDA_ENV); etl --catalog-id-filter "sspm" --distribution-id-filter "330.2"
+
 setup_anaconda:
 	conda create -n $(CONDA_ENV) python=3.6 --no-default-packages
 	source $(ACTIVATE) $(CONDA_ENV); $(SERIES_TIEMPO_PIP) install -e .
