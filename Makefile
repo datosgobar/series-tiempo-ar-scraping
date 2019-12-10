@@ -49,7 +49,7 @@ run_local:
 	source activate $(CONDA_ENV); etl
 
 run_local_distribution:
-	source activate $(CONDA_ENV); etl --catalog-id-filter "sspm" --distribution-id-filter "330.2"
+	source activate $(CONDA_ENV); etl --catalog-id-filter "sspm" --distribution-id-filter "168.1"
 
 setup_anaconda:
 	conda create -n $(CONDA_ENV) python=3.6 --no-default-packages
