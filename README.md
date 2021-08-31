@@ -9,7 +9,7 @@ Aplicación escrita en Python 3 que scrapea series de tiempo de archivos `.xlsx`
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-## Índice
+# Índice
 
 - [Instalación](#instalacion)
 - [Uso](#uso)
