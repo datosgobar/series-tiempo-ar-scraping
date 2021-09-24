@@ -121,9 +121,9 @@ Si se corre luego de los pasos de instalación, el proceso se ejecuta con el cat
 
 ### Crear un catálogo con series de tiempo
 
-El *scraper* se basa en una extensión del [Perfil Nacional de Metadatos](http://paquete-apertura-datos.readthedocs.io/es/stable/guia_metadatos.html) que documenta cómo debe crearse un catálogo de datos abiertos.
+El *scraper* se basa en una extensión del [Perfil Nacional de Metadatos](https://datosgobar.github.io/paquete-apertura-datos/guia-metadatos/) que documenta cómo debe crearse un catálogo de datos abiertos.
 
-El Perfil de Metadatos especifica [cómo deben documentarse distribuciones CSV que contengan series de tiempo](http://paquete-apertura-datos.readthedocs.io/es/stable/guia_metadatos.html#series-de-tiempo). Esta es una especificación estricta que propone generar CSVs estándares y documentarlos para su extracción e interpretación segura por aplicaciones de todo tipo.
+El Perfil de Metadatos especifica [cómo deben documentarse distribuciones CSV que contengan series de tiempo](https://datosgobar.github.io/paquete-apertura-datos/perfil-metadatos/#series-de-tiempo). Esta es una especificación estricta que propone generar CSVs estándares y documentarlos para su extracción e interpretación segura por aplicaciones de todo tipo.
 
 Este proyecto, añade algunos campos de metadatos extra al catálogo que **no son parte del Perfil de Metadatos** y están pensados para poder generar estos CSVs estándares a partir de series que están publicadas en Excels semi-estructurados.
 
