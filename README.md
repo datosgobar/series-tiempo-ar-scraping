@@ -104,8 +104,8 @@ Si se corre luego de los pasos de instalación, el proceso se ejecuta con el cat
 
 - **Entradas**:
     - `index.yaml`: Contiene un listado de catálogos con series de tiempo y sus URLs respectivas ([Ver ejemplo](config/index.example.yaml)).
-        + El índice debe tener por lo menos un [catálogo en Excel](https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/catalogs/example_catalog1.xlsx).
-        + El catálogo en Excel debe documentar por lo menos un dataset con por lo menos una distribución para *scrapear* a partir de un [Excel con series de tiempo](https://github.com/datosgobar/series-tiempo-ar-scraping/raw/master/samples/sources/actividad_ied.xlsx) o para descargar de un [CSV con series de tiempo](https://github.com/datosgobar/series-tiempo-ar-scraping/blob/master/samples/sources/odg-total-millones-pesos-1960-trimestral.csv).
+        + El índice debe tener por lo menos un [catálogo en Excel](https://github.com/datosgobar/series-tiempo-ar-scraping/raw/development/samples/catalogs/example_catalog1.xlsx).
+        + El catálogo en Excel debe documentar por lo menos un dataset con por lo menos una distribución para *scrapear* a partir de un [Excel con series de tiempo](https://github.com/datosgobar/series-tiempo-ar-scraping/raw/development/samples/sources/actividad_ied.xlsx) o para descargar de un [CSV con series de tiempo](https://github.com/datosgobar/series-tiempo-ar-scraping/blob/master/samples/sources/odg-total-millones-pesos-1960-trimestral.csv).
     - `config_general.yaml`: Contiene la configuración del servidor donde se servirán los archivos de salida ([Ver ejemplo](config/config_general.example.yaml)).
 
 - **Salidas**:
