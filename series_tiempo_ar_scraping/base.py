@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import traceback
@@ -609,8 +610,19 @@ class Catalog(ETLObject):
 
     def post_process(self):
         # TODO: unset dataset_path
+
+        # TODO: Configurar source de llaves a excluir
+        logging.info(f'Eliminando "scrapingFileURL" y "scrapingFileSheet de distribuciones...')
+        for dataset in self.metadata.get('dataset', []):
+            for distribution in dataset.get('distribution', []):
+                distribution.pop('scrapingFileURL', None)
+                distribution.pop('scrapingFileSheet', None)
+
         logging.info(f'Escribiendo una nueva versión de {self.get_json_metadata_path()}')
         self.write_json_metadata()
+
+        logging.info(f'Escribiendo una nueva versión de {self.get_xlsx_metadata_path()}')
+        self.write_xlsx_metadata()
 
         datasets_report = self.get_datasets_report()
 
