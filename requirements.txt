@@ -50,7 +50,7 @@ ptyprocess==0.6.0
 pycallgraph==1.0.1
 pycparser==2.19
 pydatajson==0.4.45
-Pygments==2.7.4
+Pygments==2.4.2
 pyrsistent==0.15.4
 python-dateutil==2.8.0
 pytz==2019.2
