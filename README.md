@@ -207,4 +207,4 @@ Este proyecto, añade algunos campos de metadatos extra al catálogo que **no so
 
 Te invitamos a [crearnos un issue](https://github.com/datosgobar/series-tiempo-ar-scraping/issues/new?title=Encontre%20un%20bug%20en%20series-tiempo-ar-scraping) en caso de que encuentres algún bug o tengas feedback de alguna parte de `series-tiempo-ar-scraping`.
 
-Para todo lo demás, podés mandarnos tu comentario o consulta a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar).
+Para todo lo demás, podés mandarnos tu comentario o consulta a [datosargentina@jefatura.gob.ar](mailto:datosargentina@jefatura.gob.ar).

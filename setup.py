@@ -15,7 +15,7 @@ setup(
     description="Descripción corta del proyecto.",
     long_description=readme,
     author="Datos Argentina",
-    author_email='datos@modernizacion.gob.ar',
+    author_email='datosargentina@jefatura.gob.ar',
     url='https://github.com/datosgobar/series-tiempo-ar-scraping',
     packages=[
         'series_tiempo_ar_scraping',
