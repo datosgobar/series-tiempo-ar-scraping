@@ -621,6 +621,8 @@ class Catalog(ETLObject):
                 for field in distribution.get('field', []):
                     field.pop('scrapingIdentifierCell', None)
                     field.pop('scrapingDataStartCell', None)
+                    field.pop('dataset_identifier', None)
+                    field.pop('distribution_identifier', None)
 
         logging.info(f'Escribiendo una nueva versión de {self.get_json_metadata_path()}')
         self.write_json_metadata()
