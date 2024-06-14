@@ -851,6 +851,11 @@ class Catalog(ETLObject):
             columns=columns,
         )
 
+        distributions_report = distributions_report.sort_values(
+        by='distribution_status', 
+        ascending=True
+    )
+
         return distributions_report
 
     def download_with_config(self, url, file_path, config):
