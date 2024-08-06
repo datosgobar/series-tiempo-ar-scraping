@@ -109,6 +109,9 @@ class Distribution(ETLObject):
             'distribution_status': 'OK',
             'distribution_note': None,
             'distribution_traceback': None,
+            'distribution_source': None,
+            'distribution_sheet': None,
+            'time_index_coord': None,
         }
 
         self.processor = self.init_processor()
@@ -157,22 +160,62 @@ class Distribution(ETLObject):
         self.pre_process()
 
         if self.processor:
+
             if not self.csv_exists() or self.context['replace']:
                 try:
-                    self._df = self.processor.run()
-                    self.validate()
-                    if self.csv_exists() and self.context['replace']:
-                        self.report['distribution_note'] = 'Replaced'
+                    if isinstance(self.processor, SpreadsheetProcessor):
+                        diccionario = self.processor.run()
+
+                        self._df = diccionario["df"]
+                        table_end = diccionario["table_end"]
+                        end = diccionario["end"]
+                        is_trimmed = table_end != end
+
+                        self.validate()
+
+                        if is_trimmed and table_end > end:
+                            self.report['distribution_status'] = 'WARNING'
+                            self.report['distribution_note'] = f"fin_tabla:{table_end}, última fecha:{end}"
+                            self.report['distribution_source'] = self.metadata.get('scrapingFileURL')
+                            self.report['distribution_sheet'] = self.metadata.get('scrapingFileSheet')
+                            for field in self.metadata["field"]:
+                                if field["title"] == "indice_tiempo":
+                                    self.report['time_index_coord'] = field['scrapingIdentifierCell']
+                                    break
+                        elif self.csv_exists() and self.context['replace']:
+                            self.report['distribution_note'] = 'Replaced'
+
+                    else:
+                        self._df = self.processor.run()
+                        self.validate()
+
+                        if self.csv_exists() and self.context['replace']:
+                            self.report['distribution_note'] = 'Replaced'
+
                     self.write_distribution_dataframe()
-                    self.context['metadata'].get_distribution(
-                        self.identifier)['downloadURL'] = self._get_new_downloadURL()
+                    self.context['metadata'].get_distribution(self.identifier)[
+                        'downloadURL'] = self._get_new_downloadURL()
+
 
                 except Exception as e:
                     self.report['distribution_status'] = 'ERROR'
                     self.report['distribution_note'] = repr(e)
-                    self.report[
-                        'distribution_traceback'] = traceback.format_exc()
+                    self.report['distribution_traceback'] = traceback.format_exc()
+                    self.report['distribution_source'] = self.metadata.get('scrapingFileURL')
+                    self.report['distribution_sheet'] = self.metadata.get('scrapingFileSheet')
+                    for field in self.metadata["field"]:
+                        if field["title"] == "indice_tiempo":
+                            self.report['time_index_coord'] = field['scrapingIdentifierCell']
+                            break
+
+
+
+
+
+
+
         self.post_process()
+
 
     def pre_process(self):
         self.init_context_paths()
@@ -241,6 +284,8 @@ class Distribution(ETLObject):
         if self.report['distribution_status'] == 'ERROR':
             logging.info(f"Distribución {self.identifier}: ERROR {self.report['distribution_note']}")
             logging.debug(self.report['distribution_traceback'])
+        elif self.report['distribution_status'] == 'WARNING':
+            logging.info(f"Distribución {self.identifier}: WARNING {self.report['distribution_note']}")
         elif self.report['distribution_status'] == 'OK':
             if self.report['distribution_note'] == 'Replaced':
                 logging.info(f"Distribución {self.identifier}: OK (Replaced)")
@@ -843,6 +888,10 @@ class Catalog(ETLObject):
             'distribution_identifier',
             'distribution_status',
             'distribution_note',
+            'distribution_source',
+            'distribution_sheet',
+            'time_index_coord',
+
         )
 
         distributions_report = pd.DataFrame(
@@ -850,10 +899,16 @@ class Catalog(ETLObject):
                 'catalog_distributions_reports'],
             columns=columns,
         )
+        custom_order = ['ERROR', 'WARNING', 'OK']
+
+        distributions_report['distribution_status'] = pd.Categorical(
+            distributions_report['distribution_status'],
+            categories=custom_order,
+            ordered=True
+        )
 
         distributions_report = distributions_report.sort_values(
-        by='distribution_status', 
-        ascending=True
+        by='distribution_status',
     )
 
         return distributions_report

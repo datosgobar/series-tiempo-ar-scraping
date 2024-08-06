@@ -121,10 +121,11 @@ class SpreadsheetProcessor(BaseProcessor):
             'sources',
             self.distribution_metadata.get('scrapingFileURL').split('/')[-1]
         )
+        file_name = os.path.basename(file_source)
 
         try:
             xl = self.catalog_context['catalog'][self.catalog_metadata.get('identifier')][
-                'xl'].get(file_source.split('/')[-1])
+                'xl'].get(file_name)
 
             distribution_params = self.gen_distribution_params(
                 self.catalog_metadata, self.distribution_metadata.get('identifier'))
@@ -133,10 +134,11 @@ class SpreadsheetProcessor(BaseProcessor):
             dataset_meta = self.catalog_metadata.get_dataset(
                 self.distribution_metadata.get('identifier').split(".")[0])
 
-            df = self.scrape_dataframe(xl, **distribution_params)
+            diccionario = self.scrape_dataframe(xl, **distribution_params)
 
-            if isinstance(df, list):
-                df = pd.concat(df, axis=1)
+
+            if isinstance(diccionario["df"], list):
+                diccionario["df"] = pd.concat(diccionario["df"], axis=1)
 
             # VALIDACIONES
             worksheet = distribution_params["worksheet"]
@@ -145,16 +147,15 @@ class SpreadsheetProcessor(BaseProcessor):
 
             validate_distribution_scraping(xl, worksheet, headers_coord, headers_value,
                                            distrib_meta)
-            validate_distribution(df, self.catalog_metadata, dataset_meta, distrib_meta,
+            validate_distribution(diccionario["df"], self.catalog_metadata, dataset_meta, distrib_meta,
                                   self.distribution_metadata.get('identifier'))
-
-            return df
+            return diccionario
 
         except Exception:
             logging.debug('Falló la descarga de la distribución')
             raise
 
-        return distribution_df
+        return diccionario
 
     def gen_distribution_params(self, catalog, distribution_identifier):
         distribution = catalog.get_distribution(distribution_identifier)
@@ -210,14 +211,14 @@ class SpreadsheetProcessor(BaseProcessor):
 
         try:
             params["time_composed"] = True
-            dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
+            diccionario = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
                                      preserve_wb_obj=PRESERVE_WB_OBJ)
         except TimeIsNotComposed:
             params["time_composed"] = False
-            dfs = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
+            diccionario = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
                                      preserve_wb_obj=PRESERVE_WB_OBJ)
 
-        return dfs
+        return diccionario
 
     def row_from_cell_coord(self, coord):
         match = re.match(r'^[A-Za-z]+(\d+)$', coord)
