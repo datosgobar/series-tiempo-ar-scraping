@@ -211,8 +211,9 @@ class SpreadsheetProcessor(BaseProcessor):
 
         try:
             params["time_composed"] = True
+            
             diccionario = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
-                                     preserve_wb_obj=PRESERVE_WB_OBJ)
+                                     preserve_wb_obj=PRESERVE_WB_OBJ, dict_mode=True)
         except TimeIsNotComposed:
             params["time_composed"] = False
             diccionario = xl.get_data_frames(deepcopy(params), ws_name=worksheet,

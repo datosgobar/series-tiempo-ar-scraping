@@ -303,6 +303,7 @@ class Dataset(ETLObject):
         self.config = kwargs.get('config')
         super().__init__(identifier, parent, context)
 
+
         self.report = {
             'dataset_identifier': self.identifier,
             'dataset_status': 'OK',
@@ -587,6 +588,7 @@ class Catalog(ETLObject):
         self.context['catalog'][self.identifier]['xl'] = xl
 
         self.init_context_paths()
+
 
     def get_txt_path(self, txt_name):
         return os.path.join(
