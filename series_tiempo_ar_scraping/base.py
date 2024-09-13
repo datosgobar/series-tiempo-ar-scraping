@@ -165,7 +165,6 @@ class Distribution(ETLObject):
                 try:
                     if isinstance(self.processor, SpreadsheetProcessor):
                         diccionario = self.processor.run()
-
                         self._df = diccionario["df"]
                         table_end = diccionario["table_end"]
                         end = diccionario["end"]
@@ -919,6 +918,7 @@ class Catalog(ETLObject):
         self.ensure_dir_exists(
             os.path.dirname(file_path),
         )
+
         try:
             download.download_to_file(url, file_path, **config)
         except Exception as e:

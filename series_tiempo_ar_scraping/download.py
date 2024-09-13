@@ -11,7 +11,7 @@ class DownloadException(Exception):
 
 
 def download(url, tries=DEFAULT_TRIES, retry_delay=RETRY_DELAY,
-             try_timeout=None, proxies=None, verify=True):
+             try_timeout=None, proxies=None, verify = True):
     """Descarga un archivo a través del protocolo HTTP, en uno o más intentos.
 
     Args:
@@ -50,7 +50,7 @@ def download(url, tries=DEFAULT_TRIES, retry_delay=RETRY_DELAY,
     raise download_exception
 
 
-def download_to_file(url, file_path, **kwargs):
+def download_to_file(url, file_path,verify=False, **kwargs):
     """Descarga un archivo a través del protocolo HTTP, en uno o más intentos,
     y escribe el contenido descargado el el path especificado.
 

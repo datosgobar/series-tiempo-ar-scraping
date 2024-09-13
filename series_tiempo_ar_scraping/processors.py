@@ -114,7 +114,6 @@ class SpreadsheetProcessor(BaseProcessor):
 
     def run(self):
         distribution_df = None
-
         file_source = os.path.join(
             CATALOGS_DIR_INPUT,
             self.catalog_metadata.get('identifier'),
@@ -211,13 +210,13 @@ class SpreadsheetProcessor(BaseProcessor):
 
         try:
             params["time_composed"] = True
-            
+
             diccionario = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
                                      preserve_wb_obj=PRESERVE_WB_OBJ, dict_mode=True)
         except TimeIsNotComposed:
             params["time_composed"] = False
             diccionario = xl.get_data_frames(deepcopy(params), ws_name=worksheet,
-                                     preserve_wb_obj=PRESERVE_WB_OBJ)
+                                     preserve_wb_obj=PRESERVE_WB_OBJ,dict_mode=True)
 
         return diccionario
 
