@@ -1,4 +1,3 @@
-import copy
 import logging
 import os
 import traceback
@@ -324,6 +323,7 @@ class Catalog(ETLObject):
         self.replace = kwargs.get('replace')
         self.config = kwargs.get('config')
         self.distribution_id_filter = kwargs.get('distribution_id_filter')
+        self.interactive = kwargs.get('interactive', False)
         logging.info(f'=== Catálogo: {identifier} ===')
 
         super().__init__(identifier, parent, context)
@@ -857,6 +857,11 @@ class Catalog(ETLObject):
         self.ensure_dir_exists(
             os.path.dirname(file_path),
         )
+        if os.path.isfile(file_path) and self.interactive:
+            logging.info('Saltando descarga de {}'.format(url))
+            logging.info('Usando archivo {}'.format(file_path))
+            return
+
         try:
             download.download_to_file(url, file_path, **config)
         except Exception as e:
@@ -987,6 +992,7 @@ class ETL(ETLObject):
         self.config = kwargs.get('config')
         self.catalog_id_filter = kwargs.get('catalog_id_filter')
         self.distribution_id_filter = kwargs.get('distribution_id_filter')
+        self.interactive = kwargs.get('interactive', False)
         super().__init__(identifier, parent, context)
         self.print_log_separator(logging, "Envío de mails para: extracción")
 
@@ -1015,7 +1021,8 @@ class ETL(ETLObject):
                 ),
                 replace=self.replace,
                 config=self.config,
-                distribution_id_filter=self.distribution_id_filter
+                distribution_id_filter=self.distribution_id_filter,
+                interactive=self.interactive
             )
             for catalog in self.catalogs_from_config.keys()
             if (not self.catalog_id_filter or
