@@ -174,7 +174,7 @@ class Distribution(ETLObject):
 
                         if is_trimmed and table_end > end:
                             self.report['distribution_status'] = 'WARNING'
-                            self.report['distribution_note'] = f"fin_tabla:{table_end}, última fecha:{end}"
+                            self.report['distribution_note'] = f"la distribución termina en la fila {table_end},pero no se detectó fecha en la fila {end+1}"
                             self.report['distribution_source'] = self.metadata.get('scrapingFileURL')
                             self.report['distribution_sheet'] = self.metadata.get('scrapingFileSheet')
                             for field in self.metadata["field"]:
