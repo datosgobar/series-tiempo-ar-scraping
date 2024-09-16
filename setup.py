@@ -3,10 +3,10 @@
 
 from setuptools import setup
 
-with open('README.md') as readme_file:
+with open('README.md', encoding="utf-8") as readme_file:
     readme = readme_file.read()
 
-with open("requirements.txt") as f:
+with open("requirements.txt", encoding ="utf-8") as f:
     requirements = [req.strip() for req in f.readlines()]
 
 setup(

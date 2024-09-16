@@ -95,3 +95,10 @@ def main(config, log_level, replace, catalog_id_filter,
     )
 
     etl.run()
+
+"""PARA PRUEBAS"""
+#if __name__ == "__main__":
+    #import sys
+    #sys.argv.append('--distribution-id-filter')
+    #sys.argv.append('15.2')
+    #cli()
