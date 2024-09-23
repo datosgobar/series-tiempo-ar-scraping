@@ -3,10 +3,10 @@
 
 from setuptools import setup
 
-with open('README.md') as readme_file:
+with open('README.md', encoding="utf-8") as readme_file:
     readme = readme_file.read()
 
-with open("requirements.txt") as f:
+with open("requirements.txt", encoding ="utf-8") as f:
     requirements = [req.strip() for req in f.readlines()]
 
 setup(
@@ -24,6 +24,9 @@ setup(
                  'series_tiempo_ar_scraping'},
     include_package_data=True,
     install_requires=requirements,
+    dependency_links=[
+        'git+https://github.com/datosgobar/xlseries.git#egg=xlseries',
+    ],
     entry_points={
         'console_scripts': [
             'etl=series_tiempo_ar_scraping.main:cli'

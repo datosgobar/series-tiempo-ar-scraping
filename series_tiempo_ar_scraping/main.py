@@ -64,13 +64,17 @@ def get_logger(log_level):
     default=None,
     type=str,
 )
-def cli(config, log_level, replace, catalog_id_filter, distribution_id_filter):
+@click.option(
+    '--interactive/--no-interactive',
+    default=False
+)
+def cli(config, log_level, replace, catalog_id_filter, distribution_id_filter, interactive):
     main(config, log_level.upper(), replace,
-         catalog_id_filter, distribution_id_filter)
+         catalog_id_filter, distribution_id_filter, interactive)
 
 
 def main(config, log_level, replace, catalog_id_filter,
-         distribution_id_filter):
+         distribution_id_filter, interactive):
     index = read_config(file_path=config)
     config = read_config(file_path=os.path.join(
         CONFIG_DIR, 'config_general.yaml'))
@@ -86,7 +90,15 @@ def main(config, log_level, replace, catalog_id_filter,
         replace=replace,
         config=config,
         catalog_id_filter=catalog_id_filter,
-        distribution_id_filter=distribution_id_filter
+        distribution_id_filter=distribution_id_filter,
+        interactive=interactive
     )
 
     etl.run()
+
+"""PARA PRUEBAS"""
+#if __name__ == "__main__":
+    #import sys
+    #sys.argv.append('--distribution-id-filter')
+    #sys.argv.append('15.2')
+    #cli()
