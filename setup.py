@@ -24,6 +24,9 @@ setup(
                  'series_tiempo_ar_scraping'},
     include_package_data=True,
     install_requires=requirements,
+    dependency_links=[
+        'git+https://github.com/datosgobar/xlseries.git#egg=xlseries',
+    ],
     entry_points={
         'console_scripts': [
             'etl=series_tiempo_ar_scraping.main:cli'
